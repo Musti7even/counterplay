@@ -172,7 +172,7 @@ export interface GfxCtx { lens: number; selected: { side: Side; idx: number } | 
 
 const W = (x: number, y: number, z = 0.04) => toWorld(x, y, z);
 const WHITE = col(C.text), ACCENT = col(C.accent), ALERT = col(C.alert);
-const TAG_H = 0.034 / PLATE; // plate height = 3.4 % of the frame (= --u * 7 at 1080p)
+const TAG_H0 = 0.034 / PLATE; // plate height = 3.4 % of the frame (= --u * 7 at 1080p)
 
 export class Graphics {
   group = new THREE.Group();
@@ -187,6 +187,7 @@ export class Graphics {
   private fades = new Map<string, number>();
   last?: Record<Side, TeamMetrics>;
   pressureCount = 0;
+  tagScale = 1; // quad quadrants: match the overlay's --k relative to the quadrant height
 
   constructor(private match: Match) {
     const add = (...o: THREE.Object3D[]) => this.group.add(...o);
@@ -211,7 +212,7 @@ export class Graphics {
   }
 
   update(s: Snapshot, c: GfxCtx) {
-    const { lens, dt, cam } = c, m = this.match;
+    const { lens, dt, cam } = c, m = this.match, TAG_H = TAG_H0 * this.tagScale;
     // lens weights (DESIGN.md density): casual = carrier + one speed tag; analysis = + back line, passes, pressure;
     // tactical = + offside, shape (speed tags drop out)
     const wPass = smooth(0.15, 0.45, lens), wPress = smooth(0.35, 0.6, lens), wLine = smooth(0.35, 0.65, lens);

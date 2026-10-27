@@ -42,7 +42,7 @@ Case: CAPS + 0.1 em tracking only for kickers, labels, team codes and player tag
 
 ### Scale, spacing, shape
 - `--u` = frame height / 216 (5 px at 1080p): every size is a multiple, so graphics scale with the frame like real broadcast output.
-  `--k` scales a subtree (quad quadrants use 0.62).
+  `--k` scales a subtree (quad quadrants use 0.75).
 - Spacing `--s1 … --s6` = 1, 2, 3, 4, 6 u. Radius `--radius` 2 px. Bars `--bar` 0.8 u (4 px).
 - Safe areas: corner furniture (scorebug, stat card, lower thirds, badges) inside the 5 % graphics-safe inset (`--safe-x/y`);
   centred reading text (subtitles, full-screen cards) inside 10 % title-safe.

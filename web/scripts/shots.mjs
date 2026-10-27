@@ -9,7 +9,7 @@ const CHROME = process.env.CHROME ?? (existsSync(toolDir) ? readdirSync(toolDir)
 const M = process.env.MATCH ?? 'match', F = process.env.FORK ?? 'fork-step_up', T = process.env.T ?? '30.5';
 const SHOTS = {
   'landing': '',
-  'quad': `?view=quad&from=63&paused=1`,
+  'quad': `?view=quad&from=${process.env.QT ?? '70.5'}&paused=1`,
   'control': `?cues=data/fork-step_up.casual.en.cues.json&control=1&controlAt=62-70&t=67&paused=1`,
   'broadcast-casual': `?match=${M}&t=${T}&lens=0&paused=1`,
   'broadcast-tactical': `?match=${M}&t=${T}&lens=1&paused=1`,
@@ -19,7 +19,8 @@ const SHOTS = {
   'ghost-whatif': `?match=${M}&fork=${F}&view=ghost&lens=0.3&paused=1&t=${process.env.FT ?? '68.6'}`,
 };
 const only = process.argv.slice(2);
-mkdirSync(new URL('../shots/', import.meta.url), { recursive: true });
+const OUT = process.env.OUT ?? new URL('../shots/', import.meta.url).pathname; // OUT=dir/ to shoot without touching shots/
+mkdirSync(OUT, { recursive: true });
 
 const browser = await puppeteer.launch({
   executablePath: CHROME, headless: true, protocolTimeout: 600000,
@@ -33,8 +34,8 @@ try {
     page.on('pageerror', (e) => console.error(name, 'pageerror', e.message));
     page.on('console', (m) => m.type() === 'error' && console.error(name, 'console', m.text()));
     await page.goto(BASE + '/' + qs, { waitUntil: 'load' });
-    await page.waitForFunction('window.__frames > 12', { timeout: 180000, polling: 250 });
-    const path = new URL(`../shots/${name}.png`, import.meta.url).pathname;
+    await page.waitForFunction('window.__frames > 12', { timeout: 600000, polling: 250 });
+    const path = `${OUT}${name}.png`;
     await page.screenshot({ path });
     console.log('wrote', path);
     await page.close();

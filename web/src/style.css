@@ -63,7 +63,7 @@ button, select, input { font: inherit; color: inherit; }
 /* ---------- 6 agent card: [idx NAME state][role][chips] ---------- */
 .agent { display: flex; flex-direction: column; gap: var(--s2); min-width: 0; padding: var(--s3) var(--s4) var(--s4); background: var(--surface-2);
   border-radius: var(--radius); box-shadow: inset 0 calc(var(--u) * 0.6) 0 var(--sig, var(--rule)); }
-.ag-top { display: flex; align-items: baseline; gap: var(--s2); }
+.ag-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--s2); }
 .ag-idx { font-size: var(--fs-1); font-weight: 700; color: var(--text-2); }
 .ag-name { font-size: var(--fs-2); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .ag-state { margin-left: auto; font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sig, var(--text-2)); white-space: nowrap; }
@@ -104,13 +104,13 @@ body.split #tactics, body.quad #tactics { display: none; }
 
 /* split / ghost: one badge per half, top centre */
 .view-label { position: absolute; top: var(--safe-y); left: 50%; transform: translateX(-50%); z-index: 2; }
-body:not(.multi) .view-label { display: none; }
+body:not(.multi) .view-label, body.quad .view-label { display: none; }
 
 /* lower-third zones: stack bottom-left of the frame (zone-r = right half in split), above the subtitle row */
 .zone { position: fixed; z-index: 4; bottom: calc(var(--base-b) + var(--subrow, 0px)); left: var(--safe-x); max-width: calc(50vw - 2 * var(--safe-x));
   display: flex; flex-direction: column; align-items: flex-start; gap: var(--s2); pointer-events: none; }
-body.has-subs { --subrow: calc(var(--u) * 17); }
-#zone-r { display: none; }
+body.has-subs { --subrow: calc(var(--u) * 24); } /* room for a two-line subtitle */
+#zone-r, body.quad .zone { display: none; }
 body.split #zone-r { display: flex; left: calc(50% + var(--safe-x)); }
 .zone .lt { opacity: 0; }
 
@@ -173,12 +173,14 @@ body.control:not(.capture):not(.noui) #control { padding-bottom: var(--s4); }
 body.quad #views { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; }
 body.quad #views { bottom: var(--chrome); }
 .ov { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
-.ov.scaled { --k: 0.62; --safe-x: calc(50vw * 0.05); --safe-y: calc(50vh * 0.05); }
+.ov.scaled { --k: 0.75; --safe-x: calc(50vw * 0.05); --safe-y: calc(50vh * 0.05); }
 .ov-top { position: absolute; top: var(--safe-y); left: var(--safe-x); display: flex; flex-direction: column; align-items: flex-start; gap: var(--s2); }
 .ov-tr { position: absolute; top: var(--safe-y); right: var(--safe-x); }
-.ov-zone { position: absolute; left: var(--safe-x); bottom: calc(var(--safe-y) + var(--u) * 17); max-width: calc(100% - 2 * var(--safe-x));
+/* quad: one bottom stack per quadrant, lower thirds left, subtitle centred under them: they can never overlap */
+.ov-zone { position: absolute; left: var(--safe-x); right: var(--safe-x); bottom: var(--safe-y);
   display: flex; flex-direction: column; align-items: flex-start; gap: var(--s2); }
-.ov-zone .lt { opacity: 0; }
+.ov-zone .lt { opacity: 0; max-width: 100%; }
+.ov-zone .ov-sub { position: static; transform: none; align-self: center; max-width: 100%; }
 
 /* ---------- start screen ---------- */
 #start { position: fixed; inset: 0; z-index: 20; display: none; align-items: center; padding: 0 10vw;

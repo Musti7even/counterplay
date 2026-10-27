@@ -6,8 +6,8 @@
 <!-- Dev-only component sheet (DESIGN.md): every component + the palette, at 1920x1080. Screenshot: shots/design-sheet.png -->
 <style>
   html, body { width: 1920px; height: 1080px; }
-  .sheet { position: absolute; inset: 0; display: grid; grid-template-columns: 470px 1fr; gap: 48px; padding: 40px 56px; }
-  .right { display: grid; grid-template-columns: 780px 1fr; gap: 22px 28px; align-content: start; }
+  .sheet { position: absolute; inset: 0; display: grid; grid-template-columns: 470px 1fr; gap: 48px; padding: 32px 56px; }
+  .right { display: grid; grid-template-columns: 780px 1fr; gap: 16px 28px; align-content: start; }
   .right > .full { grid-column: 1 / -1; }
   .col { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
   h2 { margin: 0 0 4px; font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-2); }
@@ -78,6 +78,13 @@
           <div class="lt" style="--sig: var(--home)"><div class="lt-body"><div class="lt-kicker">Goal · Redmoor FC · 01:12</div><div class="lt-line" style="font-size: var(--fs-3)">10 A. Brennan</div></div></div>
         </div>
         <div class="lt sub"><div class="lt-body"><div class="lt-kicker">AI commentary · English</div><div class="lt-line">Redmoor have 100 percent of the ball in this spell.</div></div></div>
+    <div class="spec" style="margin-top: 14px"><h2>6 Agent card · live / done / recovered</h2>
+      <div class="agents">
+        <div class="agent live"><div class="ag-top"><span class="ag-idx">03</span><span class="ag-name">What-if</span><span class="ag-state">Live</span></div><div class="ag-role">Runs the fork</div><div class="ag-chips"><span class="chip">list_forks()</span><span class="chip new">fork_what_if(a6, 66.5)</span></div></div>
+        <div class="agent done"><div class="ag-top"><span class="ag-idx">04</span><span class="ag-name">Fact-check</span><span class="ag-state">Done</span></div><div class="ag-role">Verifies every number</div><div class="ag-chips"><span class="chip ok new">score 0–0</span><span class="chip rej">100% possession</span></div></div>
+        <div class="agent rec"><div class="ag-top"><span class="ag-idx">02</span><span class="ag-name">Tactician</span><span class="ag-state">Recovered</span></div><div class="ag-role">Explains why</div><div class="ag-chips"><span class="chip alert">✗ timeout</span><span class="chip alert new">Template took over</span></div></div>
+      </div>
+    </div>
       </div>
       <div class="spec"><h2>4 Stat card · team / player</h2>
         <div class="row" style="align-items: flex-start">
@@ -95,13 +102,6 @@
           <div class="card-note">*modelled from workload</div>
         </div></div>
       </div>
-    <div class="spec full"><h2>6 Agent card · live / done / recovered</h2>
-      <div class="agents">
-        <div class="agent live"><div class="ag-top"><span class="ag-idx">03</span><span class="ag-name">What-if</span><span class="ag-state">Live</span></div><div class="ag-role">Runs the fork</div><div class="ag-chips"><span class="chip">list_forks()</span><span class="chip new">fork_what_if(a6, 66.5)</span></div></div>
-        <div class="agent done"><div class="ag-top"><span class="ag-idx">04</span><span class="ag-name">Fact-check</span><span class="ag-state">Done</span></div><div class="ag-role">Verifies every number</div><div class="ag-chips"><span class="chip ok new">score 0–0</span><span class="chip rej">100% possession</span></div></div>
-        <div class="agent rec"><div class="ag-top"><span class="ag-idx">02</span><span class="ag-name">Tactician</span><span class="ag-state">Recovered</span></div><div class="ag-role">Explains why</div><div class="ag-chips"><span class="chip alert">✗ timeout</span><span class="chip alert new">Template took over</span></div></div>
-      </div>
-    </div>
   </div>
 </div>
 <script type="module">

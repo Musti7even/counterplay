@@ -42,7 +42,8 @@ export class Overlay {
     this.root.className = 'ov';
     this.sub.classList.add('ov-sub');
     this.zone.className = 'ov-zone';
-    this.root.append(this.zone, this.sub);
+    this.root.append(this.zone);
+    if (o.label) this.zone.append(this.sub); else this.root.append(this.sub); // quad: subtitle closes the bottom stack
     const m = o.match;
     if (o.label && m) {
       this.root.classList.add('scaled');
@@ -84,7 +85,7 @@ export class Overlay {
       for (const [k, el] of this.caps) if (!captions[k]) el.style.display = 'none';
       for (const [k, c] of Object.entries(captions)) {
         let el = this.caps.get(k);
-        if (!el) { el = lowerThird(k === 'whatif' ? 'whatif' : ''); this.zone.append(el); this.caps.set(k, el); }
+        if (!el) { el = lowerThird(k === 'whatif' ? 'whatif' : ''); this.zone.insertBefore(el, this.sub.parentElement === this.zone ? this.sub : null); this.caps.set(k, el); }
         showLowerThird(el, t, c.t0, c.dur ?? 4, c.title ?? '', c.text);
       }
     }

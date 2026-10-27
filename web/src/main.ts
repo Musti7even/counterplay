@@ -283,6 +283,7 @@ async function quad() {
     const [, persona, lang] = r.split('.');
     const v = new View(orig, '', null, false, true);
     v.vs = { lens: scripts[i].lens ?? 0.2, cam: scripts[i].cam ?? 'broadcast', selected: null };
+    v.gfx.tagScale = 1.5; // = overlay --k 0.75 / quadrant height 0.5
     const label = `${persona.startsWith('player') ? 'Player cam' : persona} · ${lang ?? ''}`;
     v.overlay = new Overlay(v.el, { label, panel: persona === 'analyst', match: orig, commentary: coms[i], audio: i === 0, variant: variants[i] });
     viewsEl.append(v.el);
