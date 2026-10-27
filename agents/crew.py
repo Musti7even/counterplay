@@ -106,10 +106,10 @@ def horizon(name, kw, out):
 class Crew:
     """Shared services: MCP connection, LLM client, trace, time-stamped evidence store."""
 
-    def __init__(self, match, persona, lang, kill, mcp, client, mode):
+    def __init__(self, match, persona, lang, kill, mcp, client, mode, tag=None):
         self.match, self.persona, self.lang, self.kill = match, persona, lang, kill
         self.mcp, self.client, self.mode = mcp, client, mode
-        self.base = f"{match}.{persona.replace(':', '-')}.{lang}"
+        self.base = f"{match}.{persona.replace(':', '-')}.{lang}" + (f'.{tag}' if tag else '')
         self.trace, self.evidence, self.agent = [], {}, None  # evidence: number -> earliest match time it was known
 
     def remember(self, name, kw, out):
@@ -578,6 +578,7 @@ async def main():
     ap.add_argument('--persona', default='casual', help='casual | analyst | player:<id>')
     ap.add_argument('--lang', default='en', choices=phrases.LANGS)
     ap.add_argument('--kill', choices=STAGES, help='make this agent crash to demo recovery')
+    ap.add_argument('--tag', help='extra output name part, e.g. killtactician -> <match>.<persona>.<lang>.killtactician.*')
     a = ap.parse_args()
     load_env()
     client, mode = make_client()
@@ -585,7 +586,7 @@ async def main():
     env = dict(os.environ, MCP_LOG_LEVEL='CRITICAL', HOME=os.environ.get('HOME', os.path.join(TOOLS, 'home')))
     async with MCPStdioTool(name='engine', command=py, args=[os.path.join(CODE, 'engine', 'mcp_server.py')],
                             env=env, load_prompts=False, request_timeout=600) as mcp:
-        c = Crew(a.match, a.persona, a.lang, a.kill, mcp, client, mode)
+        c = Crew(a.match, a.persona, a.lang, a.kill, mcp, client, mode, a.tag)
         c.agent = 'crew'
         c.log('start', vars(a), f'mode={mode}, tools={[f.name for f in mcp.functions]}')
         stages = [Stage(c, n) for n in STAGES]
