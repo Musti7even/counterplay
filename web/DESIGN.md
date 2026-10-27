@@ -74,6 +74,7 @@ Case: CAPS + 0.1 em tracking only for kickers, labels, team codes and player tag
    Interstitials, rewind, architecture, end card (`video/cards.*`) and the start screen.
 
 **Pitch line family** (`graphics.ts`, `LINE` in tokens.ts): flat, anti-aliased, no halo, occluded by players.
+- Widths are metres at the broadcast gantry and scale with camera distance (constant on-screen weight; player cam thinner, high cam thicker).
 - Primary 0.30 m: back line, pass arrows, the what-if path. Shot = 1.5 × primary. Secondary 0.12 m: offside, shape hull/units, rings, pressure.
 - Solid = something that is there (a line of players, a pass). Dashed = a reference or relation (offside line, hull, pressure links).
 - White by default; colour only by meaning: alert = pressure/misplaced pass, accent = focus ring, whatif = alternate path.

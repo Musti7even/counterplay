@@ -26,6 +26,9 @@ const ribbonMat = (color: THREE.Color) => new THREE.ShaderMaterial({
 });
 
 export class Ribbon {
+  // ponytail: one global width factor set per view by Graphics.update (screen weight stays ~constant across cameras);
+  // the what-if paths in main.ts reuse the value of the view rendered last frame, fine while they share its camera
+  static k = 1;
   mesh: THREE.Mesh; mat: THREE.ShaderMaterial; geo = new THREE.BufferGeometry();
   pos: Float32Array; uv: Float32Array;
   constructor(public width: number, color: THREE.Color, max = 64, dash = 0) {
@@ -47,7 +50,7 @@ export class Ribbon {
     for (let i = 0; i < pts.length; i++) {
       const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)];
       let tx = b.x - a.x, tz = b.z - a.z; const l = Math.hypot(tx, tz) || 1; tx /= l; tz /= l;
-      const nx = -tz * this.width / 2, nz = tx * this.width / 2, p = pts[i];
+      const hw = this.width * Ribbon.k / 2, nx = -tz * hw, nz = tx * hw, p = pts[i];
       this.pos.set([p.x + nx, p.y, p.z + nz, p.x - nx, p.y, p.z - nz], i * 6);
       const u = total ? acc[i] / total : 0;
       this.uv.set([u, 0, u, 1], i * 4);
@@ -82,7 +85,7 @@ class Ring {
     this.mesh.visible = !!p && opacity > 0.01 && reveal > 0.001;
     if (!this.mesh.visible) return;
     this.mesh.position.set(p!.x, 0.03, p!.z); this.mesh.scale.setScalar(radius * 2);
-    const U = this.mat.uniforms; U.color.value.copy(color); U.opacity.value = opacity; U.inner.value = 1 - width / radius; U.reveal.value = reveal;
+    const U = this.mat.uniforms; U.color.value.copy(color); U.opacity.value = opacity; U.inner.value = 1 - (width * Ribbon.k) / radius; U.reveal.value = reveal;
   }
   hide() { this.mesh.visible = false; }
 }
@@ -213,6 +216,8 @@ export class Graphics {
 
   update(s: Snapshot, c: GfxCtx) {
     const { lens, dt, cam } = c, m = this.match, TAG_H = TAG_H0 * this.tagScale;
+    // line weight: metres scaled so a line looks the same on screen as on the broadcast gantry (60 m away, 20° fov)
+    Ribbon.k = THREE.MathUtils.clamp(cam.position.distanceTo(W(s.ball[0], s.ball[1], 0)) * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)) / 10.6, 0.4, 1.6);
     // lens weights (DESIGN.md density): casual = carrier + one speed tag; analysis = + back line, passes, pressure;
     // tactical = + offside, shape (speed tags drop out)
     const wPass = smooth(0.15, 0.45, lens), wPress = smooth(0.35, 0.6, lens), wLine = smooth(0.35, 0.65, lens);
@@ -313,7 +318,7 @@ export class Graphics {
       a.head.visible = weight * fade > 0.01 && prog > 0.05;
       a.head.position.copy(tip);
       a.head.rotation.set(-Math.PI / 2, 0, Math.atan2(to[1] - from[1], to[0] - from[0]) - Math.PI / 2);
-      a.head.scale.setScalar(isShot ? 1.3 : 1);
+      a.head.scale.setScalar((isShot ? 1.3 : 1) * Ribbon.k);
       const hm = a.head.material as THREE.MeshBasicMaterial; hm.color.copy(color); hm.opacity = weight * fade;
     });
 
