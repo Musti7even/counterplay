@@ -12,7 +12,7 @@ const template = gltf.scene;
 template.updateMatrixWorld(true);
 
 // body regions from the dominant skinning bone + bind-pose height, so one mesh can wear any kit
-const R = { skin: 0, shirt: 1, shorts: 2, socks: 3, boots: 4, hair: 5, hands: 6 };
+const R = { skin: 0, shirt: 1, shorts: 2, socks: 3, boots: 4, hair: 5, hands: 6, trim: 7 };
 const skinned: THREE.SkinnedMesh[] = [];
 template.traverse((o) => { if ((o as THREE.SkinnedMesh).isSkinnedMesh) skinned.push(o as THREE.SkinnedMesh); });
 const backZ = { min: 0, max: 0 };
@@ -25,12 +25,14 @@ for (const m of skinned) {
     const n = names[best] ?? '', x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i), ax = Math.abs(x);
     let r = R.skin;
     if (/spine|shoulder|hips/.test(n)) r = /hips/.test(n) && y < 1.0 ? R.shorts : R.shirt;
-    else if (/upper_arm/.test(n)) r = ax < 0.36 ? R.shirt : R.skin;
+    else if (/upper_arm/.test(n)) r = ax < 0.335 ? R.shirt : ax < 0.36 ? R.trim : R.skin; // sleeve cuff
     else if (/thigh/.test(n)) r = y > 0.66 ? R.shorts : R.skin;
     else if (/shin/.test(n)) r = y < 0.44 ? R.socks : R.skin;
     else if (/foot|toe/.test(n)) r = y < 0.1 || /toe/.test(n) ? R.boots : R.socks;
     else if (/hand|f_|thumb/.test(n)) r = R.hands;
     else if (/head/.test(n)) r = y > 1.72 && (z < 0.02 || y > 1.78) ? R.hair : R.skin;
+    if (r === R.shirt && y > 1.47 && ax < 0.11) r = R.trim;            // collar
+    if (r === R.socks && y > 0.4) r = R.trim;                          // sock turnover
     reg[i] = r;
     if (r === R.shirt && y > 1.25 && y < 1.42 && ax < 0.08) { backZ.min = Math.min(backZ.min, z); backZ.max = Math.max(backZ.max, z); }
   }
@@ -43,7 +45,7 @@ const clip = (n: string) => {
   for (const t of c.tracks) if (t.name === 'root.position') for (let i = 0; i < t.values.length; i += 3) { t.values[i] = t.values[0]; t.values[i + 2] = t.values[2]; }
   return c;
 };
-const CLIPS = { idle: clip('Idle_Loop'), walk: clip('Walk_Loop'), jog: clip('Jog_Fwd_Loop'), sprint: clip('Sprint_Loop') };
+const CLIPS = { idle: clip('Idle_Loop'), walk: clip('Walk_Loop'), jog: clip('Jog_Fwd_Loop'), sprint: clip('Sprint_Loop'), ready: clip('Crouch_Idle_Loop') };
 function nativeSpeed(c: THREE.AnimationClip) {
   const probe = cloneSkinned(template), mixer = new THREE.AnimationMixer(probe), foot = probe.getObjectByName('DEF-footL')!;
   mixer.clipAction(c).play();
@@ -64,9 +66,11 @@ function kitMaterial(cols: THREE.Color[], ghost: boolean) {
     s.uniforms.uRegion = { value: cols };
     s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nattribute float region;\nvarying float vRegion;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvRegion = region;');
-    s.fragmentShader = s.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uRegion[7];\nvarying float vRegion;')
+    s.fragmentShader = s.fragmentShader.replace('#include <common>', '#include <common>\nuniform vec3 uRegion[8];\nvarying float vRegion;')
       .replace('#include <color_fragment>', '#include <color_fragment>\n{ int r = int(vRegion + 0.5); vec3 c = uRegion[0];\n'
-        + ' for (int k = 1; k < 7; k++) if (k == r) c = uRegion[k];\n diffuseColor.rgb *= c; }');
+        + ' for (int k = 1; k < 8; k++) if (k == r) c = uRegion[k];\n diffuseColor.rgb *= c; }')
+      // fabric reads less plasticky: kit is rougher than skin, boots a touch glossy
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\n{ int r = int(vRegion + 0.5); roughnessFactor = r == 0 || r == 6 ? 0.55 : r == 4 ? 0.35 : r == 5 ? 0.8 : 0.72; }');
   });
 }
 
@@ -80,7 +84,7 @@ function numberTexture(num: number, fg: string) {
 
 export interface Figure {
   root: THREE.Group; mixer: THREE.AnimationMixer; acts: Record<keyof typeof CLIPS, THREE.AnimationAction>; mats: THREE.Material[];
-  thighR: THREE.Bone; shinR: THREE.Bone; spine: THREE.Bone; rest: THREE.Quaternion[]; phase: number; yaw: number; last: THREE.Vector3; idleOff: number; kicks: number[];
+  thighR: THREE.Bone; shinR: THREE.Bone; spine: THREE.Bone; rest: THREE.Quaternion[]; gk: boolean; phase: number; yaw: number; last: THREE.Vector3; idleOff: number; kicks: number[];
 }
 
 function figure(cols: THREE.Color[], num: number, ghost: boolean, numberColor: string, seed: number): Figure {
@@ -104,7 +108,7 @@ function figure(cols: THREE.Color[], num: number, ghost: boolean, numberColor: s
   const acts = Object.fromEntries(Object.entries(CLIPS).map(([k, c]) => { const a = mixer.clipAction(c); a.play(); a.setEffectiveWeight(0); return [k, a]; })) as Figure['acts'];
   model.traverse((o) => { o.userData.figureRoot = root; });
   const kb = [bone('DEF-thighR'), bone('DEF-shinR'), bone('DEF-spine001')];
-  return { root, mixer, acts, mats, thighR: kb[0], shinR: kb[1], spine: kb[2], rest: kb.map((b) => b.quaternion.clone()),
+  return { root, mixer, acts, mats, thighR: kb[0], shinR: kb[1], spine: kb[2], rest: kb.map((b) => b.quaternion.clone()), gk: false,
     phase: (seed * 0.37) % 1, yaw: 0, last: new THREE.Vector3(), idleOff: seed * 0.71, kicks: [] };
 }
 
@@ -128,9 +132,10 @@ export class Players {
         const shorts = gk ? new THREE.Color('#1a1a1a') : side === 'home' ? new THREE.Color('#f2f2f2') : new THREE.Color(tm.color).multiplyScalar(0.3);
         const socks = gk ? new THREE.Color('#1a1a1a') : side === 'home' ? new THREE.Color(tm.color) : new THREE.Color('#f2f2f2');
         const skin = SKIN[(seed * 5) % SKIN.length];
-        const cols = [skin, shirt, shorts, socks, BOOTS[(seed * 3) % BOOTS.length], HAIR[(seed * 11) % HAIR.length], gk ? new THREE.Color('#e9e9e9') : skin];
+        const trim = gk ? new THREE.Color('#222') : side === 'home' ? new THREE.Color('#f4f4f4') : new THREE.Color('#0d1b33');
+        const cols = [skin, shirt, shorts, socks, BOOTS[(seed * 3) % BOOTS.length], HAIR[(seed * 11) % HAIR.length], gk ? new THREE.Color('#e9e9e9') : skin, trim];
         const f = figure(cols, p.num, ghost, gk ? '#111' : side === 'home' ? '#ffffff' : '#ffffff', seed);
-        f.root.userData.pick = { side, idx: i };
+        f.root.userData.pick = { side, idx: i }; f.gk = gk;
         f.kicks = match.events.filter((e) => (e.type === 'pass' || e.type === 'shot') && e.team === side && e.idx === i).map((e) => e.t);
         this.figs[side].push(f); this.group.add(f.root);
         if (ghost) {
@@ -207,7 +212,10 @@ export class Players {
         const travelled = Math.min(f.last.distanceTo(v), 2); f.last.copy(v);
         f.phase = (f.phase + travelled / cycle) % 1;
         for (const l of LOCO) { const a = f.acts[l.k]; a.setEffectiveWeight(w[l.k]); a.time = f.phase * l.dur; }
-        f.acts.idle.setEffectiveWeight(w.idle); f.acts.idle.time = (s.t + f.idleOff) % CLIPS.idle.duration;
+        // keepers drop into a set stance when the ball is within ~30 m
+        const ready = f.gk ? Math.max(0, Math.min(1, (32 - Math.hypot(s.ball[0] - x, s.ball[1] - y)) / 8)) * w.idle * 0.7 : 0;
+        f.acts.idle.setEffectiveWeight(w.idle - ready); f.acts.idle.time = (s.t + f.idleOff) % CLIPS.idle.duration;
+        f.acts.ready.setEffectiveWeight(ready); f.acts.ready.time = (s.t + f.idleOff) % CLIPS.ready.duration;
         // bones the clips don't drive keep whatever we wrote last frame: reset them so the kick overlay never accumulates
         f.thighR.quaternion.copy(f.rest[0]); f.shinR.quaternion.copy(f.rest[1]); f.spine.quaternion.copy(f.rest[2]);
         f.mixer.update(0);
@@ -234,7 +242,7 @@ export class Players {
       toWorld(p[0], p[1], Math.max(p[2], 0.11), sp.position);
       const fade = 1 - k / this.trail.length, moving = sp.position.distanceTo(this.ball.position) > 0.3 ? 1 : 0;
       sp.scale.setScalar(0.3 * fade + 0.05);
-      (sp.material as THREE.SpriteMaterial).opacity = 0.4 * fade * fade * moving;
+      (sp.material as THREE.SpriteMaterial).opacity = 0.22 * fade * fade * moving; // faint tracer, not a comet
     });
   }
 }

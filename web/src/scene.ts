@@ -186,7 +186,7 @@ function stand(len: number, rows: number, crowdColors: THREE.Color[], lite: bool
   const roof = new THREE.Mesh(new THREE.BoxGeometry(len + 4, 0.6, depth + 6), concrete); roof.position.set(0, roofY, -depth / 2 + 2); grp.add(roof);
   const fascia = new THREE.Mesh(new THREE.BoxGeometry(len + 4, 1.6, 0.4), filmic(new THREE.MeshStandardMaterial({ color: 0x3a3f48, roughness: 0.6 }), 'fascia'));
   fascia.position.set(0, roofY - 0.5, 5); grp.add(fascia);
-  const lamp = new THREE.MeshBasicMaterial({ color: new THREE.Color(9, 8.6, 7.6), toneMapped: false });
+  const lamp = new THREE.MeshBasicMaterial({ color: new THREE.Color(3.6, 3.45, 3.1), toneMapped: false });
   const lampGeo = new THREE.BoxGeometry(0.9, 0.5, 0.25);
   const lamps = new THREE.InstancedMesh(lampGeo, lamp, Math.floor(len / 2.4));
   for (let i = 0; i < lamps.count; i++) lamps.setMatrixAt(i, m4.makeTranslation(-len / 2 + (i + 0.5) * 2.4, roofY - 1.5, 5.15));
@@ -242,6 +242,9 @@ function goal(side: number) {
 }
 
 export const CROWD_TIME = { value: 0 };
+// quality: the recorder (capture=1) renders 'high' (two shadow-casting floodlights); realtime defaults to 'medium'
+const _q = new URLSearchParams(location.search);
+export const QUALITY = (_q.get('quality') ?? (_q.get('capture') === '1' ? 'high' : 'medium')) as 'high' | 'medium';
 const GREY = new THREE.Color(0.35, 0.35, 0.37);
 
 // lite: multi-view (split/quad) budget, smaller shadow maps and a single shadow caster
@@ -288,7 +291,7 @@ export function buildStadium(renderer: THREE.WebGLRenderer, scene: THREE.Scene, 
     scene.add(l);
   };
   key(-45, 50, 2.3, true);
-  key(45, -45, 1.5, !lite);
+  key(45, -45, 1.5, !lite && QUALITY === 'high');
   key(40, 55, 0.6, false);
   key(-40, -50, 0.5, false);
 }
