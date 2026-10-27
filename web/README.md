@@ -53,6 +53,10 @@ They are folded from scratch each frame, so scrubbing and recording are exact. A
 - `&control=1` adds the control-room strip, replaying `<run>.trace.json` (or pass `control=<url>`). Steps are spread by order over `controlAt=a-b` (match seconds).
 - `?view=quad[&quad=run1,run2,run3,run4][&from=60&to=72]` shows the same moment for four runs on one clock. The default runs are casual/en, analyst/en, player-a6/de and casual/tr.
 
+**Demo cut:**
+1. Render the title cards (`video/cards.html`) with `BASE=<dev server> node scripts/cards.mjs`. They are written to `shots/cards/`.
+2. Run `scripts/assemble.sh`. It joins the recorded clips and the cards into `shots/demo-v0.mp4` and prints the segment timeline.
+
 `npm run check` runs the formation snapper self-check.
 
 Screenshots: `npm run shots`. This needs a running server plus a Chrome that works headless. The snap chromium on the box does not, so use:

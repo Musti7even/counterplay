@@ -6,3 +6,4 @@ __pycache__/
 *.dump
 *.ckpt
 data/audio/
+web/shots/demo-*.mp4

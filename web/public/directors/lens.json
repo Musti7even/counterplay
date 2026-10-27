@@ -1,0 +1,10 @@
+{
+  "name": "lens",
+  "match": "match",
+  "from": 62, "to": 66,
+  "cam": "broadcast", "lens": 0, "speed": 0.4,
+  "cues": [
+    { "t": 62.1, "caption": { "title": "LENS", "text": "Fan → Analyst", "dur": 3.8 } },
+    { "t": 62.4, "lensTo": 1, "over": 2.8 }
+  ]
+}
