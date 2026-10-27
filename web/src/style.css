@@ -95,7 +95,8 @@ body.capture, body.noui, body.landing { --chrome: 0px; }
 body.split #scorebug, body.quad #scorebug { display: none; }
 #whatif { display: none; top: calc(var(--safe-y) + var(--u) * 11); left: var(--safe-x); }
 body.hasfork #whatif { display: inline-flex; }
-body.split #whatif { top: calc(var(--safe-y) + var(--u) * 9); left: 75%; transform: translateX(-50%); }
+body.split #whatif { display: none; }
+.vl-change { font-size: var(--fs-2); font-weight: 500; letter-spacing: 0; text-transform: none; padding-left: 0 !important; }
 
 /* stat card: revealed by the lens, top-down */
 #tactics { top: var(--safe-y); right: var(--safe-x); pointer-events: none;

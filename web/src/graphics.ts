@@ -172,7 +172,7 @@ export interface GfxCtx { lens: number; selected: { side: Side; idx: number } | 
 
 const W = (x: number, y: number, z = 0.04) => toWorld(x, y, z);
 const WHITE = col(C.text), ACCENT = col(C.accent), ALERT = col(C.alert);
-const TAG_H0 = 0.034 / PLATE; // plate height = 3.4 % of the frame (= --u * 7 at 1080p)
+const TAG_H0 = 0.04 / PLATE; // plate = 4 % of the view height // plate height = 3.4 % of the frame (= --u * 7 at 1080p)
 
 export class Graphics {
   group = new THREE.Group();
@@ -270,7 +270,7 @@ export class Graphics {
       const far = line[0] && line[line.length - 1];
       const hgt = mt.lineHeight.toFixed(1);
       this.lineTag.draw(`${hgt}`, (g, cw, ch) => drawLabel(g, cw, ch, 'LINE HEIGHT', `${hgt} m`));
-      this.lineTag.place(far ? far.clone().add(new THREE.Vector3(0, 0.3, -2)) : null, TAG_H * 0.85, cam, smooth(0.6, 1, w));
+      this.lineTag.place(far ? far.clone().add(new THREE.Vector3(0, 0.3, -2)) : null, TAG_H * 0.9, cam, smooth(0.6, 1, w)); // same size as player tags
       // offside line across the pitch at the second-last defender: secondary dashed
       const wo = wOff * fd[side] * live;
       this.offside.set([W(mt.offsideX, -34, 0.05), W(mt.offsideX, 34, 0.05)], Math.min(1, wo * 3) * 0.6, ease(wo));
@@ -345,7 +345,8 @@ export class Graphics {
         v.copy(t.sprite.position).project(cam);
         const hh = t.screenH * 2, ww = (hh * t.contentW) / t.h / cam.aspect; // NDC units
         const r = [v.x - ww / 2 - pad, v.x + ww / 2 + pad, v.y - pad, v.y + hh + pad];
-        ok = !kept.some((k) => r[0] < k[1] && r[1] > k[0] && r[2] < k[3] && r[3] > k[2]);
+        // never half-clipped: a tag that leaves the 5 % safe area fades out
+        ok = r[0] > -0.9 && r[1] < 0.9 && r[3] < 0.9 && !kept.some((k) => r[0] < k[1] && r[1] > k[0] && r[2] < k[3] && r[3] > k[2]);
         if (ok) kept.push(r);
       }
       const f = this.fade(`tag${t.id}`, ok ? 1 : 0, dt, 12);

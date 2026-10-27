@@ -158,6 +158,8 @@ async function main() {
   viewsEl.append(main.el);
   if (alt) viewsEl.append(alt.el);
   const hud = initHud(orig, fork);
+  // split: the what-if label carries the change itself (the strap would repeat it right below)
+  if (alt) alt.label.querySelector('.vl-name')!.insertAdjacentHTML('afterend', `<span class="vl-change">${document.querySelector('.wi-text')!.textContent}</span>`);
   const end = Math.max(duration(orig), fork ? duration(fork) : 0);
   const subs = commentary ? new Overlay(document.body, { commentary, audio: true }) : null;
   subs?.root.classList.add('ov-fixed');
