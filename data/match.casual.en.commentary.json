@@ -1,7 +1,7 @@
 [
  {
   "t": 33.6,
-  "text": "A. Brennan lets fly from 11.3 metres at 116.6 km/h. xG 0.173.",
+  "text": "A. Brennan lets fly from 11 metres... so close for Redmoor FC!",
   "voice_style": "excited",
   "claim": "m5",
   "evidence": [
@@ -11,9 +11,9 @@
  },
  {
   "t": 62.5,
-  "text": "Redmoor FC have 100 percent of the ball in this spell, control index 59.",
+  "text": "Redmoor FC have camped in Halvard Athletic's half. Halvard Athletic simply can't get a touch.",
   "voice_style": "calm",
-  "claim": "m1-tactic_control",
+  "claim": "m1-tactic_siege",
   "evidence": [
    "m1",
    "window 59.5-69.5"
@@ -21,7 +21,7 @@
  },
  {
   "t": 69.5,
-  "text": "GOAL! D. Moreau finishes it for Redmoor FC, 1-0. Chance quality: xG 0.236.",
+  "text": "GOAL! D. Moreau buries it! Redmoor FC make it 1-0.",
   "voice_style": "excited",
   "claim": "m1",
   "evidence": [
@@ -32,28 +32,31 @@
  },
  {
   "t": 74.5,
-  "text": "What if B. Rinaldi stepped up?",
+  "text": "Now hold on. What if H. Sørensen had stepped up?",
   "voice_style": "hopeful",
   "claim": "w-setup",
   "evidence": [
-   "fork_what_if",
-   "a4"
+   "compare_fork",
+   "fork-step_up",
+   "a6"
   ]
  },
  {
   "t": 79.5,
-  "text": "In the what-if, the goal at 69.5 seconds never happens: 1-0 becomes 0-0.",
+  "text": "Same moment, one change, and the goal never comes! It's 0-0, not 1-0.",
   "voice_style": "excited",
   "claim": "w-result",
   "evidence": [
-   "divergence"
+   "compare_fork",
+   "fork-step_up",
+   "score@76.5"
   ]
  },
  {
   "t": 90.9,
-  "text": "Redmoor FC have 100 percent of the ball in this spell, control index 58.",
+  "text": "It's all Redmoor FC now. Halvard Athletic are chasing shadows.",
   "voice_style": "calm",
-  "claim": "m2-tactic_control",
+  "claim": "m2-tactic_siege",
   "evidence": [
    "m2",
    "window 87.9-97.9"
@@ -61,7 +64,7 @@
  },
  {
   "t": 97.9,
-  "text": "GOAL! D. Moreau finishes it for Redmoor FC, 2-0. Chance quality: xG 0.313.",
+  "text": "And there it is again! D. Moreau with another! 2-0 to Redmoor FC now.",
   "voice_style": "excited",
   "claim": "m2",
   "evidence": [
@@ -72,7 +75,7 @@
  },
  {
   "t": 124.4,
-  "text": "A. Brennan lets fly from 13.9 metres at 119.4 km/h. xG 0.134.",
+  "text": "A. Brennan has a go from 14 metres! Inches away. Redmoor FC will be kicking themselves.",
   "voice_style": "excited",
   "claim": "m6",
   "evidence": [
@@ -82,9 +85,9 @@
  },
  {
   "t": 130.5,
-  "text": "Halvard Athletic have 99 percent of the ball in this spell, control index 73.",
+  "text": "Halvard Athletic are knocking on the door again, Redmoor FC pinned in their own box.",
   "voice_style": "calm",
-  "claim": "m4-tactic_control",
+  "claim": "m4-tactic_siege",
   "evidence": [
    "m4",
    "window 127.5-137.5"
@@ -92,7 +95,7 @@
  },
  {
   "t": 137.5,
-  "text": "F. Delacroix lets fly from 12 metres at 121.3 km/h. xG 0.195.",
+  "text": "Another sight of goal for F. Delacroix, 12 metres out... not this time! Halvard Athletic keep searching.",
   "voice_style": "excited",
   "claim": "m4",
   "evidence": [
@@ -102,7 +105,7 @@
  },
  {
   "t": 149.4,
-  "text": "This is chaos: 3 turnovers, chaos index 70.",
+  "text": "It's end to end now, nobody can keep hold of the ball!",
   "voice_style": "calm",
   "claim": "m3-tactic_chaos",
   "evidence": [
@@ -112,7 +115,7 @@
  },
  {
   "t": 156.4,
-  "text": "A. Brennan lets fly from 12.5 metres at 129 km/h. xG 0.211.",
+  "text": "A. Brennan lets fly from 12 metres... so close for Redmoor FC!",
   "voice_style": "excited",
   "claim": "m3",
   "evidence": [

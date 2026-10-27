@@ -1,21 +1,24 @@
 [
  {
   "t": 62.5,
-  "text": "Was wäre, wenn H. Sørensen herausgerückt wäre?",
+  "text": "Moment mal. Was wäre, wenn H. Sørensen herausgerückt wäre?",
   "voice_style": "hopeful",
   "claim": "w-setup",
   "evidence": [
    "compare_fork",
+   "fork-step_up",
    "a6"
   ]
  },
  {
   "t": 69.5,
-  "text": "Im Was-wäre-wenn fällt das Tor nach 69.5 Sekunden nie: aus 2-0 wird 0-1.",
+  "text": "Gleicher Moment, eine Änderung, und das Tor fällt nie! 0-0 statt 1-0.",
   "voice_style": "excited",
   "claim": "w-result",
   "evidence": [
-   "divergence"
+   "compare_fork",
+   "fork-step_up",
+   "score@76.5"
   ]
  }
 ]

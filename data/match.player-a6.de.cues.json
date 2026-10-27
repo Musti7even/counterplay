@@ -15,8 +15,8 @@
   {
    "t": 62.5,
    "caption": {
-    "title": "KONTROLLE",
-    "text": "Redmoor FC: 100% Ballbesitz",
+    "title": "RAUMKONTROLLE",
+    "text": "Redmoor FC · 100%",
     "dur": 3.5
    }
   },
@@ -37,7 +37,7 @@
    "t": 69.5,
    "caption": {
     "title": "TOR",
-    "text": "D. Moreau trifft für Redmoor FC",
+    "text": "D. Moreau · xG 0.236",
     "dur": 3.5
    }
   },
@@ -57,8 +57,8 @@
   {
    "t": 74.5,
    "caption": {
-    "title": "WAS WÄRE, WENN",
-    "text": "H. Sørensen herausgerückt wäre",
+    "title": "DEIN WAS-WÄRE-WENN",
+    "text": "Wenn du herausgerückt wärst?",
     "dur": 3.5
    }
   },
@@ -74,8 +74,8 @@
   {
    "t": 79.5,
    "caption": {
-    "title": "ERGEBNIS",
-    "text": "Kein Tor: 1-0 wird 0-0",
+    "title": "DEIN WAS-WÄRE-WENN",
+    "text": "Kein Tor: 0-0",
     "dur": 3.5
    }
   },
@@ -91,8 +91,8 @@
   {
    "t": 90.9,
    "caption": {
-    "title": "KONTROLLE",
-    "text": "Redmoor FC: 100% Ballbesitz",
+    "title": "RAUMKONTROLLE",
+    "text": "Redmoor FC · 100%",
     "dur": 3.5
    }
   },
@@ -113,7 +113,7 @@
    "t": 97.9,
    "caption": {
     "title": "TOR",
-    "text": "D. Moreau trifft für Redmoor FC",
+    "text": "D. Moreau · xG 0.313",
     "dur": 3.5
    }
   },
@@ -128,8 +128,8 @@
   {
    "t": 246.7,
    "caption": {
-    "title": "SPIELER",
-    "text": "H. Sørensen",
+    "title": "DEIN SPIEL",
+    "text": "1258 m · 28 km/h",
     "dur": 3.5
    }
   }

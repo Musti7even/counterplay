@@ -1,9 +1,9 @@
 [
  {
   "t": 62.5,
-  "text": "Redmoor FC hat in dieser Phase 100 Prozent Ballbesitz, Kontrollindex 59.",
+  "text": "Redmoor FC mit 100 Prozent Ballbesitz in dieser Phase. Halvard Athletic ist eingeschnürt und kann nicht aufbauen.",
   "voice_style": "calm",
-  "claim": "m1-tactic_control",
+  "claim": "m1-tactic_siege",
   "evidence": [
    "m1",
    "window 59.5-69.5"
@@ -11,7 +11,7 @@
  },
  {
   "t": 69.5,
-  "text": "TOR! D. Moreau vollendet für Redmoor FC, 1-0. Chancenqualität: xG 0.236.",
+  "text": "Tor durch D. Moreau, aus 11.6 Metern. xG 0.236: eine gute Chance, und er macht ihn. 1-0.",
   "voice_style": "excited",
   "claim": "m1",
   "evidence": [
@@ -22,28 +22,31 @@
  },
  {
   "t": 74.5,
-  "text": "Was wäre, wenn H. Sørensen herausgerückt wäre?",
+  "text": "Jetzt geht es um dich, H. Sørensen. Was wäre, wenn du herausgerückt wärst?",
   "voice_style": "hopeful",
   "claim": "w-setup",
   "evidence": [
-   "fork_what_if",
+   "compare_fork",
+   "fork-step_up",
    "a6"
   ]
  },
  {
   "t": 79.5,
-  "text": "Im Was-wäre-wenn fällt das Tor nach 69.5 Sekunden nie: aus 1-0 wird 0-0.",
+  "text": "Du rückst heraus, und das Tor nach 69.5 Sekunden fällt nie. 0-0 statt 1-0.",
   "voice_style": "excited",
   "claim": "w-result",
   "evidence": [
-   "divergence"
+   "compare_fork",
+   "fork-step_up",
+   "score@76.5"
   ]
  },
  {
   "t": 90.9,
-  "text": "Redmoor FC hat in dieser Phase 100 Prozent Ballbesitz, Kontrollindex 58.",
+  "text": "100 Prozent Ballbesitz für Redmoor FC im Aufbau. Halvard Athletic verteidigt den Strafraum, nicht den Raum davor.",
   "voice_style": "calm",
-  "claim": "m2-tactic_control",
+  "claim": "m2-tactic_siege",
   "evidence": [
    "m2",
    "window 87.9-97.9"
@@ -51,7 +54,7 @@
  },
  {
   "t": 97.9,
-  "text": "TOR! D. Moreau vollendet für Redmoor FC, 2-0. Chancenqualität: xG 0.313.",
+  "text": "Tor durch D. Moreau, aus 9.2 Metern. xG 0.313: eine gute Chance, und er macht ihn. 2-0.",
   "voice_style": "excited",
   "claim": "m2",
   "evidence": [
@@ -62,7 +65,7 @@
  },
  {
   "t": 246.7,
-  "text": "H. Sørensen: 1258.5 Meter Laufweg, Topspeed 27.6 km/h, 22 Sprints. Synthetischer Puls bis 153.",
+  "text": "Du hast 1258 Meter abgespult, 28 km/h erreicht und 22 Sprints angezogen. Dein synthetischer Puls lag in der Spitze bei 153.",
   "voice_style": "newscast",
   "claim": "p-a6",
   "evidence": [

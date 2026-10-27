@@ -110,6 +110,22 @@ def explain_evidence(event_id: str, match: str = 'match') -> dict:
 
 
 @mcp.tool()
+def list_forks(match: str = 'match') -> dict:
+    """Existing fork files of `match`: name, fork time, tweak, player, length (seconds)."""
+    out = []
+    for fn in sorted(os.listdir(DATA)):
+        name = fn[:-5]
+        if not fn.startswith('fork-') or not fn.endswith('.json') or '.' in name or not NAME.match(name):
+            continue
+        doc, _ = load(name)
+        fo = doc['meta'].get('forkOf') or {}
+        if fo.get('match') == match:
+            out.append({'name': name, 't': fo['t'], 'tweak': fo['tweak'], 'player': fo.get('params', {}).get('player'),
+                        'until': doc['frames'][-1]['t']})
+    return {'forks': out}
+
+
+@mcp.tool()
 def compare_fork(fork: str) -> dict:
     """Divergence summary of an existing fork vs the match it was forked from: goals prevented/created, score, player displacement."""
     f, _ = load(fork)

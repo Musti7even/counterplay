@@ -10,16 +10,16 @@
   {
    "t": 33.6,
    "caption": {
-    "title": "BIG CHANCE",
-    "text": "A. Brennan from 11.3 m",
+    "title": "SO CLOSE",
+    "text": "A. Brennan from 11 m",
     "dur": 3.5
    }
   },
   {
    "t": 62.5,
    "caption": {
-    "title": "CONTROL",
-    "text": "Redmoor FC: 100% possession",
+    "title": "ALL Redmoor FC",
+    "text": "Halvard Athletic can't get out",
     "dur": 3.5
    }
   },
@@ -30,8 +30,8 @@
   {
    "t": 69.5,
    "caption": {
-    "title": "GOAL",
-    "text": "D. Moreau scores for Redmoor FC",
+    "title": "GOAL!",
+    "text": "D. Moreau · Redmoor FC",
     "dur": 3.5
    }
   },
@@ -42,24 +42,24 @@
   {
    "t": 74.5,
    "caption": {
-    "title": "WHAT IF",
-    "text": "B. Rinaldi stepped up",
+    "title": "WHAT IF?",
+    "text": "H. Sørensen stepped up",
     "dur": 3.5
    }
   },
   {
    "t": 79.5,
    "caption": {
-    "title": "RESULT",
-    "text": "No goal: 1-0 becomes 0-0",
+    "title": "WHAT IF",
+    "text": "The goal never comes",
     "dur": 3.5
    }
   },
   {
    "t": 90.9,
    "caption": {
-    "title": "CONTROL",
-    "text": "Redmoor FC: 100% possession",
+    "title": "ALL Redmoor FC",
+    "text": "Halvard Athletic can't get out",
     "dur": 3.5
    }
   },
@@ -70,8 +70,8 @@
   {
    "t": 97.9,
    "caption": {
-    "title": "GOAL",
-    "text": "D. Moreau scores for Redmoor FC",
+    "title": "GOAL!",
+    "text": "D. Moreau · Redmoor FC",
     "dur": 3.5
    }
   },
@@ -82,23 +82,23 @@
   {
    "t": 124.4,
    "caption": {
-    "title": "BIG CHANCE",
-    "text": "A. Brennan from 13.9 m",
+    "title": "SO CLOSE",
+    "text": "A. Brennan from 14 m",
     "dur": 3.5
    }
   },
   {
    "t": 130.5,
    "caption": {
-    "title": "CONTROL",
-    "text": "Halvard Athletic: 99% possession",
+    "title": "ALL Halvard Athletic",
+    "text": "Redmoor FC can't get out",
     "dur": 3.5
    }
   },
   {
    "t": 137.5,
    "caption": {
-    "title": "BIG CHANCE",
+    "title": "SO CLOSE",
     "text": "F. Delacroix from 12 m",
     "dur": 3.5
    }
@@ -106,16 +106,16 @@
   {
    "t": 149.4,
    "caption": {
-    "title": "CHAOS",
-    "text": "3 turnovers",
+    "title": "END TO END",
+    "text": "Nobody can keep it",
     "dur": 3.5
    }
   },
   {
    "t": 156.4,
    "caption": {
-    "title": "BIG CHANCE",
-    "text": "A. Brennan from 12.5 m",
+    "title": "SO CLOSE",
+    "text": "A. Brennan from 12 m",
     "dur": 3.5
    }
   }

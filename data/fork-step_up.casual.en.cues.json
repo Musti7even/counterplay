@@ -12,7 +12,7 @@
   {
    "t": 62.5,
    "caption": {
-    "title": "WHAT IF",
+    "title": "WHAT IF?",
     "text": "H. Sørensen stepped up",
     "dur": 3.5
    }
@@ -35,9 +35,10 @@
   {
    "t": 69.5,
    "caption": {
-    "title": "RESULT",
-    "text": "No goal: 2-0 becomes 0-1",
-    "dur": 3.5
+    "title": "WHAT IF",
+    "text": "The goal never comes",
+    "dur": 3.5,
+    "side": "whatif"
    }
   },
   {

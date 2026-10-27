@@ -12,7 +12,7 @@
   {
    "t": 62.5,
    "caption": {
-    "title": "WAS WÄRE, WENN",
+    "title": "WAS WÄRE, WENN?",
     "text": "H. Sørensen herausgerückt wäre",
     "dur": 3.5
    }
@@ -35,9 +35,10 @@
   {
    "t": 69.5,
    "caption": {
-    "title": "ERGEBNIS",
-    "text": "Kein Tor: 2-0 wird 0-1",
-    "dur": 3.5
+    "title": "WAS WÄRE, WENN",
+    "text": "Das Tor fällt nie",
+    "dur": 3.5,
+    "side": "whatif"
    }
   },
   {

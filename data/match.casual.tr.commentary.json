@@ -1,7 +1,7 @@
 [
  {
   "t": 33.6,
-  "text": "A. Brennan 11.3 metreden vuruyor, top saatte 116.6 kilometre hızla gidiyor. xG 0.173.",
+  "text": "A. Brennan 11 metreden vurdu... kıl payı, Redmoor FC için çok yakındı!",
   "voice_style": "excited",
   "claim": "m5",
   "evidence": [
@@ -11,9 +11,9 @@
  },
  {
   "t": 62.5,
-  "text": "Redmoor FC bu bölümde topun yüzde 100 kadarına sahip, kontrol endeksi 59.",
+  "text": "Redmoor FC rakip yarı sahaya yerleşti, Halvard Athletic topa dokunamıyor.",
   "voice_style": "calm",
-  "claim": "m1-tactic_control",
+  "claim": "m1-tactic_siege",
   "evidence": [
    "m1",
    "window 59.5-69.5"
@@ -21,7 +21,7 @@
  },
  {
   "t": 69.5,
-  "text": "GOL! D. Moreau topu ağlara gönderiyor, Redmoor FC için skor 1-0. Pozisyonun gol beklentisi: xG 0.236.",
+  "text": "GOOL! D. Moreau topu ağlara gömüyor! Skor 1-0, Redmoor FC sevinçli.",
   "voice_style": "excited",
   "claim": "m1",
   "evidence": [
@@ -32,28 +32,31 @@
  },
  {
   "t": 74.5,
-  "text": "Peki ya B. Rinaldi öne çıksaydı?",
+  "text": "Bir dakika. Peki ya H. Sørensen öne çıksaydı?",
   "voice_style": "hopeful",
   "claim": "w-setup",
   "evidence": [
-   "fork_what_if",
-   "a4"
+   "compare_fork",
+   "fork-step_up",
+   "a6"
   ]
  },
  {
   "t": 79.5,
-  "text": "Alternatif senaryoda 69.5. saniyedeki gol hiç gelmiyor: 1-0 yerine skor 0-0.",
+  "text": "Aynı an, tek bir değişiklik ve gol gelmiyor! Skor 1-0 değil, 0-0.",
   "voice_style": "excited",
   "claim": "w-result",
   "evidence": [
-   "divergence"
+   "compare_fork",
+   "fork-step_up",
+   "score@76.5"
   ]
  },
  {
   "t": 90.9,
-  "text": "Redmoor FC bu bölümde topun yüzde 100 kadarına sahip, kontrol endeksi 58.",
+  "text": "Sahada artık sadece Redmoor FC var. Halvard Athletic gölge kovalıyor.",
   "voice_style": "calm",
-  "claim": "m2-tactic_control",
+  "claim": "m2-tactic_siege",
   "evidence": [
    "m2",
    "window 87.9-97.9"
@@ -61,7 +64,7 @@
  },
  {
   "t": 97.9,
-  "text": "GOL! D. Moreau topu ağlara gönderiyor, Redmoor FC için skor 2-0. Pozisyonun gol beklentisi: xG 0.313.",
+  "text": "Bir gol daha! D. Moreau yine sahnede! Skor artık 2-0.",
   "voice_style": "excited",
   "claim": "m2",
   "evidence": [
@@ -72,7 +75,7 @@
  },
  {
   "t": 124.4,
-  "text": "A. Brennan 13.9 metreden vuruyor, top saatte 119.4 kilometre hızla gidiyor. xG 0.134.",
+  "text": "A. Brennan 14 metreden şansını deniyor! Olmadı! Redmoor FC için büyük fırsat kaçtı.",
   "voice_style": "excited",
   "claim": "m6",
   "evidence": [
@@ -82,9 +85,9 @@
  },
  {
   "t": 130.5,
-  "text": "Halvard Athletic bu bölümde topun yüzde 99 kadarına sahip, kontrol endeksi 73.",
+  "text": "Halvard Athletic yine kapıyı çalıyor, Redmoor FC kendi ceza sahasına gömülmüş.",
   "voice_style": "calm",
-  "claim": "m4-tactic_control",
+  "claim": "m4-tactic_siege",
   "evidence": [
    "m4",
    "window 127.5-137.5"
@@ -92,7 +95,7 @@
  },
  {
   "t": 137.5,
-  "text": "F. Delacroix 12 metreden vuruyor, top saatte 121.3 kilometre hızla gidiyor. xG 0.195.",
+  "text": "Yine F. Delacroix, 12 metreden... ve gol değil! Halvard Athletic zorlamaya devam ediyor.",
   "voice_style": "excited",
   "claim": "m4",
   "evidence": [
@@ -102,7 +105,7 @@
  },
  {
   "t": 149.4,
-  "text": "Oyun kaosa dönüyor: 3 top kaybı, kaos endeksi 70.",
+  "text": "Karşılıklı akınlar, kimse topu ayağında tutamıyor!",
   "voice_style": "calm",
   "claim": "m3-tactic_chaos",
   "evidence": [
@@ -112,7 +115,7 @@
  },
  {
   "t": 156.4,
-  "text": "A. Brennan 12.5 metreden vuruyor, top saatte 129 kilometre hızla gidiyor. xG 0.211.",
+  "text": "A. Brennan 12 metreden vurdu... kıl payı, Redmoor FC için çok yakındı!",
   "voice_style": "excited",
   "claim": "m3",
   "evidence": [
