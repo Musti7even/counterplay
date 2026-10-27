@@ -7,7 +7,7 @@
 // --from/--to default to the director script's window. Slow-mo cues produce more frames per match second.
 import puppeteer from 'puppeteer-core';
 import { spawn, execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, mkdirSync, renameSync, rmSync } from 'node:fs';
+import { existsSync, readdirSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, resolve, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -94,6 +94,8 @@ try {
   }
   ff.stdin.end();
   await new Promise((r) => ff.on('exit', r));
+  // sidecar: match time of every frame, so voice can be muxed later without re-rendering (scripts/mux-voice.mjs)
+  writeFileSync(out.replace(/\.mp4$/, '.frames.json'), JSON.stringify({ url: a.url, fps, from, to, ts }));
   // voice: each clip starts on the first frame whose match time reaches its t (slow-mo aware); mixed into one AAC track
   const clips = ((await page.evaluate(() => window.demo.audio ?? [])) || [])
     .map((c) => ({ ...c, file: resolve(WEB, '..', c.url.replace(/^\//, '').replace(/^\.\//, '')), frame: ts.findIndex((x) => x >= c.t) }))

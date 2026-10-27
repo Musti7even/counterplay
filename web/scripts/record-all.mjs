@@ -2,8 +2,9 @@
 //   npm run record:all                      # all clips + assemble
 //   npm run record:all -- --only lens,quad  # subset (skips assemble unless --assemble)
 //   npm run record:all -- --quick           # 0.2 s smoke test per clip, no assemble
+//   npm run record:all -- --jobs 2          # render two clips at once (worth it when one render can't saturate the machine)
 // Extra flags (--chrome <path>, --gpu, --no-gpu) are passed through to scripts/record.mjs.
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -33,12 +34,21 @@ const run = (cmd, args) => {
   if (r.status !== 0) { console.error(`failed: ${cmd} (exit ${r.status})`); process.exit(r.status ?? 1); }
 };
 
-const t0 = Date.now();
-for (const [name, args] of Object.entries(CLIPS)) {
-  if (only && !only.includes(name)) continue;
+const t0 = Date.now(), jobs = Math.max(1, +(value('--jobs') ?? 1));
+// longest clips first so a parallel pool finishes evenly
+const ORDER = ['control', 'whatif', 'quad', 'lens', 'coldopen'];
+const todo = ORDER.filter((n) => !only || only.includes(n));
+const recordOne = (name) => new Promise((ok, fail) => {
   const extra = quick ? ['--from', String(QUICK_FROM[name]), '--to', String(QUICK_FROM[name] + 0.2)] : [];
   // later --from/--to win in parseArgs, so quick overrides the clip window
-  run('node', ['scripts/record.mjs', ...args, ...extra, ...pass, '--crf', '20', '--out', quick ? `shots/quick-${name}.mp4` : `shots/${name}.mp4`]);
-}
-if ((!only && !quick) || flag('--assemble')) run('bash', ['scripts/assemble.sh']);
+  const args = ['scripts/record.mjs', ...CLIPS[name], ...extra, ...pass, '--crf', '20', '--out', quick ? `shots/quick-${name}.mp4` : `shots/${name}.mp4`];
+  console.log(`\n[${name}] node ${args.join(' ')}`);
+  const c = spawn('node', args, { cwd: WEB });
+  const tag = (d) => process.stdout.write(String(d).split('\n').filter(Boolean).map((l) => `[${name}] ${l}\n`).join(''));
+  c.stdout.on('data', tag); c.stderr.on('data', tag);
+  c.on('exit', (code) => (code === 0 ? ok() : fail(new Error(`${name} exited ${code}`))));
+});
+await Promise.all(Array.from({ length: Math.min(jobs, todo.length) }, async () => { while (todo.length) await recordOne(todo.shift()); }))
+  .catch((e) => { console.error(e.message); process.exit(1); });
+if ((!only && !quick) || flag('--assemble')) run('bash', ['scripts/assemble.sh', value('--name') ?? 'demo-v1.mp4']);
 console.log(`\nrecord:all done in ${((Date.now() - t0) / 60000).toFixed(1)} min`);

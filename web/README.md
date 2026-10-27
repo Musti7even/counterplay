@@ -52,7 +52,12 @@ npm run record:all            # coldopen, whatif, lens, quad, control -> shots/*
 - **Other Chrome:** use `npm run record:all -- --chrome "/path/to/Chrome"`. `--no-gpu` forces software rendering and `--gpu` forces the GPU on Linux.
 - **One clip:** `npm run record -- --url '?director=whatif' --out shots/whatif.mp4` (same flags).
 - **Subset or smoke test:** `npm run record:all -- --only lens,quad` renders just those clips (add `--assemble` to also cut the demo). `npm run record:all -- --quick` renders 0.2 s per clip to check the setup.
-- **Cut only:** `bash scripts/assemble.sh` rebuilds `shots/demo-v0.mp4` from existing clips and the title cards in `shots/cards/` (cards are committed; regenerate with `scripts/cards.mjs`).
+- **Cut only:** `bash scripts/assemble.sh [demo-v1.mp4]` rebuilds the demo (default `shots/demo-v1.mp4`; `demo-v0.mp4` is the kept fallback) from existing clips and the title cards in `shots/cards/` (cards are committed; regenerate with `scripts/cards.mjs`).
+- **Parallel:** `npm run record:all -- --jobs 2` renders two clips at a time. On the 4-core Linux box this was about 25–35% faster than one at a time.
+- **Voice added later (no re-render):**
+  1. Every recorded clip gets a `<clip>.frames.json` sidecar holding the match time of each frame.
+  2. Once the voice files exist in `data/audio/<run>/voice.json`, run `node scripts/mux-voice.mjs shots/control.mp4`. It infers the run from the clip URL; pass `--run <name>` to override. This adds the voice track with the video stream copied, not re-rendered.
+  3. Then run `bash scripts/assemble.sh`. Any clip that has audio is placed on the demo timeline at that clip's offset, and the cards stay silent.
 - **Linux / CI:** with no GPU, it uses the bundled chrome-headless-shell on swiftshader (see below).
 
 ## Filming (deterministic, any machine)
