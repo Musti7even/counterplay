@@ -33,6 +33,12 @@ On this box that is about 1.5 s per frame, or 2 views ≈ 3 s per frame in split
 `{ t, cam, cut, lens, lensTo, over, speed, view, select, caption: { title, text, dur } }` keyed on match time.
 They are folded from scratch each frame, so scrubbing and recording are exact. Agents can emit the same JSON.
 
+**Agent outputs** (from `../agents`):
+- `?cues=/data/<run>.cues.json` plays a run. Its sibling `<run>.commentary.json` is shown as AI commentary subtitles; override it with `?commentary=<url>`, or turn it off with `commentary=0`.
+- If `data/audio/<run>/voice.json` exists, its mp3s play in sync, and the recorder mixes them into the mp4 (each clip lands on the first frame whose match time reaches its `t`).
+- `&control=1` adds the control-room strip, replaying `<run>.trace.json` (or pass `control=<url>`). Steps are spread by order over `controlAt=a-b` (match seconds).
+- `?view=quad[&quad=run1,run2,run3,run4][&from=60&to=72]` shows the same moment for four runs on one clock. The default runs are casual/en, analyst/en, player-a6/de and casual/tr.
+
 `npm run check` runs the formation snapper self-check.
 
 Screenshots: `npm run shots`. This needs a running server plus a Chrome that works headless. The snap chromium on the box does not, so use:

@@ -5,7 +5,7 @@
 // --from/--to default to the director script's window. Slow-mo cues produce more frames per match second.
 import puppeteer from 'puppeteer-core';
 import { spawn, execFileSync } from 'node:child_process';
-import { existsSync, readdirSync, mkdirSync } from 'node:fs';
+import { existsSync, readdirSync, mkdirSync, renameSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
@@ -70,14 +70,31 @@ try {
   const cdp = await page.createCDPSession();
   const t0 = Date.now();
   let t = from, n = 0;
+  const ts = []; // match time of every frame, to place voice clips
   while (t < to && n < fps * 600) {
     t = await page.evaluate((dt) => window.demo.step(dt), 1 / fps);
+    ts.push(t);
     const { data } = await cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 93, optimizeForSpeed: true });
     if (!ff.stdin.write(Buffer.from(data, 'base64'))) await new Promise((r) => ff.stdin.once('drain', r));
     if (++n % fps === 0) console.log(`frame ${n}  match t=${t.toFixed(2)}/${to}  ${((Date.now() - t0) / n / 1000).toFixed(2)} s/frame`);
   }
   ff.stdin.end();
   await new Promise((r) => ff.on('exit', r));
+  // voice: each clip starts on the first frame whose match time reaches its t (slow-mo aware); mixed into one AAC track
+  const clips = ((await page.evaluate(() => window.demo.audio ?? [])) || [])
+    .map((c) => ({ ...c, file: resolve(WEB, '..', c.url.replace(/^\//, '')), frame: ts.findIndex((x) => x >= c.t) }))
+    .filter((c) => c.frame >= 0 && c.t >= from - 0.01 && existsSync(c.file));
+  if (clips.length) {
+    const tmp = out.replace(/\.mp4$/, '.video.mp4');
+    renameSync(out, tmp);
+    const inputs = clips.flatMap((c) => ['-i', c.file]);
+    const delays = clips.map((c, i) => `[${i + 1}:a]adelay=${Math.round((c.frame / fps) * 1000)}:all=1[a${i}]`).join(';');
+    const mix = `${delays};${clips.map((_, i) => `[a${i}]`).join('')}amix=inputs=${clips.length}:normalize=0:duration=longest[a]`;
+    execFileSync('/usr/bin/ffmpeg', ['-y', '-loglevel', 'error', '-i', tmp, ...inputs, '-filter_complex', mix, '-map', '0:v', '-map', '[a]',
+      '-c:v', 'copy', '-c:a', 'aac', '-b:a', '160k', '-t', String(n / fps), '-movflags', '+faststart', out]);
+    rmSync(tmp);
+    console.log(`muxed ${clips.length} voice clip(s): ${clips.map((c) => `${c.t}s@${(c.frame / fps).toFixed(2)}s`).join(', ')}`);
+  }
   console.log(`wrote ${out}: ${n} frames, ${(n / fps).toFixed(1)} s @ ${fps} fps (match ${from}→${to})`);
 } finally {
   await browser.close();

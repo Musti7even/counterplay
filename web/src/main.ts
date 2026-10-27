@@ -10,7 +10,9 @@ import { Players } from './players';
 import { Graphics, Ribbon } from './graphics';
 import { CameraRig, CamMode } from './cameras';
 import { initHud } from './hud';
-import { loadScript, evalCues, ViewMode } from './director';
+import { loadScript, evalCues, ViewMode, Script } from './director';
+import { Overlay, loadCommentary, Commentary } from './overlay';
+import { ControlStrip, loadTrace } from './control';
 
 const q = new URLSearchParams(location.search);
 
@@ -23,6 +25,9 @@ class View {
   post = makeComposer(this.renderer, this.scene, this.cam);
   players: Players; gfx: Graphics; ghosts: Players | null = null;
   label: HTMLElement;
+  // per-view lens/cam/selection: the shared global state, except in quad where each quadrant has its own
+  vs: { lens: number; cam: CamMode; selected: { side: Side; idx: number } | null } = state;
+  overlay?: Overlay;
   // selected player's path since the fork: [original (white), what-if (lime)]
   paths = [new Ribbon(0.45, new THREE.Color(1.5, 1.5, 1.5), 160), new Ribbon(0.45, new THREE.Color(1.5, 2.2, 0.35), 160)];
 
@@ -55,7 +60,7 @@ class View {
     const r = this.renderer.domElement.getBoundingClientRect(), ray = new THREE.Raycaster();
     ray.setFromCamera(new THREE.Vector2(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1), this.cam);
     const hit = ray.intersectObject(this.players.group, true).find((h) => h.object.userData.figureRoot);
-    state.selected = hit ? hit.object.userData.figureRoot.userData.pick : null;
+    this.vs.selected = hit ? hit.object.userData.figureRoot.userData.pick : null;
   }
 
   wipe = document.createElement('div');
@@ -77,7 +82,7 @@ class View {
       this.ghosts.group.visible = on;
       if (on) this.ghosts.update(fs, dt, s);
     }
-    const sel = state.selected, after = t > forkT;
+    const sel = this.vs.selected, after = t > forkT;
     const trail = (m: Match, r: Ribbon, on: boolean) => {
       if (!on || !sel) return r.set([], 0);
       const t0 = Math.max(forkT - 1, t - 14), n = Math.max(2, Math.min(150, Math.ceil((t - t0) / 0.1)));
@@ -91,11 +96,11 @@ class View {
       this.cam.fov = o.camFrom.fov; this.cam.updateProjectionMatrix(); this.cam.updateMatrixWorld();
     } else {
       this.rig.tight = !!o.tight;
-      this.rig.update(o.camBall ? { ...s, ball: o.camBall } : s, state.cam === 'player' ? state.selected : null, dt);
+      this.rig.update(o.camBall ? { ...s, ball: o.camBall } : s, this.vs.cam === 'player' ? this.vs.selected : null, dt);
     }
-    this.gfx.update(s, { lens: state.lens, selected: state.selected, now, dt, cam: this.cam });
-    this.post.grade.uniforms.desat.value = state.lens * 0.22;
-    this.post.grade.uniforms.vignette.value = 0.3 + state.lens * 0.1;
+    this.gfx.update(s, { lens: this.vs.lens, selected: this.vs.selected, now, dt, cam: this.cam });
+    this.post.grade.uniforms.desat.value = this.vs.lens * 0.22;
+    this.post.grade.uniforms.vignette.value = 0.3 + this.vs.lens * 0.1;
     this.post.composer.render(dt);
     (this.label.querySelector('.vl-score') as HTMLElement).textContent = s.score.join(' – ');
     return s;
@@ -113,7 +118,13 @@ const capture = q.get('capture') === '1'; // recorder drives time via demo.step(
 
 async function main() {
   await Promise.all(['600', '700', '800'].map((w) => document.fonts.load(`${w} 40px "Barlow Condensed"`)));
+  if (q.get('view') === 'quad') return quad();
   const script = await loadScript(q);
+  // agent run outputs: /data/<run>.cues.json has siblings <run>.commentary.json and <run>.trace.json
+  const run = q.get('cues')?.match(/\/data\/([^/]+)\.cues\.json$/)?.[1];
+  const comUrl = q.get('commentary') ?? (run ? `/data/${run}.commentary.json` : null);
+  const commentary = comUrl && q.get('commentary') !== '0' ? await loadCommentary(comUrl).catch(() => null) : null;
+  const traceUrl = q.get('control') === '1' ? (run ? `/data/${run}.trace.json` : null) : q.get('control');
   const name = q.get('match') ?? script?.match ?? 'match';
   const orig = await loadMatch(name).catch(() => (q.get('match') || script?.match ? Promise.reject(new Error(`could not load /data/${name}.json`)) : loadMatch('mock')));
   const forkName = q.get('fork') ?? script?.fork;
@@ -140,6 +151,14 @@ async function main() {
   if (alt) viewsEl.append(alt.el);
   const hud = initHud(orig, fork);
   const end = Math.max(duration(orig), fork ? duration(fork) : 0);
+  const subs = commentary ? new Overlay(document.body, { commentary, audio: true }) : null;
+  subs?.root.classList.add('ov-fixed');
+  let control: ControlStrip | null = null;
+  if (traceUrl) {
+    const ca = q.get('controlAt')?.split('-').map(Number);
+    const w0 = win?.[0] ?? state.t, w1 = win?.[1] ?? w0 + 12;
+    control = new ControlStrip(await loadTrace(traceUrl), ca?.length === 2 ? [ca[0], ca[1]] : [w0 + 0.5, w0 + Math.min(9, (w1 - w0) * 0.7)]);
+  }
 
   const applyView = () => {
     if (alt) alt.el.style.display = state.view === 'split' ? '' : 'none';
@@ -215,13 +234,15 @@ async function main() {
     const s = main.render(state.t, dt, now, state.view === 'ghost', { camBall, tight: split });
     if (split) alt!.render(state.t, dt, now, false, { camFrom: main.cam });
     hud.update(s, state.lens, main.gfx.last, main.gfx.pressureCount, captions);
+    subs?.update(s, null, undefined, state.playing && !capture);
+    control?.update(state.t);
     (window as any).__frames = ++frames;
   };
 
   let clockNow = 0;
   Object.assign(window, {
     demo: {
-      state, setCam, clock, window: win,
+      state, setCam, clock, window: win, audio: commentary?.voice ?? [],
       seek(t: number) { state.t = t; lastT = t; setPlaying(true); [main, alt].forEach((v) => v?.rig.snap()); tick(0, clockNow); },
       step(dt: number) { clockNow += dt; tick(dt, clockNow); return state.t; },
     },
@@ -233,6 +254,69 @@ async function main() {
     tick(dt, now / 1000);
     requestAnimationFrame(loop);
   };
+  requestAnimationFrame(loop);
+  (window as any).__ready = true;
+}
+
+// Persona quad: the same moment for four agent runs (cues + commentary each), one match clock.
+async function quad() {
+  const runs = (q.get('quad') ?? 'match.casual.en,match.analyst.en,match.player-a6.de,match.casual.tr').split(',');
+  const scripts = await Promise.all(runs.map(async (r) => { const s = (await (await fetch(`/data/${r}.cues.json`)).json()) as Script; s.cues.sort((a, b) => a.t - b.t); return s; }));
+  const coms = await Promise.all(runs.map((r) => loadCommentary(`/data/${r}.commentary.json`).catch(() => null)));
+  const orig = await loadMatch(scripts[0].match ?? 'match');
+  const from = +(q.get('from') ?? q.get('t') ?? 60), to = +(q.get('to') ?? from + 12);
+  state.t = from;
+  document.body.classList.add('quad', 'multi');
+  const viewsEl = document.getElementById('views')!;
+  const views = runs.map((r, i) => {
+    const [, persona, lang] = r.split('.');
+    const v = new View(orig, '', null);
+    v.vs = { lens: scripts[i].lens ?? 0.2, cam: scripts[i].cam ?? 'broadcast', selected: null };
+    const label = `${persona.replace(/^player-/, 'player · ').toUpperCase()} · ${(lang ?? '').toUpperCase()}`;
+    v.overlay = new Overlay(v.el, { label, panel: persona === 'analyst', match: orig, commentary: coms[i], audio: i === 0 });
+    viewsEl.append(v.el);
+    return v;
+  });
+  const hud = initHud(orig, null);
+  const selectId = (vs: View['vs'], id: string | null | undefined) => {
+    vs.selected = null;
+    if (id) for (const side of ['home', 'away'] as Side[]) { const idx = orig.meta[side].players.findIndex((p) => p.id === id); if (idx >= 0) vs.selected = { side, idx }; }
+  };
+  const lastSel: (string | null | undefined)[] = runs.map(() => undefined);
+  if (q.get('ui') === '0' || capture) document.body.classList.add('noui');
+  if (capture) document.body.classList.add('capture');
+  views.forEach((v) => { v.resize(); v.rig.set(v.vs.cam, true); v.rig.snap(); });
+  addEventListener('resize', () => views.forEach((v) => v.resize()));
+  addEventListener('keydown', (e) => { if (e.key === ' ') { e.preventDefault(); state.playing = !state.playing; } });
+  let lastT = state.t, frames = 0;
+  const tick = (dt: number, now: number) => {
+    if (state.playing) state.t += dt * state.speed;
+    if (!capture && state.t > to) state.t = from;
+    const jumped = Math.abs(state.t - lastT) > 1; lastT = state.t;
+    let s0 = null;
+    views.forEach((v, i) => {
+      const d = evalCues(scripts[i], state.t);
+      if (i === 0) state.speed = d.speed; // one clock: the first quadrant's slow-mo drives all four
+      if (d.cam !== v.vs.cam) { v.vs.cam = d.cam; v.rig.set(d.cam, d.cut || jumped); }
+      if (d.select !== lastSel[i]) { lastSel[i] = d.select; if (d.select !== undefined) selectId(v.vs, d.select); }
+      v.vs.lens = d.lens;
+      if (jumped) v.rig.snap();
+      const s = v.render(state.t, dt, now, false);
+      v.overlay!.update(s, d.captions, v.gfx.last, i === 0 && state.playing && !capture);
+      s0 ??= s;
+    });
+    hud.update(s0!, 0, undefined, 0, {});
+    (window as any).__frames = ++frames;
+  };
+  let clockNow = 0;
+  Object.assign(window, { demo: {
+    state, window: [from, to], audio: coms[0]?.voice ?? [],
+    seek(t: number) { state.t = lastT = t; state.playing = true; views.forEach((v) => v.rig.snap()); tick(0, clockNow); },
+    step(dt: number) { clockNow += dt; tick(dt, clockNow); return state.t; },
+  } });
+  if (capture) { tick(0, 0); (window as any).__ready = true; return; }
+  let last = performance.now();
+  const loop = (now: number) => { const dt = Math.min(0.1, (now - last) / 1000); last = now; tick(dt, now / 1000); requestAnimationFrame(loop); };
   requestAnimationFrame(loop);
   (window as any).__ready = true;
 }
