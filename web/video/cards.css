@@ -18,3 +18,5 @@ body.c-rewind, html:has(body.c-rewind) { background: transparent; }
 .ar-stack .fs-kicker { margin-right: var(--s4); font-size: var(--fs-1); white-space: nowrap; }
 .ar-stack .badge { --k: 1.2; flex: none; }
 .ar-row .ag-top { flex-wrap: nowrap; }
+
+.ar-note { margin-top: calc(var(--u) * 12); font-size: var(--fs-2); color: var(--text-2); letter-spacing: 0.02em; }

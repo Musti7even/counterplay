@@ -14,7 +14,7 @@
 | **Interpret** | Events (passes, shots, tackles, goals) and metrics are derived from the frames: pass difficulty, xG, sprints, synthetic heart rate, possession, line height, pressing and control vs chaos. Moments are ranked, each with evidence. | `engine/insights.py` |
 | **Explain** | A Microsoft Agent Framework crew reads the match only through MCP tools. The Analyst picks what matters, the Tactician explains why, and the What-If agent forks the key moment. The Fact-checker re-verifies every number against tool output. | `engine/mcp_server.py`, `agents/crew.py` |
 | **Render** | A three.js broadcast renderer shows split and ghost what-if views, a casual-to-tactical lens, camera cuts and captions. A director cue JSON drives it. | `web/` |
-| **Personalize** | The Producer and Localizer write a cue script and commentary per persona (casual, analyst, or one player in the second person) and language (en, es, tr, de). Azure AI Speech voices it. | `agents/crew.py`, `agents/voice.py` |
+| **Personalize** | The Producer and Localizer write a cue script and commentary per persona (casual, analyst, or one player in the second person) and language (en, es, tr, de). It can voice it via Azure AI Speech (optional). | `agents/crew.py`, `agents/voice.py` |
 
 ```mermaid
 flowchart LR
@@ -27,7 +27,7 @@ flowchart LR
   Q --> W["three.js renderer<br/>split · ghost · lens · control room"]
   Q --> S["Azure AI Speech<br/>neural voices"]
   S --> W
-  subgraph ACA["target deploy: Azure Container Apps"]
+  subgraph ACA["planned deploy: Azure Container Apps"]
     GRF
     I
     M
