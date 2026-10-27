@@ -110,8 +110,8 @@ function holdPositions(m: Match, h: Hold, tau: number) {
     });
   // ball carries on into the net and dies in the mesh (net depth ~2 m, under the bar)
   const [bx, by, bz] = f.ball, [px, py, pz] = p.ball, sx = Math.sign(bx) || 1;
-  const e = ease(3.2), nx = sx * clamp((bx + (bx - px) * fps * e) * sx, 52.6, 54.3);
-  const ball: [number, number, number] = [nx, clamp(by + (by - py) * fps * e, -3.4, 3.4), clamp(bz + (bz - pz) * fps * e - 3 * tau * tau, 0.11, 2.3)];
+  const e = ease(3.2), nx = sx * clamp((bx + (bx - px) * fps * e) * sx, 52.6, 53.9);
+  const ball: [number, number, number] = [nx, clamp(by + (by - py) * fps * e, -2.6, 2.6), clamp(bz + (bz - pz) * fps * e - 3 * tau * tau, 0.11, 2.3)];
   return { ball, pos };
 }
 

@@ -242,6 +242,8 @@ async function main() {
     if (split) { // one shared camera: follow the midpoint of both balls so the only difference is the play
       const a = snapshot(orig, state.t).ball, b = snapshot(fork!, state.t).ball;
       camBall = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, 0];
+      // goal hold on the original side: frame its goal mouth (the rig's damping eases in; it snaps back under the wipe)
+      if (orig.holds.some((h) => state.t >= h.t0 && state.t < h.t1)) camBall = [a[0] - Math.sign(a[0]) * 6, a[1] * 0.5, 0];
     }
     const s = main.render(state.t, dt, now, state.view === 'ghost', { camBall, tight: split });
     if (split) alt!.render(state.t, dt, now, false, { camFrom: main.cam });

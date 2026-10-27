@@ -215,7 +215,7 @@ function boardTexture(home: string, away: string) {
 
 function netTexture() {
   const c = document.createElement('canvas'); c.width = c.height = 64;
-  const g = c.getContext('2d')!; g.strokeStyle = 'rgba(255,255,255,0.8)'; g.lineWidth = 1.6;
+  const g = c.getContext('2d')!; g.strokeStyle = 'rgba(255,255,255,0.95)'; g.lineWidth = 2.4;
   g.beginPath(); g.moveTo(0, 32); g.lineTo(32, 0); g.lineTo(64, 32); g.lineTo(32, 64); g.closePath(); g.stroke(); // diamond mesh
   const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
 }
@@ -231,7 +231,7 @@ function goal(side: number) {
   // net: sloped roof/back + sides, diamond mesh, slight sag
   const nt = netTexture();
   const netMat = (rx: number, ry: number) => { const t = nt.clone(); t.repeat.set(rx, ry); t.needsUpdate = true;
-    return filmic(new THREE.MeshStandardMaterial({ map: t, transparent: true, side: THREE.DoubleSide, depthWrite: false, opacity: 0.55, roughness: 1 }), 'net'); };
+    return filmic(new THREE.MeshStandardMaterial({ map: t, transparent: true, side: THREE.DoubleSide, depthWrite: false, opacity: 0.85, roughness: 1 }), 'net'); };
   const back = new THREE.Mesh(new THREE.PlaneGeometry(gw, 2.2, 8, 4), netMat(60, 18));
   back.position.set(depth, 1.0, 0); back.rotation.y = -Math.PI / 2; back.rotation.x = 0.0; grp.add(back);
   const top = new THREE.Mesh(new THREE.PlaneGeometry(depth, gw), netMat(18, 60));
