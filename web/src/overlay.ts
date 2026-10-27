@@ -17,7 +17,8 @@ export async function loadCommentary(url: string): Promise<Commentary> {
   const v = await fetch(`data/audio/${run}/voice.json`).catch(() => null);
   if (v?.ok && (v.headers.get('content-type') ?? '').includes('json'))
     voice = ((await v.json()) as { t: number; file: string; dur?: number }[]).map((e) => ({ t: e.t, dur: e.dur, url: `data/audio/${run}/${e.file}` }));
-  return { run, lang: run.split('.').pop() ?? '', lines, voice };
+  // <match>.<persona>.<lang>[.<variant>]: the language is the 2-letter part, not just the last one
+  return { run, lang: run.split('.').slice(1).reverse().find((p) => /^[a-z]{2}$/.test(p)) ?? '', lines, voice };
 }
 
 const esc = (s: string) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
