@@ -10,6 +10,7 @@
     "mock": "node scripts/mock.mjs",
     "shots": "node scripts/shots.mjs",
     "record": "node scripts/record.mjs",
+    "record:all": "node scripts/record-all.mjs",
     "check": "node --experimental-strip-types scripts/check-formation.ts"
   },
   "dependencies": {

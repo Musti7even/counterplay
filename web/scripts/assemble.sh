@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../shots"
 T=$(mktemp -d /tmp/pl-cut.XXXX); trap 'rm -rf "$T"' EXIT
 ENC=(-r 30 -pix_fmt yuv420p -c:v libx264 -preset medium -crf 20 -an -video_track_timescale 30000)
-ff() { /usr/bin/ffmpeg -loglevel error -y "$@"; }
+ff() { ffmpeg -loglevel error -y "$@"; }  # ffmpeg/ffprobe from PATH (brew on macOS)
 n=0; seg() { n=$((n+1)); OUT=$(printf '%s/%02d.mp4' "$T" $n); }  # sets OUT (no subshell, so n persists)
 clip() { seg; ff -i "$1" -vf "scale=1920:1080,fps=30" "${ENC[@]}" "$OUT"; }
 still() { # png, seconds, push-in amount

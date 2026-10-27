@@ -33,6 +33,28 @@ Upload `dist/` to any static host (GitHub Pages, Azure Static Web Apps). Check i
 - Split and quad use 2× MSAA and a 1024 shadow map; a single view uses 4× MSAA and a 2048 shadow map.
 - The pitch and crowd canvases are drawn once and shared by every view.
 
+## Render on a laptop
+
+On a MacBook with a real GPU this is much faster than the headless-Linux path (seconds per clip rather than ~1.5–5 s per frame).
+
+Prerequisites:
+- **Node 20 or newer**
+- **ffmpeg**: `brew install ffmpeg`
+- **Google Chrome** in `/Applications`. It is found automatically; Chrome Canary and Chromium also work.
+
+```bash
+cd web
+npm install
+npm run record:all            # coldopen, whatif, lens, quad, control -> shots/*.mp4, then shots/demo-v0.mp4
+```
+
+- **macOS:** the recorder launches your Chrome in headless mode on the GPU (Metal). It stays frame-exact, because time is stepped per frame rather than played in real time.
+- **Other Chrome:** use `npm run record:all -- --chrome "/path/to/Chrome"`. `--no-gpu` forces software rendering and `--gpu` forces the GPU on Linux.
+- **One clip:** `npm run record -- --url '?director=whatif' --out shots/whatif.mp4` (same flags).
+- **Subset or smoke test:** `npm run record:all -- --only lens,quad` renders just those clips (add `--assemble` to also cut the demo). `npm run record:all -- --quick` renders 0.2 s per clip to check the setup.
+- **Cut only:** `bash scripts/assemble.sh` rebuilds `shots/demo-v0.mp4` from existing clips and the title cards in `shots/cards/` (cards are committed; regenerate with `scripts/cards.mjs`).
+- **Linux / CI:** with no GPU, it uses the bundled chrome-headless-shell on swiftshader (see below).
+
 ## Filming (deterministic, any machine)
 
 ```bash

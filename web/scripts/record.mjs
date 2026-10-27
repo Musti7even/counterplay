@@ -1,12 +1,15 @@
 // Deterministic video recorder: builds a snapshot of the app, serves it, steps match time frame by frame
-// (no realtime clock), screenshots each frame in headless Chrome (swiftshader) and pipes JPEGs into ffmpeg.
+// (no realtime clock), screenshots each frame in headless Chrome and pipes JPEGs into ffmpeg (from PATH).
+// GPU: macOS uses the installed Google Chrome with its real GPU (Metal); Linux defaults to the bundled
+// chrome-headless-shell on swiftshader. Override with --chrome <path> and --gpu / --no-gpu.
 //   npm run record -- --url '?director=whatif' --out shots/whatif.mp4
 //   npm run record -- --url '?match=match&cam=broadcast' --from 60 --to 72 --fps 30 --out shots/x.mp4
 // --from/--to default to the director script's window. Slow-mo cues produce more frames per match second.
 import puppeteer from 'puppeteer-core';
 import { spawn, execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, mkdirSync, renameSync, rmSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, resolve, join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
@@ -15,12 +18,17 @@ const { values: a } = parseArgs({ options: {
   url: { type: 'string', default: '?match=match' }, from: { type: 'string' }, to: { type: 'string' },
   fps: { type: 'string', default: '30' }, out: { type: 'string', default: 'shots/out.mp4' },
   width: { type: 'string', default: '1920' }, height: { type: 'string', default: '1080' },
-  crf: { type: 'string', default: '18' }, base: { type: 'string' },
+  crf: { type: 'string', default: '18' }, base: { type: 'string' }, chrome: { type: 'string' },
+  gpu: { type: 'boolean' }, 'no-gpu': { type: 'boolean' },
 } });
 const fps = +a.fps, W = +a.width, H = +a.height, out = resolve(WEB, a.out);
 
+const MAC_CHROMES = ['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+  '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary', '/Applications/Chromium.app/Contents/MacOS/Chromium'];
 function findChrome() {
+  if (a.chrome) return a.chrome;
   if (process.env.CHROME) return process.env.CHROME;
+  if (process.platform === 'darwin') for (const p of MAC_CHROMES) if (existsSync(p)) return p;
   for (const root of [resolve(WEB, '../../.tools/pl-browsers'), '/tmp/pl-browsers']) {
     const dir = `${root}/chrome-headless-shell`;
     if (!existsSync(dir)) continue;
@@ -29,13 +37,14 @@ function findChrome() {
       if (existsSync(p)) return p;
     }
   }
-  throw new Error('no headless chrome: npx @puppeteer/browsers install chrome-headless-shell@stable --path ../../.tools/pl-browsers');
+  throw new Error(process.platform === 'darwin' ? 'Google Chrome not found: install it or pass --chrome <path>'
+    : 'no headless chrome: npx @puppeteer/browsers install chrome-headless-shell@stable --path ../../.tools/pl-browsers (or --chrome <path>)');
 }
 
 // frozen build so edits to src/ during a long render can't hot-reload mid-take
 async function serve() {
   if (a.base) return { base: a.base, stop() {} };
-  const dist = `/tmp/pl-rec-${process.pid}`;
+  const dist = join(tmpdir(), `pl-rec-${process.pid}`);
   execFileSync(resolve(WEB, 'node_modules/.bin/vite'), ['build', '--outDir', dist, '--emptyOutDir', '--logLevel', 'error'], { cwd: WEB, stdio: 'inherit' });
   const child = spawn(resolve(WEB, 'node_modules/.bin/vite'), ['preview', '--outDir', dist, '--port', '0', '--strictPort', 'false'], { cwd: WEB });
   const base = await new Promise((ok, fail) => {
@@ -43,18 +52,23 @@ async function serve() {
     child.stdout.on('data', (d) => { buf += d; const m = buf.replace(/\x1b\[[0-9;]*m/g, '').match(/Local:\s+(http:\/\/\S+?)\/?\s/); if (m) ok(m[1]); });
     child.on('exit', (c) => fail(new Error(`vite preview exited ${c}: ${buf}`)));
   });
-  return { base, stop: () => { child.kill(); try { execFileSync('rm', ['-rf', dist]); } catch {} } };
+  return { base, stop: () => { child.kill(); rmSync(dist, { recursive: true, force: true }); } };
 }
 
 const srv = await serve();
 mkdirSync(dirname(out), { recursive: true });
-const ff = spawn('/usr/bin/ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-',
+const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-',
   '-vf', `scale=${W}:${H}:out_range=tv,format=yuv420p`, '-c:v', 'libx264', '-preset', 'medium', '-crf', a.crf, '-pix_fmt', 'yuv420p', '-movflags', '+faststart', out],
   { stdio: ['pipe', 'inherit', 'inherit'] });
+const gpu = a.gpu || (!a['no-gpu'] && process.platform === 'darwin');
+const chrome = findChrome();
 const browser = await puppeteer.launch({
-  executablePath: findChrome(), headless: true, protocolTimeout: 600000,
-  args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', `--window-size=${W},${H}`],
+  executablePath: chrome, headless: true, protocolTimeout: 600000, // headless: true = new headless mode
+  args: [`--window-size=${W},${H}`, '--ignore-gpu-blocklist', ...(gpu
+    ? ['--enable-gpu', '--enable-gpu-rasterization'] // real GPU (Metal/ANGLE on macOS)
+    : ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'])],
 });
+console.log(`chrome: ${chrome} (${gpu ? 'GPU' : 'swiftshader'})`);
 try {
   const page = await browser.newPage();
   await page.setViewport({ width: W, height: H, deviceScaleFactor: 1 });
@@ -90,7 +104,7 @@ try {
     const inputs = clips.flatMap((c) => ['-i', c.file]);
     const delays = clips.map((c, i) => `[${i + 1}:a]adelay=${Math.round((c.frame / fps) * 1000)}:all=1[a${i}]`).join(';');
     const mix = `${delays};${clips.map((_, i) => `[a${i}]`).join('')}amix=inputs=${clips.length}:normalize=0:duration=longest[a]`;
-    execFileSync('/usr/bin/ffmpeg', ['-y', '-loglevel', 'error', '-i', tmp, ...inputs, '-filter_complex', mix, '-map', '0:v', '-map', '[a]',
+    execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', tmp, ...inputs, '-filter_complex', mix, '-map', '0:v', '-map', '[a]',
       '-c:v', 'copy', '-c:a', 'aac', '-b:a', '160k', '-t', String(n / fps), '-movflags', '+faststart', out]);
     rmSync(tmp);
     console.log(`muxed ${clips.length} voice clip(s): ${clips.map((c) => `${c.t}s@${(c.frame / fps).toFixed(2)}s`).join(', ')}`);
