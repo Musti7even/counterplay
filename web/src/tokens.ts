@@ -11,7 +11,7 @@ export const FONT = '"Onest", system-ui, sans-serif';
 export const W = { text: 500, strong: 700, heavy: 800 } as const;
 
 // pitch line family (metres on the grass): primary = the point of the graphic, secondary = context
-export const LINE = { primary: 0.3, secondary: 0.15, dash: 1.6 };
+export const LINE = { primary: 0.3, secondary: 0.12, dash: 1.2 };
 
 // motion: one easing, three durations (seconds). In = reveal from the anchor, out = fade only, faster.
 export const T = { fast: 0.2, base: 0.4, draw: 0.8 };

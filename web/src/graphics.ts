@@ -148,7 +148,7 @@ export function drawPlayerTag(g: CanvasRenderingContext2D, w: number, h: number,
 }
 // line label = label badge anatomy: [white bar][KICKER][value]
 export function drawLabel(g: CanvasRenderingContext2D, w: number, h: number, kicker: string, value: string, sig: string = C.text) {
-  const ch = h * PLATE, fs = ch * 0.4, pad = ch * 0.3, bar = ch * 0.115;
+  const ch = h * PLATE, fs = ch * 0.44, pad = ch * 0.3, bar = ch * 0.115;
   g.font = `700 ${fs * 0.8}px ${FONT}`; const kW = g.measureText(kicker).width + 0.08 * fs * kicker.length;
   g.font = `700 ${fs}px ${FONT}`; const vW = g.measureText(value).width;
   const total = bar + pad + kW + pad * 0.7 + vW + pad, x0 = (w - total) / 2, cy = ch / 2 + fs * 0.05;
@@ -272,7 +272,7 @@ export class Graphics {
       this.lineTag.place(far ? far.clone().add(new THREE.Vector3(0, 0.3, -2)) : null, TAG_H * 0.85, cam, smooth(0.6, 1, w));
       // offside line across the pitch at the second-last defender: secondary dashed
       const wo = wOff * fd[side] * live;
-      this.offside.set([W(mt.offsideX, -34, 0.05), W(mt.offsideX, 34, 0.05)], Math.min(1, wo * 3) * 0.85, ease(wo));
+      this.offside.set([W(mt.offsideX, -34, 0.05), W(mt.offsideX, 34, 0.05)], Math.min(1, wo * 3) * 0.6, ease(wo));
     }
 
     // team shape of the defending side: dashed hull + solid unit lines, faint fill
@@ -284,7 +284,7 @@ export class Graphics {
       fill.visible = f > 0.01;
       if (fill.visible) {
         fill.geometry.dispose(); fill.geometry = new THREE.ShapeGeometry(new THREE.Shape(hull.map((p) => new THREE.Vector2(p[0], p[1]))));
-        (fill.material as THREE.MeshBasicMaterial).opacity = 0.05 * f;
+        (fill.material as THREE.MeshBasicMaterial).opacity = 0.03 * f;
       }
       this.units[side].forEach((r, k) => {
         const ln = mt.shape.lines[k];

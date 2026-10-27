@@ -5,9 +5,9 @@ const BASE = process.env.BASE ?? 'http://localhost:5173';
 const toolDir = new URL('../../../.tools/pl-browsers/chrome-headless-shell/', import.meta.url).pathname;
 const CHROME = process.env.CHROME ?? readdirSync(toolDir).map((v) => `${toolDir}${v}/chrome-headless-shell-linux64/chrome-headless-shell`).find(existsSync);
 const CARDS = {
-  'inter-whatif': 'card=inter&text=What if one defender stepped up?',
-  'inter-quad': 'card=inter&text=Same moment. Four fans.',
-  'inter-agents': 'card=inter&text=Six agents. Every number verified.',
+  'inter-whatif': 'card=inter&kicker=The what-if&text=What if one defender stepped up?',
+  'inter-quad': 'card=inter&kicker=Every fan&text=Same moment. Four fans.',
+  'inter-agents': 'card=inter&kicker=AI production gallery&text=Six agents. Every number verified.',
   rewind: 'card=rewind&time=01:06',
   arch: 'card=arch',
   end: 'card=end',
