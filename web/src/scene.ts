@@ -14,7 +14,7 @@ export const L = 105, W = 68;
 export const toWorld = (x: number, y: number, z = 0, v = new THREE.Vector3()) => v.set(x, z, -y);
 
 // ---------- filmic: ACES tone mapping inside world materials only ----------
-export const EXPOSURE = { value: 1.15 };
+export const EXPOSURE = { value: 1.0 };
 export function filmic<T extends THREE.Material>(m: T, key: string, patch?: (s: THREE.WebGLProgramParametersWithUniforms) => void): T {
   m.onBeforeCompile = (s) => {
     patch?.(s);
@@ -101,7 +101,7 @@ function pitchMaterial(renderer: THREE.WebGLRenderer) {
   const nrm = grassNrm.clone(), rgh = grassRgh.clone();
   for (const t of [nrm, rgh]) { t.repeat.copy(rep); t.needsUpdate = true; }
   const m = new THREE.MeshStandardMaterial({ map: grassCol, normalMap: nrm, normalScale: new THREE.Vector2(0.55, 0.55), roughnessMap: rgh,
-    roughness: 1.0, color: new THREE.Color(0.62, 0.78, 0.5), envMapIntensity: 0.6 });
+    roughness: 1.0, color: new THREE.Color(0.45, 0.62, 0.36), envMapIntensity: 0.5 });
   return filmic(m, 'pitch', (s) => {
     Object.assign(s.uniforms, { lineMap: { value: lines }, noiseMap: { value: noise } });
     s.vertexShader = s.vertexShader.replace('#include <common>', '#include <common>\nvarying vec2 vPUv;')
@@ -120,7 +120,7 @@ function pitchMaterial(renderer: THREE.WebGLRenderer) {
         float wear = clamp(zone * (n * 1.7 - 0.45), 0.0, 1.0);
         g = mix(g, vec3(0.30, 0.25, 0.13) * (0.75 + 0.5 * n), wear * 0.5); // worn goalmouths and centre spot
         float line = texture2D(lineMap, vPUv).r;
-        g = mix(g, vec3(0.78, 0.8, 0.76) / vec3(0.62, 0.78, 0.5), line * 0.92); // painted lines (undo grass tint)
+        g = mix(g, vec3(0.78, 0.8, 0.76) / vec3(0.45, 0.62, 0.36), line * 0.92); // painted lines (undo grass tint)
         diffuseColor.rgb *= g;`);
   });
 }
@@ -172,8 +172,8 @@ function stand(len: number, rows: number, crowdColors: THREE.Color[], lite: bool
       .setPosition(-len / 2 + (i + 0.5) * (len / seats) + (rnd() - 0.5) * 0.12, 1.2 + r * rise + rise + 0.05, -(r + 0.55) * step);
     crowd.setMatrixAt(k, m4);
     // lit by the floodlights near the front, darker toward the back under the roof
-    const light = 0.62 - (r / rows) * 0.38;
-    crowd.setColorAt(k, col.copy(crowdColors[Math.floor(rnd() * crowdColors.length)]).multiplyScalar(light * (0.7 + rnd() * 0.4)));
+    const light = 0.4 - (r / rows) * 0.22;
+    crowd.setColorAt(k, col.copy(crowdColors[Math.floor(rnd() * crowdColors.length)]).lerp(GREY, 0.35).multiplyScalar(light * (0.7 + rnd() * 0.5)));
     k++;
   }
   grp.add(crowd);
@@ -242,11 +242,12 @@ function goal(side: number) {
 }
 
 export const CROWD_TIME = { value: 0 };
+const GREY = new THREE.Color(0.35, 0.35, 0.37);
 
 // lite: multi-view (split/quad) budget, smaller shadow maps and a single shadow caster
 export function buildStadium(renderer: THREE.WebGLRenderer, scene: THREE.Scene, names: [string, string], lite = false) {
-  scene.background = hdr; scene.backgroundIntensity = 0.22;
-  scene.environment = hdr; scene.environmentIntensity = 0.35;
+  scene.background = hdr; scene.backgroundIntensity = 0.18;
+  scene.environment = hdr; scene.environmentIntensity = 0.25;
   scene.fog = new THREE.Fog(0x0b1424, 160, 360);
 
   const pitch = new THREE.Mesh(new THREE.PlaneGeometry(TW, TH), pitchMaterial(renderer));
@@ -275,7 +276,7 @@ export function buildStadium(renderer: THREE.WebGLRenderer, scene: THREE.Scene, 
   for (const [x, z, len, ry, rows] of sides) { const s = stand(len, rows, crowdCols, lite); s.position.set(x, 0, z); s.rotation.y = ry; scene.add(s); }
 
   // floodlights: two shadow-casting keys from opposite roof corners (soft double shadows) + cool fill
-  scene.add(new THREE.HemisphereLight(0x8fa6cc, 0x0b140c, 0.35));
+  scene.add(new THREE.HemisphereLight(0x8fa6cc, 0x0b140c, 0.18));
   const key = (x: number, z: number, i: number, shadow: boolean) => {
     const l = new THREE.DirectionalLight(0xfff3e2, i);
     l.position.set(x, 75, z); l.castShadow = shadow;
@@ -286,10 +287,10 @@ export function buildStadium(renderer: THREE.WebGLRenderer, scene: THREE.Scene, 
     }
     scene.add(l);
   };
-  key(-45, 50, 1.9, true);
-  key(45, -45, 1.4, !lite);
-  key(40, 55, 0.7, false);
-  key(-40, -50, 0.6, false);
+  key(-45, 50, 2.3, true);
+  key(45, -45, 1.5, !lite);
+  key(40, 55, 0.6, false);
+  key(-40, -50, 0.5, false);
 }
 
 // broadcast grade: gentle S-curve, warm highlights / cool shadows, light grain, vignette.

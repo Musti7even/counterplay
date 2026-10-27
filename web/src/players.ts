@@ -80,7 +80,7 @@ function numberTexture(num: number, fg: string) {
 
 export interface Figure {
   root: THREE.Group; mixer: THREE.AnimationMixer; acts: Record<keyof typeof CLIPS, THREE.AnimationAction>; mats: THREE.Material[];
-  thighR: THREE.Bone; shinR: THREE.Bone; spine: THREE.Bone; phase: number; yaw: number; last: THREE.Vector3; idleOff: number; kicks: number[];
+  thighR: THREE.Bone; shinR: THREE.Bone; spine: THREE.Bone; rest: THREE.Quaternion[]; phase: number; yaw: number; last: THREE.Vector3; idleOff: number; kicks: number[];
 }
 
 function figure(cols: THREE.Color[], num: number, ghost: boolean, numberColor: string, seed: number): Figure {
@@ -103,7 +103,8 @@ function figure(cols: THREE.Color[], num: number, ghost: boolean, numberColor: s
   const mixer = new THREE.AnimationMixer(model);
   const acts = Object.fromEntries(Object.entries(CLIPS).map(([k, c]) => { const a = mixer.clipAction(c); a.play(); a.setEffectiveWeight(0); return [k, a]; })) as Figure['acts'];
   model.traverse((o) => { o.userData.figureRoot = root; });
-  return { root, mixer, acts, mats, thighR: bone('DEF-thighR'), shinR: bone('DEF-shinR'), spine: bone('DEF-spine001'),
+  const kb = [bone('DEF-thighR'), bone('DEF-shinR'), bone('DEF-spine001')];
+  return { root, mixer, acts, mats, thighR: kb[0], shinR: kb[1], spine: kb[2], rest: kb.map((b) => b.quaternion.clone()),
     phase: (seed * 0.37) % 1, yaw: 0, last: new THREE.Vector3(), idleOff: seed * 0.71, kicks: [] };
 }
 
@@ -207,6 +208,8 @@ export class Players {
         f.phase = (f.phase + travelled / cycle) % 1;
         for (const l of LOCO) { const a = f.acts[l.k]; a.setEffectiveWeight(w[l.k]); a.time = f.phase * l.dur; }
         f.acts.idle.setEffectiveWeight(w.idle); f.acts.idle.time = (s.t + f.idleOff) % CLIPS.idle.duration;
+        // bones the clips don't drive keep whatever we wrote last frame: reset them so the kick overlay never accumulates
+        f.thighR.quaternion.copy(f.rest[0]); f.shinR.quaternion.copy(f.rest[1]); f.spine.quaternion.copy(f.rest[2]);
         f.mixer.update(0);
         // kick overlay on the right leg around pass/shot events: back-swing, strike, follow-through
         const kt = f.kicks.find((t) => Math.abs(s.t - t) < 0.45);
