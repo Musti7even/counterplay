@@ -1,0 +1,80 @@
+[
+ {
+  "t": 2.0,
+  "text": "A defender's afternoon for you, H. Sørensen: Redmoor FC have 76 percent of the ball over the match. Your job is to keep that back line tight.",
+  "voice_style": "newscast",
+  "claim": "you-job",
+  "evidence": [
+   "window 0-300.0"
+  ]
+ },
+ {
+  "t": 69.5,
+  "text": "D. Moreau scores, 1-0. D. Moreau was 8.3 metres from you when the shot came. You were 1.1 metres ahead of the rest of your line.",
+  "voice_style": "calm",
+  "claim": "m1",
+  "evidence": [
+   "m1",
+   "snapshot a6@69.0"
+  ]
+ },
+ {
+  "t": 74.5,
+  "text": "This one is on you, H. Sørensen. What if you had stepped up?",
+  "voice_style": "hopeful",
+  "claim": "w-setup",
+  "evidence": [
+   "compare_fork",
+   "fork-step_up",
+   "a6"
+  ]
+ },
+ {
+  "t": 79.5,
+  "text": "You step up, and the goal at 69.5 seconds never comes. It is 0-0, not 1-0.",
+  "voice_style": "excited",
+  "claim": "w-result",
+  "evidence": [
+   "compare_fork",
+   "fork-step_up",
+   "score@76.5"
+  ]
+ },
+ {
+  "t": 97.9,
+  "text": "D. Moreau scores, 2-0. R. Takahashi was 2.1 metres from you when the shot came. You were 17 metres ahead of the rest of your line.",
+  "voice_style": "calm",
+  "claim": "m2",
+  "evidence": [
+   "m2",
+   "snapshot a6@97.5"
+  ]
+ },
+ {
+  "t": 178.1,
+  "text": "A. Brennan wins that one and takes the ball off you.",
+  "voice_style": "calm",
+  "claim": "e80",
+  "evidence": [
+   "e80"
+  ]
+ },
+ {
+  "t": 230.5,
+  "text": "You read the pass and step in. Ball won.",
+  "voice_style": "cheerful",
+  "claim": "e96",
+  "evidence": [
+   "e96"
+  ]
+ },
+ {
+  "t": 246.7,
+  "text": "You have covered 1258 metres, topped out at 28 km/h and made 22 sprints. Your synthetic heart rate peaked at 153.",
+  "voice_style": "newscast",
+  "claim": "p-a6",
+  "evidence": [
+   "a6"
+  ]
+ }
+]

@@ -4,7 +4,7 @@ Voices: 'casual' (emotion + story, short, few numbers), 'analyst' (precise, numb
 'you' (player persona, second person to that player). Missing entries fall back you -> analyst
 -> casual. A template line is made of the sentences whose params are all present.
 Templates contain no literal numbers: every number comes from a verified claim param, and the
-casual/you voices round floats to whole numbers (the fact-checker accepts tool numbers rounded).
+casual voice (and 'you' for values >= 10) rounds floats to whole numbers (the fact-checker accepts tool numbers rounded).
 """
 import string
 
@@ -93,6 +93,12 @@ P = {
             'player_load': ('LOAD', '{player}', ['{player}: {dist} metres covered, top speed {kmh} km/h, {sprints} sprints.', 'Synthetic heart rate peaks at {hr}.']),
         },
         'you': {
+            'you_job': ('YOUR JOB', '{opp}: {poss}% of the ball', ['A defender\'s afternoon for you, {player}: {opp} have {poss} percent of the ball over the match.', 'Your job is to keep that back line tight.']),
+            'you_tackle': ('DUEL WON', 'You stop {other}', ['Big tackle from you, ball won off {other}.']),
+            'you_intercept': ('INTERCEPTION', 'You read it', ['You read the pass and step in. Ball won.']),
+            'you_beaten': ('DUEL LOST', '{other} gets the ball', ['{other} wins that one and takes the ball off you.']),
+            'you_goal_against': ('GOAL AGAINST', '{scorer} · {score}', ['{scorer} scores, {score}.', '{near} was {near_d} metres from you when the shot came.', 'You were {behind} metres deeper than the rest of your line.', 'You were {ahead} metres ahead of the rest of your line.']),
+            'you_goal_for': ('GOAL!', '{scorer} · {score}', ['{scorer} scores for your side, {score}!']),
             'whatif_setup': ('YOUR WHAT IF', 'What if you {tweak}?', ['This one is on you, {player}. What if you had {tweak}?']),
             'whatif_prevented': ('YOUR WHAT IF', 'No goal: {fork}', ['You step up, and the goal at {t} seconds never comes.', 'It is {fork}, not {base}.']),
             'sprint_milestone': ('YOUR TOP SPEED', '{kmh} km/h', ['That is you at {kmh} km/h, your fastest run of the match.']),
@@ -144,6 +150,12 @@ P = {
             'player_load': ('CARGA', '{player}', ['{player}: {dist} metros recorridos, punta de {kmh} km/h, {sprints} esprints.', 'Pulso sintético máximo de {hr}.']),
         },
         'you': {
+            'you_job': ('TU TAREA', '{opp}: {poss}% del balón', ['Tarde de defender para ti, {player}: {opp} tiene el {poss} por ciento del balón en el partido.', 'Tu tarea es mantener junta la línea.']),
+            'you_tackle': ('DUELO GANADO', 'Frenas a {other}', ['Gran entrada tuya, le robas el balón a {other}.']),
+            'you_intercept': ('INTERCEPCIÓN', 'Lo lees', ['Lees el pase y te anticipas. Balón recuperado.']),
+            'you_beaten': ('DUELO PERDIDO', '{other} se impone', ['{other} gana ese duelo y te quita el balón.']),
+            'you_goal_against': ('GOL EN CONTRA', '{scorer} · {score}', ['Marca {scorer}, {score}.', '{near} estaba a {near_d} metros de ti en el disparo.', 'Estabas {behind} metros por detrás del resto de tu línea.', 'Estabas {ahead} metros por delante del resto de tu línea.']),
+            'you_goal_for': ('¡GOL!', '{scorer} · {score}', ['¡Marca {scorer} para tu equipo, {score}!']),
             'whatif_setup': ('TU ¿Y SI...?', '¿Y si {tweak}?', ['Esta va por ti, {player}. ¿Y si {tweak}?']),
             'whatif_prevented': ('TU ¿Y SI...?', 'Sin gol: {fork}', ['Sales tú, y el gol del segundo {t} nunca llega.', '{fork} en lugar de {base}.']),
             'sprint_milestone': ('TU PUNTA', '{kmh} km/h', ['Ese eres tú a {kmh} km/h, tu carrera más rápida del partido.']),
@@ -195,6 +207,12 @@ P = {
             'player_load': ('YÜK', '{player}', ['{player}: {dist} metre koşu, en yüksek hız saatte {kmh} kilometre, {sprints} sprint.', 'Sentetik nabız en fazla {hr}.']),
         },
         'you': {
+            'you_job': ('GÖREVİN', '{opp}: %{poss} topla oynama', ['Bugün tam bir savunma maçı, {player}: {opp} maç boyunca topun yüzde {poss} kadarına sahip.', 'Senin görevin savunma hattını sıkı tutmak.']),
+            'you_tackle': ('İKİLİ MÜCADELE', '{other} durduruldu', ['Harika müdahale, topu {other} oyuncusundan alıyorsun.']),
+            'you_intercept': ('TOP KAPTIN', 'Pası okudun', ['Pası okuyup araya giriyorsun. Top artık sizde.']),
+            'you_beaten': ('MÜCADELE KAYBI', '{other} topu aldı', ['{other} bu mücadeleyi kazanıyor ve topu senden alıyor.']),
+            'you_goal_against': ('YENİLEN GOL', '{scorer} · {score}', ['{scorer} golü atıyor, {score}.', 'Şut anında {near} senden {near_d} metre uzaktaydı.', 'Hattının geri kalanından {behind} metre daha gerideydin.', 'Hattının geri kalanından {ahead} metre daha öndeydin.']),
+            'you_goal_for': ('GOL!', '{scorer} · {score}', ['{scorer} takımın için atıyor, {score}!']),
             'whatif_setup': ('SENİN SENARYON', 'Ya {tweak}?', ['Bu sefer mesele sensin, {player}. Peki ya {tweak}?']),
             'whatif_prevented': ('SENİN SENARYON', 'Gol yok: {fork}', ['Sen öne çıkıyorsun ve {t}. saniyedeki gol hiç gelmiyor.', 'Skor {base} değil, {fork}.']),
             'sprint_milestone': ('EN YÜKSEK HIZIN', '{kmh} km/sa', ['Saatte {kmh} kilometre, maçtaki en hızlı koşun bu.']),
@@ -246,6 +264,12 @@ P = {
             'player_load': ('BELASTUNG', '{player}', ['{player}: {dist} Meter Laufweg, Topspeed {kmh} km/h, {sprints} Sprints.', 'Synthetischer Puls bis {hr}.']),
         },
         'you': {
+            'you_job': ('DEIN JOB', '{opp}: {poss}% Ballbesitz', ['Ein Abwehrnachmittag für dich, {player}: {opp} hat über das Spiel {poss} Prozent Ballbesitz.', 'Dein Job: die Kette eng halten.']),
+            'you_tackle': ('ZWEIKAMPF GEWONNEN', 'Du stoppst {other}', ['Starkes Tackling, du nimmst {other} den Ball ab.']),
+            'you_intercept': ('BALLGEWINN', 'Du liest es', ['Du liest den Pass und gehst dazwischen. Ball gewonnen.']),
+            'you_beaten': ('ZWEIKAMPF VERLOREN', '{other} setzt sich durch', ['{other} gewinnt das Duell und nimmt dir den Ball ab.']),
+            'you_goal_against': ('GEGENTOR', '{scorer} · {score}', ['{scorer} trifft, {score}.', '{near} war beim Schuss {near_d} Meter von dir entfernt.', 'Du standest {behind} Meter tiefer als der Rest deiner Kette.', 'Du standest {ahead} Meter vor dem Rest deiner Kette.']),
+            'you_goal_for': ('TOR!', '{scorer} · {score}', ['{scorer} trifft für dein Team, {score}!']),
             'whatif_setup': ('DEIN WAS-WÄRE-WENN', 'Wenn du {tweak}?', ['Jetzt geht es um dich, {player}. Was wäre, wenn du {tweak}?']),
             'whatif_prevented': ('DEIN WAS-WÄRE-WENN', 'Kein Tor: {fork}', ['Du rückst heraus, und das Tor nach {t} Sekunden fällt nie.', '{fork} statt {base}.']),
             'sprint_milestone': ('DEIN TOPSPEED', '{kmh} km/h', ['Das bist du mit {kmh} km/h, dein schnellster Lauf im Spiel.']),
@@ -274,7 +298,7 @@ def render(kind, params, lang, voice='casual', n=0):
         return None
     ps = dict(params)
     for k, x in ps.items():  # casual/you voices speak whole numbers; analyst keeps one decimal
-        if isinstance(x, float) and k not in ('xg', 't') and (v != 'analyst' or x.is_integer()):
+        if isinstance(x, float) and k not in ('xg', 't') and (x.is_integer() or v == 'casual' or (v == 'you' and abs(x) >= 10)):
             ps[k] = int(round(x))
     if ps.get('xg') is not None:
         ps['xgw'] = _bucket(lang, 'xgw', ps['xg'])
@@ -292,11 +316,14 @@ if __name__ == '__main__':  # self-check: every kind renders in every language/v
     import re
     demo = {'player': 'X', 'team': 'T', 'opp': 'O', 'who': 'W', 'score': '1-0', 'base': '1-0', 'fork': '0-0', 't': 69.5,
             'xg': 0.236, 'dist': 11.6, 'kmh': 131.2, 'n': 3, 'p': 2.2, 'a': 85, 'b': -57, 'poss': 99.0, 'control': 59,
-            'turnovers': 3, 'chaos': 70, 'lh': 30.1, 'tweak': 'step_up', 'sprints': 22, 'hr': 153}
-    allowed = {'1', '0', '69', '69.5', '0.236', '11.6', '12', '131.2', '131', '3', '2.2', '2', '85', '57', '99', '59', '70', '30.1', '30', '22', '153', '1-0', '0-0'}
+            'turnovers': 3, 'chaos': 70, 'lh': 30.1, 'tweak': 'step_up', 'sprints': 22, 'hr': 153,
+            'scorer': 'S', 'near': 'N', 'near_d': 8.3, 'ahead': 1.1, 'other': 'Y'}
+    allowed = {'8', '8.3', '1.1', '1', '0', '69', '69.5', '0.236', '11.6', '12', '131.2', '131', '3', '2.2', '2', '85', '57', '99', '59', '70', '30.1', '30', '22', '153', '1-0', '0-0'}
     for lang in LANGS:
-        for kind in P['en']['casual']:
+        for kind in set(P['en']['casual']) | set(P['en']['you']):
             for voice in VOICES:
+                if kind.startswith('you_') and voice != 'you':
+                    continue
                 for n in range(3):
                     r = render(kind, demo, lang, voice, n)
                     assert r and r[2], (lang, kind, voice)

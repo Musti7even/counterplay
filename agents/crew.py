@@ -25,7 +25,8 @@ TOOLS = os.path.normpath(os.path.join(CODE, '..', '.tools'))
 STAGES = ['analyst', 'tactician', 'whatif', 'factcheck', 'producer', 'localizer']
 TIMEOUT = {'analyst': 60, 'tactician': 60, 'whatif': 240, 'factcheck': 90, 'producer': 60, 'localizer': 90}
 STYLE = {'goal': 'excited', 'big_chance': 'excited', 'whatif_prevented': 'excited', 'whatif_created': 'excited',
-         'sprint_milestone': 'cheerful', 'whatif_setup': 'hopeful', 'player_load': 'newscast'}  # else 'calm'
+         'sprint_milestone': 'cheerful', 'whatif_setup': 'hopeful', 'player_load': 'newscast',
+         'you_goal_for': 'excited', 'you_tackle': 'excited', 'you_intercept': 'cheerful', 'you_job': 'newscast'}  # else 'calm'
 LENS = {'casual': 0.15, 'analyst': 0.8, 'player': 0.4}
 
 
@@ -186,6 +187,7 @@ ROLES = {
 
 # ---- template (fallback) agents ----------------------------------------------------------
 
+GOALS = ('goal', 'you_goal_against', 'you_goal_for')
 WINDOW = 10  # what-if result is judged this many seconds after the fork point (the clip shows fork-5..fork+10)
 
 
@@ -199,6 +201,8 @@ async def t_analyst(c, b):
     st = await c.tool('get_match_state', t=0, match=c.match)
     b.update(teams=st['teams'], forkOf=st['forkOf'], end=st['end'], claims=[])
     kind, pid = (c.persona.split(':') + [None])[:2]
+    if kind == 'player' and not b['forkOf']:
+        return await t_analyst_player(c, b, pid)
     moms = (await c.tool('get_moments', top_k=40, match=c.match))['moments']
     if b['forkOf']:  # fork: only what happens around the change
         t0 = b['forkOf']['t']
@@ -227,6 +231,39 @@ async def t_analyst(c, b):
     return b
 
 
+async def t_analyst_player(c, b, pid):
+    """Player persona: only moments he is part of, all framed around him."""
+    me = 'home' if pid[0] == 'h' else 'away'
+    say = lambda cid, t, kind, params, ev, score, side=me: b['claims'].append(
+        {'id': cid, 't': t, 'kind': kind, 'params': params, 'evidence': ev, 'pid': pid, 'side': side, 'score': score})
+    for e in (await c.tool('get_player_events', id=pid, match=c.match))['events']:  # his duels
+        ev = e['event']
+        kind = {('tackle', 'actor'): 'you_tackle', ('tackle', 'beaten'): 'you_beaten',
+                ('interception', 'actor'): 'you_intercept'}.get((ev['type'], e['role']))
+        if kind:
+            say(e['id'], ev['t'], kind, {'other': e['other']}, [e['id']], 60)
+    for m in (await c.tool('get_moments', top_k=40, match=c.match))['moments']:  # goals, seen from where he stood
+        if m['type'] != 'goal':
+            continue
+        ex = await c.tool('explain_evidence', event_id=m['id'], match=c.match)
+        shot = next((e for e in ex['events'] if e['event']['type'] == 'shot'), None)
+        goal = next(e for e in ex['events'] if e['event']['type'] == 'goal')
+        scorer = (shot or goal).get('player', {}).get('name')
+        snap = await c.tool('get_player_snapshot', id=pid, t=(shot or goal)['event']['t'], match=c.match)
+        score = '-'.join(map(str, m['evidence']['scoreAfter']))
+        if goal['event']['team'] == me:
+            say(m['id'], m['t'], 'you_goal_for', {'scorer': scorer, 'score': score}, [m['id']], 100, goal['event']['team'])
+        else:
+            say(m['id'], m['t'], 'you_goal_against', {'scorer': scorer, 'score': score, 'near': snap['nearestOpponent']['name'],
+                'near_d': snap['nearestOpponent']['dist'], 'behind': snap['behindLine'], 'ahead': snap['aheadOfLine']},
+                [m['id'], f"snapshot {pid}@{snap['t']}"], 100, goal['event']['team'])
+    p = await c.tool('get_player', id=pid, match=c.match)
+    say(f'p-{pid}', p['topSpeedT'], 'player_load', {'player': p['name'], 'dist': p['distance'], 'kmh': p['topSpeedKmh'],
+        'sprints': p['sprints'], 'hr': p['maxHr']}, [pid], 50)
+    b['player'] = {'id': pid, 'name': p['name'], 'side': me}
+    return b
+
+
 def moment_claim(c, b, m, ex, who):
     ev, team = m['evidence'], None
     e0 = next((e for e in ex['events'] if e['event']['type'] in ('shot', 'pass')), ex['events'][0] if ex['events'] else None)
@@ -247,6 +284,14 @@ def moment_claim(c, b, m, ex, who):
 
 async def t_tactician(c, b):
     kind = c.persona.split(':')[0]
+    if kind == 'player' and b.get('player'):  # one team-context line framing his job, nothing else
+        me = b['player']['side']
+        opp = 'away' if me == 'home' else 'home'
+        w = await c.tool('get_window_stats', t0=0, t1=b['end'], match=c.match)
+        b['claims'].append({'id': 'you-job', 't': 2.0, 'kind': 'you_job', 'pid': b['player']['id'], 'score': 70,
+                            'evidence': [f"window 0-{b['end']}"],
+                            'params': {'player': b['player']['name'], 'opp': b['teams'][opp]['name'], 'poss': w[opp]['possession']}})
+        return b
     for cl in [x for x in b['claims'] if x['kind'] in ('goal', 'big_chance', 'line_breaking_pass')][:4]:
         w = await c.tool('get_window_stats', t0=cl['t'] - 10, t1=cl['t'], match=c.match)
         att = cl.get('side') or 'home'
@@ -296,7 +341,7 @@ async def t_whatif(c, b):
     if b['forkOf']:
         name = c.match
     else:
-        top = next((x for x in b['claims'] if x['kind'] == 'goal'), None) or next((x for x in b['claims'] if x['kind'] == 'big_chance'), None)
+        top = next((x for x in b['claims'] if x['kind'] in GOALS), None) or next((x for x in b['claims'] if x['kind'] == 'big_chance'), None)
         if not top:
             return b
         name = b['whatifFork'] = await pick_fork(c, b, top)
@@ -307,7 +352,7 @@ async def t_whatif(c, b):
     base, fork = await window_scores(c, fo['match'], name, t_end)
     pl = await c.tool('get_player', id=pid, t0=fo['t'], t1=fo['t'], match=fo['match'])
     b['whatif'] = dict(d, window={'t': t_end, 'base': base, 'fork': fork})
-    goal_t = next((x['t'] for x in b['claims'] if x['kind'] == 'goal'), fo['t'])
+    goal_t = next((x['t'] for x in b['claims'] if x['kind'] in GOALS), fo['t'])
     t_setup = fo['t'] - 4 if b['forkOf'] else goal_t + 5  # fork clip: open with it; base match: after the goal
     b['claims'].append({'id': 'w-setup', 't': round(t_setup, 1), 'kind': 'whatif_setup', 'pid': pid,
                         'evidence': ['compare_fork', name, pid], 'params': {'player': pl['name'], 'tweak': fo['tweak']}, 'score': 90})
@@ -344,7 +389,7 @@ async def verify(c, b):
         bad = sorted(n for n in nums if not ok_num(c, n))
         missing = [k for k, v in cl.get('params', {}).items() if v is None and k in ('player', 'team')]
         why = None
-        if cl.get('kind') not in phrases.P['en']['casual']:
+        if not any(cl.get('kind') in v for v in phrases.P['en'].values()):
             why = f"unknown kind {cl.get('kind')}"
         elif bad or missing:
             why = f'unverified numbers {bad}' if bad else f'missing {missing}'
@@ -391,8 +436,8 @@ async def t_producer(c, b):
             s['cues'] += [{'t': round(x['t'] - 2, 1), 'speed': 0.5}, {'t': round(x['t'] + 0.5, 1), 'speed': 1}]
         if kind == 'analyst' and x['kind'] in ('line_breaking_pass', 'pressing_spell') and not fo:
             s['cues'] += [{'t': round(x['t'] - 3, 1), 'cam': 'tactical'}, {'t': round(x['t'] + 3, 1), 'cam': 'broadcast'}]
-        if kind == 'player' and not fo and x['kind'] != 'player_load':
-            s['cues'] += [{'t': round(x['t'] - 4, 1), 'cam': 'player', 'select': pid}, {'t': round(x['t'] + 3, 1), 'cam': 'broadcast'}]
+        if kind == 'player' and not fo and x['kind'] in ('you_tackle', 'you_beaten', 'you_intercept', 'you_goal_against', 'you_goal_for'):
+            s['cues'] += [{'t': max(0, round(x['t'] - 4, 1)), 'cam': 'player', 'select': pid}, {'t': round(x['t'] + 2, 1), 'cam': 'broadcast'}]
         cap = {'claim': i}
         if fo and x['kind'].startswith('whatif_') and x['kind'] != 'whatif_setup':
             cap['side'] = 'whatif'  # split view: result banner on the what-if half

@@ -1,0 +1,111 @@
+{
+ "name": "match.player-a6.en",
+ "match": "match",
+ "from": 0,
+ "to": 300.0,
+ "cam": "broadcast",
+ "lens": 0.4,
+ "select": "a6",
+ "cues": [
+  {
+   "t": 2.0,
+   "caption": {
+    "title": "YOUR JOB",
+    "text": "Redmoor FC: 76% of the ball",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 65.5,
+   "cam": "player",
+   "select": "a6"
+  },
+  {
+   "t": 69.5,
+   "caption": {
+    "title": "GOAL AGAINST",
+    "text": "D. Moreau · 1-0",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 71.5,
+   "cam": "broadcast"
+  },
+  {
+   "t": 74.5,
+   "caption": {
+    "title": "YOUR WHAT IF",
+    "text": "What if you stepped up?",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 79.5,
+   "caption": {
+    "title": "YOUR WHAT IF",
+    "text": "No goal: 0-0",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 93.9,
+   "cam": "player",
+   "select": "a6"
+  },
+  {
+   "t": 97.9,
+   "caption": {
+    "title": "GOAL AGAINST",
+    "text": "D. Moreau · 2-0",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 99.9,
+   "cam": "broadcast"
+  },
+  {
+   "t": 174.1,
+   "cam": "player",
+   "select": "a6"
+  },
+  {
+   "t": 178.1,
+   "caption": {
+    "title": "DUEL LOST",
+    "text": "A. Brennan gets the ball",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 180.1,
+   "cam": "broadcast"
+  },
+  {
+   "t": 226.5,
+   "cam": "player",
+   "select": "a6"
+  },
+  {
+   "t": 230.5,
+   "caption": {
+    "title": "INTERCEPTION",
+    "text": "You read it",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 232.5,
+   "cam": "broadcast"
+  },
+  {
+   "t": 246.7,
+   "caption": {
+    "title": "YOUR MATCH",
+    "text": "1258 m · 28 km/h",
+    "dur": 3.5
+   }
+  }
+ ]
+}

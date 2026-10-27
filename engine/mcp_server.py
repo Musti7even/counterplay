@@ -88,6 +88,49 @@ def get_player(id: str, t0: float = None, t1: float = None, match: str = 'match'
     return I.player_stats(doc, 'home' if id[0] == 'h' else 'away', int(id[1:]) - 1, t0, t1)
 
 
+def _pid(id):
+    if not re.match(r'^[ha]([1-9]|1[01])$', id):
+        raise ValueError('id must be h1..h11 or a1..a11')
+    return ('home' if id[0] == 'h' else 'away'), int(id[1:]) - 1
+
+
+@mcp.tool()
+def get_player_events(id: str, match: str = 'match') -> dict:
+    """Events a player is part of: his passes/shots/tackles/interceptions (role actor) and tackles suffered (role beaten), with the other player's name."""
+    doc, ins = load(match)
+    side, idx = _pid(id)
+    out = []
+    for e in ins['events']:
+        ev = e['event']
+        if ev.get('team') == side and ev.get('idx') == idx:
+            other = ev.get('onIdx') if ev['type'] == 'tackle' else None
+            out.append(dict(e, role='actor', other=doc['meta'][I.other(side)]['players'][other]['name'] if other is not None else None))
+        elif ev['type'] == 'tackle' and ev['team'] == I.other(side) and ev.get('onIdx') == idx:
+            out.append(dict(e, role='beaten', other=doc['meta'][ev['team']]['players'][ev['idx']]['name']))
+    return {'events': out}
+
+
+@mcp.tool()
+def get_player_snapshot(id: str, t: float, match: str = 'match') -> dict:
+    """Where a player is at time t: metres from own goal, vs his back line (4 deepest outfield team-mates),
+    distance to the ball, nearest opponent, current speed."""
+    doc, _ = load(match)
+    side, idx = _pid(id)
+    i = I.fidx(doc, t)
+    f = doc['frames'][i]
+    depth = lambda p: round(p[0] * I.fwd(side) + 52.5, 1)  # metres from own goal line
+    me = f[side][idx]
+    line = round(sum(sorted(depth(p) for j, p in enumerate(f[side]) if j not in (0, idx))[:4]) / 4, 1)
+    rel = round(line - depth(me), 1)  # > 0: deeper than his line
+    opp = I.other(side)
+    k = min(range(11), key=lambda j: I.dist(f[opp][j], me))
+    return {'id': id, 't': f['t'], 'score': f['score'], 'fromOwnGoal': depth(me), 'lineFromOwnGoal': line,
+            'behindLine': rel if rel > 0 else None, 'aheadOfLine': -rel if rel < 0 else None,
+            'ballDist': round(I.dist(me, f['ball']), 1),
+            'nearestOpponent': {'name': doc['meta'][opp]['players'][k]['name'], 'dist': round(I.dist(f[opp][k], me), 1)},
+            'speed': round(float(I.player_speeds(doc, side, idx)[1][i]), 1)}
+
+
 @mcp.tool()
 def explain_evidence(event_id: str, match: str = 'match') -> dict:
     """Explain an event (e<N>) or moment (m<N>): metrics, the frame at that time (who was near the ball) and linked moments/events."""

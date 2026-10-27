@@ -8,50 +8,28 @@
  "select": "a6",
  "cues": [
   {
-   "t": 58.5,
-   "cam": "player",
-   "select": "a6"
-  },
-  {
-   "t": 62.5,
+   "t": 2.0,
    "caption": {
-    "title": "RAUMKONTROLLE",
-    "text": "Redmoor FC · 100%",
+    "title": "DEIN JOB",
+    "text": "Redmoor FC: 76% Ballbesitz",
     "dur": 3.5
    }
   },
   {
    "t": 65.5,
-   "cam": "broadcast"
-  },
-  {
-   "t": 65.5,
    "cam": "player",
    "select": "a6"
-  },
-  {
-   "t": 67.5,
-   "speed": 0.5
   },
   {
    "t": 69.5,
    "caption": {
-    "title": "TOR",
-    "text": "D. Moreau · xG 0.236",
+    "title": "GEGENTOR",
+    "text": "D. Moreau · 1-0",
     "dur": 3.5
    }
   },
   {
-   "t": 70.0,
-   "speed": 1
-  },
-  {
-   "t": 70.5,
-   "cam": "player",
-   "select": "a6"
-  },
-  {
-   "t": 72.5,
+   "t": 71.5,
    "cam": "broadcast"
   },
   {
@@ -63,15 +41,6 @@
    }
   },
   {
-   "t": 75.5,
-   "cam": "player",
-   "select": "a6"
-  },
-  {
-   "t": 77.5,
-   "cam": "broadcast"
-  },
-  {
    "t": 79.5,
    "caption": {
     "title": "DEIN WAS-WÄRE-WENN",
@@ -80,49 +49,54 @@
    }
   },
   {
-   "t": 82.5,
-   "cam": "broadcast"
-  },
-  {
-   "t": 86.9,
-   "cam": "player",
-   "select": "a6"
-  },
-  {
-   "t": 90.9,
-   "caption": {
-    "title": "RAUMKONTROLLE",
-    "text": "Redmoor FC · 100%",
-    "dur": 3.5
-   }
-  },
-  {
-   "t": 93.9,
-   "cam": "broadcast"
-  },
-  {
    "t": 93.9,
    "cam": "player",
    "select": "a6"
-  },
-  {
-   "t": 95.9,
-   "speed": 0.5
   },
   {
    "t": 97.9,
    "caption": {
-    "title": "TOR",
-    "text": "D. Moreau · xG 0.313",
+    "title": "GEGENTOR",
+    "text": "D. Moreau · 2-0",
     "dur": 3.5
    }
   },
   {
-   "t": 98.4,
-   "speed": 1
+   "t": 99.9,
+   "cam": "broadcast"
   },
   {
-   "t": 100.9,
+   "t": 174.1,
+   "cam": "player",
+   "select": "a6"
+  },
+  {
+   "t": 178.1,
+   "caption": {
+    "title": "ZWEIKAMPF VERLOREN",
+    "text": "A. Brennan setzt sich durch",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 180.1,
+   "cam": "broadcast"
+  },
+  {
+   "t": 226.5,
+   "cam": "player",
+   "select": "a6"
+  },
+  {
+   "t": 230.5,
+   "caption": {
+    "title": "BALLGEWINN",
+    "text": "Du liest es",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 232.5,
    "cam": "broadcast"
   },
   {

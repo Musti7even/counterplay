@@ -1,23 +1,21 @@
 [
  {
-  "t": 62.5,
-  "text": "Redmoor FC mit 100 Prozent Ballbesitz in dieser Phase. Halvard Athletic ist eingeschnürt und kann nicht aufbauen.",
-  "voice_style": "calm",
-  "claim": "m1-tactic_siege",
+  "t": 2.0,
+  "text": "Ein Abwehrnachmittag für dich, H. Sørensen: Redmoor FC hat über das Spiel 76 Prozent Ballbesitz. Dein Job: die Kette eng halten.",
+  "voice_style": "newscast",
+  "claim": "you-job",
   "evidence": [
-   "m1",
-   "window 59.5-69.5"
+   "window 0-300.0"
   ]
  },
  {
   "t": 69.5,
-  "text": "Tor durch D. Moreau, aus 11.6 Metern. xG 0.236: eine gute Chance, und er macht ihn. 1-0.",
-  "voice_style": "excited",
+  "text": "D. Moreau trifft, 1-0. D. Moreau war beim Schuss 8.3 Meter von dir entfernt. Du standest 1.1 Meter vor dem Rest deiner Kette.",
+  "voice_style": "calm",
   "claim": "m1",
   "evidence": [
-   "e29",
-   "e28",
-   "m1"
+   "m1",
+   "snapshot a6@69.0"
   ]
  },
  {
@@ -43,24 +41,31 @@
   ]
  },
  {
-  "t": 90.9,
-  "text": "100 Prozent Ballbesitz für Redmoor FC im Aufbau. Halvard Athletic verteidigt den Strafraum, nicht den Raum davor.",
+  "t": 97.9,
+  "text": "D. Moreau trifft, 2-0. R. Takahashi war beim Schuss 2.1 Meter von dir entfernt. Du standest 17 Meter vor dem Rest deiner Kette.",
   "voice_style": "calm",
-  "claim": "m2-tactic_siege",
+  "claim": "m2",
   "evidence": [
    "m2",
-   "window 87.9-97.9"
+   "snapshot a6@97.5"
   ]
  },
  {
-  "t": 97.9,
-  "text": "Tor durch D. Moreau, aus 9.2 Metern. xG 0.313: eine gute Chance, und er macht ihn. 2-0.",
-  "voice_style": "excited",
-  "claim": "m2",
+  "t": 178.1,
+  "text": "A. Brennan gewinnt das Duell und nimmt dir den Ball ab.",
+  "voice_style": "calm",
+  "claim": "e80",
   "evidence": [
-   "e43",
-   "e42",
-   "m2"
+   "e80"
+  ]
+ },
+ {
+  "t": 230.5,
+  "text": "Du liest den Pass und gehst dazwischen. Ball gewonnen.",
+  "voice_style": "cheerful",
+  "claim": "e96",
+  "evidence": [
+   "e96"
   ]
  },
  {
