@@ -8,7 +8,8 @@
     "preview": "vite preview --host",
     "typecheck": "tsc --noEmit",
     "mock": "node scripts/mock.mjs",
-    "shots": "node scripts/shots.mjs"
+    "shots": "node scripts/shots.mjs",
+    "record": "node scripts/record.mjs"
   },
   "dependencies": {
     "@fontsource/barlow": "^5.3.0",

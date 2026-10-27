@@ -10,9 +10,9 @@ import { Players } from './players';
 import { Graphics } from './graphics';
 import { CameraRig, CamMode } from './cameras';
 import { initHud } from './hud';
+import { loadScript, evalCues, ViewMode } from './director';
 
 const q = new URLSearchParams(location.search);
-type ViewMode = 'single' | 'split' | 'ghost';
 
 class View {
   el = document.createElement('div');
@@ -80,23 +80,29 @@ const state = {
   view: 'single' as ViewMode,
 };
 let forkT = Infinity;
+const capture = q.get('capture') === '1'; // recorder drives time via demo.step(); no realtime clock
 
 async function main() {
   await Promise.all(['600', '700', '800'].map((w) => document.fonts.load(`${w} 40px "Barlow Condensed"`)));
-  const name = q.get('match') ?? 'match';
-  const orig = await loadMatch(name).catch(() => (q.get('match') ? Promise.reject(new Error(`could not load /data/${name}.json`)) : loadMatch('mock')));
-  const forkRaw = q.get('fork') ? await loadMatch(q.get('fork')!) : null;
+  const script = await loadScript(q);
+  const name = q.get('match') ?? script?.match ?? 'match';
+  const orig = await loadMatch(name).catch(() => (q.get('match') || script?.match ? Promise.reject(new Error(`could not load /data/${name}.json`)) : loadMatch('mock')));
+  const forkName = q.get('fork') ?? script?.fork;
+  const forkRaw = forkName ? await loadMatch(forkName) : null;
   const fork = forkRaw ? mergeFork(orig, forkRaw) : null;
   forkT = fork?.meta.forkOf?.t ?? forkRaw?.frames[0].t ?? Infinity;
-  state.view = fork ? ((q.get('view') as ViewMode) ?? 'split') : 'single';
-  // what-if story window: a few seconds of lead-in, ~10 s after the fork (GRF diverges into noise later)
-  const win = fork && q.get('loop') !== '0' ? [Math.max(startTime(orig), forkT - 5), forkT + 10] : null;
+  state.view = fork ? ((q.get('view') as ViewMode) ?? script?.view ?? 'split') : 'single';
+  // loop window: the director's take, else the what-if story window (GRF diverges into noise later)
+  const win = script ? [script.from, script.to] : fork && q.get('loop') !== '0' ? [Math.max(startTime(orig), forkT - 5), forkT + 10] : null;
   state.t = q.has('t') ? +q.get('t')! : win ? win[0] : startTime(orig);
-  const fp = (fork?.meta.forkOf as any)?.params?.player as string | undefined;
-  if (fp) for (const side of ['home', 'away'] as Side[]) {
-    const idx = orig.meta[side].players.findIndex((p) => p.id === fp);
-    if (idx >= 0) state.selected = { side, idx };
-  }
+  const selectId = (id: string | null | undefined) => {
+    state.selected = null;
+    if (id) for (const side of ['home', 'away'] as Side[]) {
+      const idx = orig.meta[side].players.findIndex((p) => p.id === id);
+      if (idx >= 0) state.selected = { side, idx };
+    }
+  };
+  selectId((fork?.meta.forkOf as any)?.params?.player);
 
   const viewsEl = document.getElementById('views')!;
   const main = new View(orig, 'ORIGINAL', fork, false);
@@ -112,7 +118,7 @@ async function main() {
     document.querySelectorAll<HTMLButtonElement>('#viewmode button').forEach((b) => b.classList.toggle('on', b.dataset.view === state.view));
     (main.label.querySelector('.vl-name') as HTMLElement).textContent = state.view === 'ghost' ? 'ORIGINAL + WHAT IF GHOSTS' : 'ORIGINAL';
     document.body.classList.toggle('multi', state.view !== 'single');
-    requestAnimationFrame(() => [main, alt].forEach((v) => v?.resize()));
+    [main, alt].forEach((v) => v?.resize()); // sync: the recorder captures right after
   };
   const setCam = (c: CamMode, instant = false) => {
     state.cam = c; [main, alt].forEach((v) => v?.rig.set(c, instant));
@@ -145,31 +151,55 @@ async function main() {
     else if (k === 'g' && fork) { state.view = 'ghost'; applyView(); }
     else if (k === 'm' && fork) { state.view = 'single'; applyView(); }
   });
-  if (q.get('ui') === '0') document.body.classList.add('noui');
+  if (q.get('ui') === '0' || capture) document.body.classList.add('noui');
+  if (capture) document.body.classList.add('capture');
   if (q.has('sel')) { const [side, idx] = q.get('sel')!.split(':'); state.selected = { side: side as Side, idx: +idx }; }
   addEventListener('resize', () => [main, alt].forEach((v) => v?.resize()));
 
   setCam(state.cam, true); setPlaying(state.playing); applyView();
-  [main, alt].forEach((v) => { v?.resize(); v?.rig.snap(); });
+  [main, alt].forEach((v) => { v?.rig.snap(); });
 
-  let last = performance.now(), lastT = state.t, frames = 0;
-  const loop = (now: number) => {
-    const dt = Math.min(0.1, (now - last) / 1000); last = now;
+  let lastT = state.t, frames = 0, lastSel: string | null | undefined = undefined;
+  const tick = (dt: number, now: number) => {
     if (state.playing) state.t += dt * state.speed;
-    if (win && state.playing && state.t > win[1]) state.t = win[0];
+    if (win && !capture && state.playing && state.t > win[1]) state.t = win[0];
     if (state.t >= end) { state.t = end; setPlaying(false); }
     state.t = Math.max(startTime(orig), state.t);
-    if (Math.abs(state.t - lastT) > 1) [main, alt].forEach((v) => v?.rig.snap());
+    const jumped = Math.abs(state.t - lastT) > 1;
     lastT = state.t;
-    state.lens += (state.lensTarget - state.lens) * (1 - Math.exp(-dt * 5));
-    const s = main.render(state.t, dt, now / 1000, state.view === 'ghost');
-    if (alt && state.view === 'split') alt.render(state.t, dt, now / 1000, false);
-    hud.update(s, state.lens, main.gfx.last, main.gfx.pressureCount);
+    let caption = null;
+    if (script) {
+      const d = evalCues(script, state.t);
+      if (d.cam !== state.cam) setCam(d.cam, d.cut || jumped);
+      if (d.view && fork && d.view !== state.view) { state.view = d.view; applyView(); }
+      if (d.select !== lastSel) { lastSel = d.select; if (d.select !== undefined) selectId(d.select); }
+      state.speed = d.speed; state.lens = state.lensTarget = d.lens; lens.value = String(d.lens);
+      caption = d.caption;
+    } else state.lens += (state.lensTarget - state.lens) * (1 - Math.exp(-dt * 5));
+    if (jumped) [main, alt].forEach((v) => v?.rig.snap());
+    const s = main.render(state.t, dt, now, state.view === 'ghost');
+    if (alt && state.view === 'split') alt.render(state.t, dt, now, false);
+    hud.update(s, state.lens, main.gfx.last, main.gfx.pressureCount, caption);
     (window as any).__frames = ++frames;
+  };
+
+  let clockNow = 0;
+  Object.assign(window, {
+    demo: {
+      state, setCam, clock, window: win,
+      seek(t: number) { state.t = t; lastT = t; setPlaying(true); [main, alt].forEach((v) => v?.rig.snap()); tick(0, clockNow); },
+      step(dt: number) { clockNow += dt; tick(dt, clockNow); return state.t; },
+    },
+  });
+  if (capture) { tick(0, 0); (window as any).__ready = true; return; }
+  let last = performance.now();
+  const loop = (now: number) => {
+    const dt = Math.min(0.1, (now - last) / 1000); last = now;
+    tick(dt, now / 1000);
     requestAnimationFrame(loop);
   };
   requestAnimationFrame(loop);
-  Object.assign(window, { demo: { state, setCam, clock } });
+  (window as any).__ready = true;
 }
 
 main().catch((e) => {

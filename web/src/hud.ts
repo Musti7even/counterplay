@@ -1,5 +1,6 @@
 // HTML overlay: scorebug, tactical panel, goal banner, timeline markers. Pure DOM updates, no framework.
 import { Match, Snapshot, TeamMetrics, Side, clock, duration, startTime } from './data';
+import type { DirectorState } from './director';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
 const setText = (el: Element, s: string) => { if (el.textContent !== s) el.textContent = s; };
@@ -34,7 +35,7 @@ export function initHud(m: Match, fork: Match | null) {
   const scoreEls = [$('.sb-score .h'), $('.sb-score .a')];
   let lastScore = '';
   return {
-    update(s: Snapshot, lens: number, met: Record<Side, TeamMetrics> | undefined, pressure: number) {
+    update(s: Snapshot, lens: number, met: Record<Side, TeamMetrics> | undefined, pressure: number, caption: DirectorState['caption'] = null) {
       root.setProperty('--lens', lens.toFixed(3));
       setText($('.sb-clock'), clock(s.t)); setText($('#time'), clock(s.t));
       const sc = s.score.join('-');
@@ -51,10 +52,19 @@ export function initHud(m: Match, fork: Match | null) {
       }
       setText($('[data-k=press]'), pressure ? `${pressure} WITHIN 5 M` : '—');
 
-      // goal banner: big moment, shown at every lens setting
+      // goal banner: big moment, shown at every lens setting. Animated from match time (recorder-safe), not CSS transitions.
       const g = m.events.find((e) => e.type === 'goal' && s.t >= e.t && s.t < e.t + 5);
       const banner = $('#banner');
-      banner.classList.toggle('show', !!g);
+      const ga = g ? Math.min(1, (s.t - g.t) / 0.35, (g.t + 5 - s.t) / 0.35) : 0, ge = 1 - (1 - ga) ** 3;
+      banner.style.opacity = String(ga); banner.style.transform = `translateX(-50%) scaleX(${0.6 + 0.4 * ge})`;
+      const cap = $('#caption');
+      if (caption) {
+        const age = s.t - caption.t0, out = (caption.dur ?? 4) - age;
+        const a = Math.max(0, Math.min(1, age / 0.4, out / 0.4)), e = 1 - (1 - a) ** 3;
+        cap.style.opacity = String(a); cap.style.transform = `translateX(${(1 - e) * -40}px)`;
+        setText($('.cp-title'), caption.title ?? ''); setText($('.cp-text'), caption.text);
+        ($('.cp-title').style.display = caption.title ? '' : 'none');
+      } else cap.style.opacity = '0';
       if (g) {
         const side = g.team ?? 'home', shot = [...m.events].reverse().find((e) => e.type === 'shot' && e.t <= g.t && e.team === side);
         const p = shot?.idx != null ? m.meta[side].players[shot.idx] : null;
