@@ -217,7 +217,8 @@ export class Graphics {
   update(s: Snapshot, c: GfxCtx) {
     const { lens, dt, cam } = c, m = this.match, TAG_H = TAG_H0 * this.tagScale;
     // line weight: metres scaled so a line looks the same on screen as on the broadcast gantry (60 m away, 20° fov)
-    Ribbon.k = THREE.MathUtils.clamp(cam.position.distanceTo(W(s.ball[0], s.ball[1], 0)) * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)) / 10.6, 0.4, 1.6);
+    // (^1.5: close cameras see the near end of a line much closer than the ball, so thin them a bit more)
+    Ribbon.k = THREE.MathUtils.clamp((cam.position.distanceTo(W(s.ball[0], s.ball[1], 0)) * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)) / 10.6) ** 1.5, 0.25, 1.6);
     // lens weights (DESIGN.md density): casual = carrier + one speed tag; analysis = + back line, passes, pressure;
     // tactical = + offside, shape (speed tags drop out)
     const wPass = smooth(0.15, 0.45, lens), wPress = smooth(0.35, 0.6, lens), wLine = smooth(0.35, 0.65, lens);
