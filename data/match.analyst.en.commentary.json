@@ -1,32 +1,12 @@
 [
  {
-  "t": 33.6,
+  "t": 35.1,
   "text": "A. Brennan from 11.3 metres at 116.6 km/h, xG 0.173. That is a half-chance for Redmoor FC.",
   "voice_style": "excited",
   "claim": "m5",
   "evidence": [
    "e16",
    "m5"
-  ]
- },
- {
-  "t": 62.5,
-  "text": "Redmoor FC with 100 percent of the ball in this phase. Halvard Athletic are pinned back and cannot build.",
-  "voice_style": "calm",
-  "claim": "m1-tactic_siege",
-  "evidence": [
-   "m1",
-   "window 59.5-69.5"
-  ]
- },
- {
-  "t": 66.0,
-  "text": "Halvard Athletic's back line sits 30.1 metres from their own goal. That is the gap D. Moreau runs into.",
-  "voice_style": "calm",
-  "claim": "m1-tactic_line",
-  "evidence": [
-   "m1",
-   "window 59.5-69.5"
   ]
  },
  {
@@ -41,7 +21,27 @@
   ]
  },
  {
-  "t": 74.5,
+  "t": 73.5,
+  "text": "Redmoor FC with 100 percent of the ball in this phase. Halvard Athletic are pinned back and cannot build.",
+  "voice_style": "calm",
+  "claim": "m1-tactic_siege",
+  "evidence": [
+   "m1",
+   "window 59.5-69.5"
+  ]
+ },
+ {
+  "t": 77.0,
+  "text": "Halvard Athletic's back line sits 30.1 metres from their own goal. That is the gap D. Moreau runs into.",
+  "voice_style": "calm",
+  "claim": "m1-tactic_line",
+  "evidence": [
+   "m1",
+   "window 59.5-69.5"
+  ]
+ },
+ {
+  "t": 81.0,
   "text": "Counterfactual: same seed, same moment, but H. Sørensen steps up instead of dropping off.",
   "voice_style": "hopeful",
   "claim": "w-setup",
@@ -52,34 +52,14 @@
   ]
  },
  {
-  "t": 79.5,
-  "text": "Result: the goal at 69.5 seconds never happens. At the same moment it is 1-0 in the original and 0-0 in the what-if.",
+  "t": 86.5,
+  "text": "Result: no goal at 69.5 seconds in the what-if. Right now it is 1-0 in the original and 0-0 in the what-if.",
   "voice_style": "excited",
   "claim": "w-result",
   "evidence": [
    "compare_fork",
    "fork-step_up",
-   "score@76.5"
-  ]
- },
- {
-  "t": 90.9,
-  "text": "100 percent possession for Redmoor FC in the build-up. Halvard Athletic are defending their box, not the space.",
-  "voice_style": "calm",
-  "claim": "m2-tactic_siege",
-  "evidence": [
-   "m2",
-   "window 87.9-97.9"
-  ]
- },
- {
-  "t": 94.4,
-  "text": "Halvard Athletic defend 30.3 metres from goal again. Watch D. Moreau find the pocket in front of them.",
-  "voice_style": "calm",
-  "claim": "m2-tactic_line",
-  "evidence": [
-   "m2",
-   "window 87.9-97.9"
+   "score@86.5"
   ]
  },
  {
@@ -94,7 +74,27 @@
   ]
  },
  {
-  "t": 124.4,
+  "t": 101.9,
+  "text": "100 percent possession for Redmoor FC in the build-up. Halvard Athletic are defending their box, not the space.",
+  "voice_style": "calm",
+  "claim": "m2-tactic_siege",
+  "evidence": [
+   "m2",
+   "window 87.9-97.9"
+  ]
+ },
+ {
+  "t": 105.4,
+  "text": "Halvard Athletic defend 30.3 metres from goal again. Watch D. Moreau find the pocket in front of them.",
+  "voice_style": "calm",
+  "claim": "m2-tactic_line",
+  "evidence": [
+   "m2",
+   "window 87.9-97.9"
+  ]
+ },
+ {
+  "t": 125.9,
   "text": "A. Brennan again: 13.9 metres, 119.4 km/h. xG 0.134, a half-chance, and it stays out.",
   "voice_style": "excited",
   "claim": "m6",
@@ -104,27 +104,7 @@
   ]
  },
  {
-  "t": 130.5,
-  "text": "Halvard Athletic with 99 percent of the ball in this phase. Redmoor FC are pinned back and cannot build.",
-  "voice_style": "calm",
-  "claim": "m4-tactic_siege",
-  "evidence": [
-   "m4",
-   "window 127.5-137.5"
-  ]
- },
- {
-  "t": 134.0,
-  "text": "Redmoor FC's back line sits 33.6 metres from their own goal. That is the gap F. Delacroix runs into.",
-  "voice_style": "calm",
-  "claim": "m4-tactic_line",
-  "evidence": [
-   "m4",
-   "window 127.5-137.5"
-  ]
- },
- {
-  "t": 137.5,
+  "t": 139.0,
   "text": "F. Delacroix gets the shot away from 12 metres, xG 0.195. The volume of chances is building for Halvard Athletic.",
   "voice_style": "excited",
   "claim": "m4",
@@ -134,27 +114,17 @@
   ]
  },
  {
-  "t": 149.4,
-  "text": "3 turnovers in this spell, chaos index 70. Nobody is controlling this game.",
+  "t": 145.0,
+  "text": "Redmoor FC's back line sits 33.6 metres from their own goal. That is the gap F. Delacroix runs into.",
   "voice_style": "calm",
-  "claim": "m3-tactic_chaos",
+  "claim": "m4-tactic_line",
   "evidence": [
-   "m3",
-   "window 146.4-156.4"
+   "m4",
+   "window 127.5-137.5"
   ]
  },
  {
-  "t": 152.9,
-  "text": "Halvard Athletic defend 41.9 metres from goal again. Watch A. Brennan find the pocket in front of them.",
-  "voice_style": "calm",
-  "claim": "m3-tactic_line",
-  "evidence": [
-   "m3",
-   "window 146.4-156.4"
-  ]
- },
- {
-  "t": 156.4,
+  "t": 157.9,
   "text": "A. Brennan from 12.5 metres at 129 km/h, xG 0.211. That is a good chance for Redmoor FC.",
   "voice_style": "excited",
   "claim": "m3",
@@ -164,7 +134,17 @@
   ]
  },
  {
-  "t": 196.8,
+  "t": 163.9,
+  "text": "Halvard Athletic defend 41.9 metres from goal again. Watch A. Brennan find the pocket in front of them.",
+  "voice_style": "calm",
+  "claim": "m3-tactic_line",
+  "evidence": [
+   "m3",
+   "window 146.4-156.4"
+  ]
+ },
+ {
+  "t": 198.3,
   "text": "A. Brennan again: 16.4 metres, 128.6 km/h. xG 0.133, a half-chance, and it stays out.",
   "voice_style": "excited",
   "claim": "m7",
@@ -174,16 +154,7 @@
   ]
  },
  {
-  "t": 230.0,
-  "text": "Momentum index from 85 to -57: Halvard Athletic now own the ball and the territory.",
-  "voice_style": "calm",
-  "claim": "m9",
-  "evidence": [
-   "m9"
-  ]
- },
- {
-  "t": 238.5,
+  "t": 240.0,
   "text": "V. Ibarra gets the shot away from 16 metres, xG 0.126. The volume of chances is building for Halvard Athletic.",
   "voice_style": "excited",
   "claim": "m8",

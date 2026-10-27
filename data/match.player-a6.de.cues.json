@@ -11,7 +11,7 @@
    "t": 2.0,
    "caption": {
     "title": "DEIN JOB",
-    "text": "Redmoor FC: 76% Ballbesitz",
+    "text": "Innenverteidiger · Kette bei 38 m",
     "dur": 3.5
    }
   },
@@ -33,7 +33,7 @@
    "cam": "broadcast"
   },
   {
-   "t": 74.5,
+   "t": 81.0,
    "caption": {
     "title": "DEIN WAS-WÄRE-WENN",
     "text": "Wenn du herausgerückt wärst?",
@@ -41,7 +41,7 @@
    }
   },
   {
-   "t": 79.5,
+   "t": 86.5,
    "caption": {
     "title": "DEIN WAS-WÄRE-WENN",
     "text": "Kein Tor: 0-0",
@@ -103,7 +103,7 @@
    "t": 246.7,
    "caption": {
     "title": "DEIN SPIEL",
-    "text": "1258 m · 28 km/h",
+    "text": "1057 m · 28 km/h",
     "dur": 3.5
    }
   }

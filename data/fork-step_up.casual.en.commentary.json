@@ -11,14 +11,14 @@
   ]
  },
  {
-  "t": 69.5,
-  "text": "Same moment, one change, and the goal never comes! It's 0-0, not 1-0.",
+  "t": 70.0,
+  "text": "Same moment, one change, and no goal! It's 0-0, not 1-0.",
   "voice_style": "excited",
   "claim": "w-result",
   "evidence": [
    "compare_fork",
    "fork-step_up",
-   "score@76.5"
+   "score@70.0"
   ]
  }
 ]

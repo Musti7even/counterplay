@@ -1,11 +1,11 @@
 [
  {
   "t": 2.0,
-  "text": "Ein Abwehrnachmittag für dich, H. Sørensen: Redmoor FC hat über das Spiel 76 Prozent Ballbesitz. Dein Job: die Kette eng halten.",
+  "text": "Du beginnst heute als Innenverteidiger, H. Sørensen. Deine Kette steht 38 Meter vor dem Tor, dein nächster Gegenspieler ist M. Ferreira.",
   "voice_style": "newscast",
   "claim": "you-job",
   "evidence": [
-   "window 0-300.0"
+   "snapshot a6@2.0"
   ]
  },
  {
@@ -19,7 +19,7 @@
   ]
  },
  {
-  "t": 74.5,
+  "t": 81.0,
   "text": "Jetzt geht es um dich, H. Sørensen. Was wäre, wenn du herausgerückt wärst?",
   "voice_style": "hopeful",
   "claim": "w-setup",
@@ -30,14 +30,14 @@
   ]
  },
  {
-  "t": 79.5,
-  "text": "Du rückst heraus, und das Tor nach 69.5 Sekunden fällt nie. 0-0 statt 1-0.",
+  "t": 86.5,
+  "text": "Du rückst heraus, und nach 69.5 Sekunden fällt kein Tor. 0-0 statt 1-0.",
   "voice_style": "excited",
   "claim": "w-result",
   "evidence": [
    "compare_fork",
    "fork-step_up",
-   "score@76.5"
+   "score@86.5"
   ]
  },
  {
@@ -70,7 +70,7 @@
  },
  {
   "t": 246.7,
-  "text": "Du hast 1258 Meter abgespult, 28 km/h erreicht und 22 Sprints angezogen. Dein synthetischer Puls lag in der Spitze bei 153.",
+  "text": "Bisher hast du 1057 Meter abgespult, 28 km/h erreicht und 19 Sprints angezogen. Dein synthetischer Puls lag bisher in der Spitze bei 153.",
   "voice_style": "newscast",
   "claim": "p-a6",
   "evidence": [

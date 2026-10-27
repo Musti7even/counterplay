@@ -31,6 +31,7 @@ $T/agentenv/bin/python voice.py ../data/match.casual.en.commentary.json         
 - **LLM mode.** With creds in `code/.env`, each agent is an LLM `Agent` with the MCP server as its tool source. Its MCP calls are traced through function middleware.
 - **Template mode.** Without creds (`mode=template`), each agent runs a deterministic template path over the same MCP tools.
 - **Recovery.** In LLM mode, a timeout or exception gets one retry, then the template path takes over (`fallback: true` in the trace). `--kill <agent>` forces that path.
+- **Live rule.** Every MCP output is stamped with the latest match time it depends on (`t`/`t1` of the call; whole-match tools like `get_moments` count as unknown future and are only used to choose). A claim airing at `t` may only use numbers known by `t`, and its `asof` must be `<= t`.
 - **Fact-check gate.** The fact-check gate always runs. Every number in a claim, and in any LLM-written text, must match a number seen in an MCP tool output (rounded to 0.1). Anything else is rejected and listed in the trace.
 - **Localization guard.** If a localized line contains a number that is not in its claim's params or the tool outputs, it is replaced by the verified template line.
 

@@ -70,7 +70,10 @@ def pass_metrics(doc, e):
     #                  + line-breaking (<=15, 5 per opponent bypassed in the attacking direction)
     diff = (35 * min(d / 40, 1) + min(12 * in_lane, 30) + 20 * max(0.0, (5 - press) / 5)
             + 5 * min(bypassed, 3))
-    return {'distance': round(d, 1), 'speed': round(ball_speed_after(doc, e['t']), 1),
+    fr, i = doc['frames'], fidx(doc, e['t'])
+    t_end = next((g['t'] for g in fr[i + 1:i + 100] if g['owner'] and (g['owner']['team'], g['owner']['idx']) != (team, e['idx'])),
+                 fr[min(i + 1, len(fr) - 1)]['t'])  # when the pass arrived: first frame someone else owns it
+    return {'distance': round(d, 1), 'speed': round(ball_speed_after(doc, e['t']), 1), 'tEnd': t_end,
             'opponentsInLane': in_lane, 'pressureDist': round(press, 1), 'bypassed': bypassed,
             'lineBreaking': bypassed >= 3, 'difficulty': int(round(diff))}
 
