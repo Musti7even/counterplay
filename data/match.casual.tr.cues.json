@@ -1,0 +1,123 @@
+{
+ "name": "match.casual.tr",
+ "match": "match",
+ "from": 0,
+ "to": 300.0,
+ "cam": "broadcast",
+ "lens": 0.15,
+ "select": null,
+ "cues": [
+  {
+   "t": 33.6,
+   "caption": {
+    "title": "BÜYÜK FIRSAT",
+    "text": "A. Brennan, 11.3 metreden",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 62.5,
+   "caption": {
+    "title": "KONTROL",
+    "text": "Redmoor FC: %100 topla oynama",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 67.5,
+   "speed": 0.5
+  },
+  {
+   "t": 69.5,
+   "caption": {
+    "title": "GOL",
+    "text": "D. Moreau ile Redmoor FC golü buldu",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 70.0,
+   "speed": 1
+  },
+  {
+   "t": 74.5,
+   "caption": {
+    "title": "YA OLSAYDI?",
+    "text": "B. Rinaldi öne çıksaydı",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 79.5,
+   "caption": {
+    "title": "SONUÇ",
+    "text": "Gol yok: 1-0 yerine 0-0",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 90.9,
+   "caption": {
+    "title": "KONTROL",
+    "text": "Redmoor FC: %100 topla oynama",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 95.9,
+   "speed": 0.5
+  },
+  {
+   "t": 97.9,
+   "caption": {
+    "title": "GOL",
+    "text": "D. Moreau ile Redmoor FC golü buldu",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 98.4,
+   "speed": 1
+  },
+  {
+   "t": 124.4,
+   "caption": {
+    "title": "BÜYÜK FIRSAT",
+    "text": "A. Brennan, 13.9 metreden",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 130.5,
+   "caption": {
+    "title": "KONTROL",
+    "text": "Halvard Athletic: %99 topla oynama",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 137.5,
+   "caption": {
+    "title": "BÜYÜK FIRSAT",
+    "text": "F. Delacroix, 12 metreden",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 149.4,
+   "caption": {
+    "title": "KAOS",
+    "text": "3 top kaybı",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 156.4,
+   "caption": {
+    "title": "BÜYÜK FIRSAT",
+    "text": "A. Brennan, 12.5 metreden",
+    "dur": 3.5
+   }
+  }
+ ]
+}

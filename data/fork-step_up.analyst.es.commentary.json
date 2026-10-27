@@ -1,0 +1,31 @@
+[
+ {
+  "t": 55.9,
+  "text": "Redmoor FC tiene el 100 por ciento del balón en esta fase, índice de control 90.",
+  "voice_style": "calm",
+  "claim": "m8-tactic_control",
+  "evidence": [
+   "m8",
+   "window 61.5-62.9"
+  ]
+ },
+ {
+  "t": 62.5,
+  "text": "¿Y si H. Sørensen hubiera adelantado la línea?",
+  "voice_style": "hopeful",
+  "claim": "w-setup",
+  "evidence": [
+   "compare_fork",
+   "a6"
+  ]
+ },
+ {
+  "t": 69.5,
+  "text": "En la alternativa, el gol del segundo 69.5 nunca llega: 2-0 pasa a 0-1.",
+  "voice_style": "excited",
+  "claim": "w-result",
+  "evidence": [
+   "divergence"
+  ]
+ }
+]

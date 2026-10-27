@@ -1,0 +1,123 @@
+[
+ {
+  "t": 33.6,
+  "text": "A. Brennan 11.3 metreden vuruyor, top saatte 116.6 kilometre hızla gidiyor. xG 0.173.",
+  "voice_style": "excited",
+  "claim": "m5",
+  "evidence": [
+   "e16",
+   "m5"
+  ]
+ },
+ {
+  "t": 62.5,
+  "text": "Redmoor FC bu bölümde topun yüzde 100 kadarına sahip, kontrol endeksi 59.",
+  "voice_style": "calm",
+  "claim": "m1-tactic_control",
+  "evidence": [
+   "m1",
+   "window 59.5-69.5"
+  ]
+ },
+ {
+  "t": 69.5,
+  "text": "GOL! D. Moreau topu ağlara gönderiyor, Redmoor FC için skor 1-0. Pozisyonun gol beklentisi: xG 0.236.",
+  "voice_style": "excited",
+  "claim": "m1",
+  "evidence": [
+   "e29",
+   "e28",
+   "m1"
+  ]
+ },
+ {
+  "t": 74.5,
+  "text": "Peki ya B. Rinaldi öne çıksaydı?",
+  "voice_style": "hopeful",
+  "claim": "w-setup",
+  "evidence": [
+   "fork_what_if",
+   "a4"
+  ]
+ },
+ {
+  "t": 79.5,
+  "text": "Alternatif senaryoda 69.5. saniyedeki gol hiç gelmiyor: 1-0 yerine skor 0-0.",
+  "voice_style": "excited",
+  "claim": "w-result",
+  "evidence": [
+   "divergence"
+  ]
+ },
+ {
+  "t": 90.9,
+  "text": "Redmoor FC bu bölümde topun yüzde 100 kadarına sahip, kontrol endeksi 58.",
+  "voice_style": "calm",
+  "claim": "m2-tactic_control",
+  "evidence": [
+   "m2",
+   "window 87.9-97.9"
+  ]
+ },
+ {
+  "t": 97.9,
+  "text": "GOL! D. Moreau topu ağlara gönderiyor, Redmoor FC için skor 2-0. Pozisyonun gol beklentisi: xG 0.313.",
+  "voice_style": "excited",
+  "claim": "m2",
+  "evidence": [
+   "e43",
+   "e42",
+   "m2"
+  ]
+ },
+ {
+  "t": 124.4,
+  "text": "A. Brennan 13.9 metreden vuruyor, top saatte 119.4 kilometre hızla gidiyor. xG 0.134.",
+  "voice_style": "excited",
+  "claim": "m6",
+  "evidence": [
+   "e50",
+   "m6"
+  ]
+ },
+ {
+  "t": 130.5,
+  "text": "Halvard Athletic bu bölümde topun yüzde 99 kadarına sahip, kontrol endeksi 73.",
+  "voice_style": "calm",
+  "claim": "m4-tactic_control",
+  "evidence": [
+   "m4",
+   "window 127.5-137.5"
+  ]
+ },
+ {
+  "t": 137.5,
+  "text": "F. Delacroix 12 metreden vuruyor, top saatte 121.3 kilometre hızla gidiyor. xG 0.195.",
+  "voice_style": "excited",
+  "claim": "m4",
+  "evidence": [
+   "e55",
+   "m4"
+  ]
+ },
+ {
+  "t": 149.4,
+  "text": "Oyun kaosa dönüyor: 3 top kaybı, kaos endeksi 70.",
+  "voice_style": "calm",
+  "claim": "m3-tactic_chaos",
+  "evidence": [
+   "m3",
+   "window 146.4-156.4"
+  ]
+ },
+ {
+  "t": 156.4,
+  "text": "A. Brennan 12.5 metreden vuruyor, top saatte 129 kilometre hızla gidiyor. xG 0.211.",
+  "voice_style": "excited",
+  "claim": "m3",
+  "evidence": [
+   "e65",
+   "m3"
+  ]
+ }
+]

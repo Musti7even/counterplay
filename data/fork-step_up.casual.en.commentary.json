@@ -1,0 +1,21 @@
+[
+ {
+  "t": 62.5,
+  "text": "What if H. Sørensen stepped up?",
+  "voice_style": "hopeful",
+  "claim": "w-setup",
+  "evidence": [
+   "compare_fork",
+   "a6"
+  ]
+ },
+ {
+  "t": 69.5,
+  "text": "In the what-if, the goal at 69.5 seconds never happens: 2-0 becomes 0-1.",
+  "voice_style": "excited",
+  "claim": "w-result",
+  "evidence": [
+   "divergence"
+  ]
+ }
+]

@@ -5,3 +5,4 @@ __pycache__/
 .env
 *.dump
 *.ckpt
+data/audio/

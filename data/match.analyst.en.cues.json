@@ -1,0 +1,184 @@
+{
+ "name": "match.analyst.en",
+ "match": "match",
+ "from": 0,
+ "to": 300.0,
+ "cam": "broadcast",
+ "lens": 0.8,
+ "select": null,
+ "cues": [
+  {
+   "t": 1,
+   "lensTo": 0.8,
+   "over": 3
+  },
+  {
+   "t": 33.6,
+   "caption": {
+    "title": "BIG CHANCE",
+    "text": "A. Brennan from 11.3 m",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 62.5,
+   "caption": {
+    "title": "CONTROL",
+    "text": "Redmoor FC: 100% possession",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 66.0,
+   "caption": {
+    "title": "DEFENSIVE LINE",
+    "text": "Halvard Athletic: 30.1 m",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 67.5,
+   "speed": 0.5
+  },
+  {
+   "t": 69.5,
+   "caption": {
+    "title": "GOAL",
+    "text": "D. Moreau scores for Redmoor FC",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 70.0,
+   "speed": 1
+  },
+  {
+   "t": 74.5,
+   "caption": {
+    "title": "WHAT IF",
+    "text": "B. Rinaldi stepped up",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 79.5,
+   "caption": {
+    "title": "RESULT",
+    "text": "No goal: 1-0 becomes 0-0",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 90.9,
+   "caption": {
+    "title": "CONTROL",
+    "text": "Redmoor FC: 100% possession",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 94.4,
+   "caption": {
+    "title": "DEFENSIVE LINE",
+    "text": "Halvard Athletic: 30.3 m",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 95.9,
+   "speed": 0.5
+  },
+  {
+   "t": 97.9,
+   "caption": {
+    "title": "GOAL",
+    "text": "D. Moreau scores for Redmoor FC",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 98.4,
+   "speed": 1
+  },
+  {
+   "t": 124.4,
+   "caption": {
+    "title": "BIG CHANCE",
+    "text": "A. Brennan from 13.9 m",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 130.5,
+   "caption": {
+    "title": "CONTROL",
+    "text": "Halvard Athletic: 99% possession",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 134.0,
+   "caption": {
+    "title": "DEFENSIVE LINE",
+    "text": "Redmoor FC: 33.6 m",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 137.5,
+   "caption": {
+    "title": "BIG CHANCE",
+    "text": "F. Delacroix from 12 m",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 149.4,
+   "caption": {
+    "title": "CHAOS",
+    "text": "3 turnovers",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 152.9,
+   "caption": {
+    "title": "DEFENSIVE LINE",
+    "text": "Halvard Athletic: 41.9 m",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 156.4,
+   "caption": {
+    "title": "BIG CHANCE",
+    "text": "A. Brennan from 12.5 m",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 196.8,
+   "caption": {
+    "title": "BIG CHANCE",
+    "text": "A. Brennan from 16.4 m",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 230.0,
+   "caption": {
+    "title": "MOMENTUM",
+    "text": "Swinging to Halvard Athletic",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 238.5,
+   "caption": {
+    "title": "BIG CHANCE",
+    "text": "V. Ibarra from 16 m",
+    "dur": 3.5
+   }
+  }
+ ]
+}

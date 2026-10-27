@@ -1,0 +1,48 @@
+{
+ "name": "fork-step_up.casual.de",
+ "match": "match",
+ "fork": "fork-step_up",
+ "from": 61.5,
+ "to": 76.5,
+ "view": "split",
+ "cam": "broadcast",
+ "lens": 0.15,
+ "select": "a6",
+ "cues": [
+  {
+   "t": 62.5,
+   "caption": {
+    "title": "WAS WÄRE, WENN",
+    "text": "H. Sørensen herausgerückt wäre",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 66.0,
+   "speed": 0.5
+  },
+  {
+   "t": 67.5,
+   "view": "ghost",
+   "cut": true,
+   "speed": 0.7
+  },
+  {
+   "t": 69.5,
+   "view": "split",
+   "cut": true
+  },
+  {
+   "t": 69.5,
+   "caption": {
+    "title": "ERGEBNIS",
+    "text": "Kein Tor: 2-0 wird 0-1",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 72.5,
+   "speed": 1
+  }
+ ]
+}

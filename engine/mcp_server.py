@@ -21,7 +21,7 @@ NAME = re.compile(r'^[\w-]+$')
 mcp = FastMCP('pl-match-engine', instructions=(
     'Football match engine (Google Research Football, 10 fps, 300 s per match, metres, home attacks +x). '
     'match = data file name without .json, e.g. "match" or "fork-step_up". Event ids e<N>, moment ids m<N>, '
-    'player ids h1..h11 / a1..a11. Heart rate is synthetic.'))
+    'player ids h1..h11 / a1..a11. Heart rate is synthetic.'), log_level=os.environ.get('MCP_LOG_LEVEL', 'INFO'))
 
 
 @functools.lru_cache(maxsize=32)
@@ -42,6 +42,15 @@ def pname(doc, side, idx):
     return f"{p['id']} {p['name']} ({p['pos']})"
 
 
+def with_player(doc, e):
+    """Event metrics + who did it (id, name, team name)."""
+    ev = e['event']
+    if ev.get('idx') is None:
+        return e
+    p = doc['meta'][ev['team']]['players'][ev['idx']]
+    return dict(e, player={'id': p['id'], 'name': p['name'], 'pos': p['pos'], 'team': doc['meta'][ev['team']]['name']})
+
+
 @mcp.tool()
 def get_match_state(t: float, match: str = 'match') -> dict:
     """Snapshot at match time t (s): score, mode, ball, owner, all player positions, events of the last 10 s, and team stats for the last 10 s."""
@@ -49,6 +58,8 @@ def get_match_state(t: float, match: str = 'match') -> dict:
     f = doc['frames'][I.fidx(doc, t)]
     o = f['owner']
     return {'t': f['t'], 'score': f['score'], 'mode': f['mode'], 'ball': f['ball'],
+            'teams': {s: {'name': doc['meta'][s]['name'], 'short': doc['meta'][s]['short']} for s in I.SIDES},
+            'forkOf': doc['meta'].get('forkOf'), 'end': doc['frames'][-1]['t'],
             'owner': pname(doc, o['team'], o['idx']) if o else None,
             'players': {s: {doc['meta'][s]['players'][i]['id']: p for i, p in enumerate(f[s])} for s in I.SIDES},
             'recentEvents': [e for e in ins['events'] if f['t'] - 10 <= e['event']['t'] <= f['t']],
@@ -86,16 +97,25 @@ def explain_evidence(event_id: str, match: str = 'match') -> dict:
         if not m:
             raise ValueError(f'unknown moment {event_id}')
         ids = m['evidence'].get('events', [])
-        return {'moment': m, 'events': [e for e in ins['events'] if e['id'] in ids],
+        return {'moment': m, 'events': [with_player(doc, e) for e in ins['events'] if e['id'] in ids],
                 'window': I.window_stats(doc, m['t'] - 5, m.get('t1', m['t'] + 5))}
     e = next((e for e in ins['events'] if e['id'] == event_id), None)
     if not e:
         raise ValueError(f'unknown event {event_id}')
     f = doc['frames'][I.fidx(doc, e['event']['t'])]
     near = sorted((round(I.dist(p, f['ball']), 1), pname(doc, s, i)) for s in I.SIDES for i, p in enumerate(f[s]))
-    return {'event': e, 'frame': {'t': f['t'], 'score': f['score'], 'ball': f['ball'], 'mode': f['mode']},
+    return {'event': with_player(doc, e), 'frame': {'t': f['t'], 'score': f['score'], 'ball': f['ball'], 'mode': f['mode']},
             'nearestToBall': [{'player': p, 'dist': d} for d, p in near[:6]],
             'moments': [m for m in ins['moments'] if event_id in m['evidence'].get('events', [])]}
+
+
+@mcp.tool()
+def compare_fork(fork: str) -> dict:
+    """Divergence summary of an existing fork vs the match it was forked from: goals prevented/created, score, player displacement."""
+    f, _ = load(fork)
+    if not f['meta'].get('forkOf'):
+        raise ValueError(f'{fork} is not a fork')
+    return I.divergence(load(f['meta']['forkOf']['match'])[0], f)
 
 
 @mcp.tool()

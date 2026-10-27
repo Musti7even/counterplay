@@ -1,0 +1,72 @@
+[
+ {
+  "t": 62.5,
+  "text": "Redmoor FC hat in dieser Phase 100 Prozent Ballbesitz, Kontrollindex 59.",
+  "voice_style": "calm",
+  "claim": "m1-tactic_control",
+  "evidence": [
+   "m1",
+   "window 59.5-69.5"
+  ]
+ },
+ {
+  "t": 69.5,
+  "text": "TOR! D. Moreau vollendet für Redmoor FC, 1-0. Chancenqualität: xG 0.236.",
+  "voice_style": "excited",
+  "claim": "m1",
+  "evidence": [
+   "e29",
+   "e28",
+   "m1"
+  ]
+ },
+ {
+  "t": 74.5,
+  "text": "Was wäre, wenn H. Sørensen herausgerückt wäre?",
+  "voice_style": "hopeful",
+  "claim": "w-setup",
+  "evidence": [
+   "fork_what_if",
+   "a6"
+  ]
+ },
+ {
+  "t": 79.5,
+  "text": "Im Was-wäre-wenn fällt das Tor nach 69.5 Sekunden nie: aus 1-0 wird 0-0.",
+  "voice_style": "excited",
+  "claim": "w-result",
+  "evidence": [
+   "divergence"
+  ]
+ },
+ {
+  "t": 90.9,
+  "text": "Redmoor FC hat in dieser Phase 100 Prozent Ballbesitz, Kontrollindex 58.",
+  "voice_style": "calm",
+  "claim": "m2-tactic_control",
+  "evidence": [
+   "m2",
+   "window 87.9-97.9"
+  ]
+ },
+ {
+  "t": 97.9,
+  "text": "TOR! D. Moreau vollendet für Redmoor FC, 2-0. Chancenqualität: xG 0.313.",
+  "voice_style": "excited",
+  "claim": "m2",
+  "evidence": [
+   "e43",
+   "e42",
+   "m2"
+  ]
+ },
+ {
+  "t": 246.7,
+  "text": "H. Sørensen: 1258.5 Meter Laufweg, Topspeed 27.6 km/h, 22 Sprints. Synthetischer Puls bis 153.",
+  "voice_style": "newscast",
+  "claim": "p-a6",
+  "evidence": [
+   "a6"
+  ]
+ }
+]
