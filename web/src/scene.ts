@@ -10,9 +10,12 @@ export const L = 105, W = 68;
 // data (x, y, z-up) -> three (x, y-up, z toward broadcast camera)
 export const toWorld = (x: number, y: number, z = 0, v = new THREE.Vector3()) => v.set(x, z, -y);
 
+// canvases are drawn once and shared by every view (quad = 4 renderers); each renderer gets its own texture
+let _pitch: HTMLCanvasElement | null = null, _crowd: HTMLCanvasElement | null = null;
 function pitchTexture(renderer: THREE.WebGLRenderer) {
   const PX = 34, M = 7, TW = L + 2 * M, TH = W + 2 * M; // px per metre, runoff margin
-  const c = document.createElement('canvas');
+  const cached = !!_pitch, c = (_pitch ??= document.createElement('canvas'));
+  if (!cached) {
   c.width = Math.round(TW * PX); c.height = Math.round(TH * PX);
   const g = c.getContext('2d')!;
   const sx = (x: number) => (x + TW / 2) * PX, sy = (y: number) => (TH / 2 - y) * PX;
@@ -53,6 +56,7 @@ function pitchTexture(renderer: THREE.WebGLRenderer) {
       arc(gx, cy, 1, start, start + Math.PI / 2);
     }
   }
+  }
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -60,7 +64,9 @@ function pitchTexture(renderer: THREE.WebGLRenderer) {
 }
 
 function crowdTexture() {
-  const c = document.createElement('canvas'); c.width = 1024; c.height = 256;
+  const cached = !!_crowd, c = (_crowd ??= document.createElement('canvas'));
+  if (!cached) {
+  c.width = 1024; c.height = 256;
   const g = c.getContext('2d')!;
   g.fillStyle = '#0d1018'; g.fillRect(0, 0, c.width, c.height);
   const cols = ['#8a1c2b', '#c42b3c', '#1c4f8a', '#2e6fb8', '#d9d9d9', '#3a3f4a', '#6b6f78', '#e0b84c'];
@@ -73,6 +79,7 @@ function crowdTexture() {
   g.globalAlpha = 1;
   // seat-row banding reads as tiers at distance
   for (let y = 0; y < c.height; y += 16) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(0, y, c.width, 3); }
+  }
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
   return tex;
@@ -119,7 +126,8 @@ function goal(side: number) {
   return grp;
 }
 
-export function buildStadium(renderer: THREE.WebGLRenderer, scene: THREE.Scene, names: [string, string]) {
+// lite: multi-view (split/quad) budget, smaller shadow map
+export function buildStadium(renderer: THREE.WebGLRenderer, scene: THREE.Scene, names: [string, string], lite = false) {
   scene.background = new THREE.Color(0x0a1222);
   scene.fog = new THREE.Fog(0x0a1222, 150, 330);
 
@@ -174,7 +182,7 @@ export function buildStadium(renderer: THREE.WebGLRenderer, scene: THREE.Scene, 
   scene.add(new THREE.HemisphereLight(0x9fb4d8, 0x0b140c, 0.55));
   const key = new THREE.DirectionalLight(0xfff6e8, 2.6);
   key.position.set(-30, 70, 45); key.castShadow = true;
-  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.mapSize.setScalar(lite ? 1024 : 2048);
   Object.assign(key.shadow.camera, { left: -70, right: 70, top: 50, bottom: -50, near: 10, far: 200 });
   key.shadow.bias = -0.0004; key.shadow.normalBias = 0.02; key.shadow.radius = 3;
   scene.add(key);
@@ -183,19 +191,19 @@ export function buildStadium(renderer: THREE.WebGLRenderer, scene: THREE.Scene, 
 
 // bloom only catches HDR (>1) colours: graphics, LED boards, floodlights
 const GradeShader = {
-  uniforms: { tDiffuse: { value: null }, vignette: { value: 0.32 }, desat: { value: 0 } },
+  uniforms: { tDiffuse: { value: null }, vignette: { value: 0.32 }, desat: { value: 0 }, tint: { value: new THREE.Vector3(1, 1, 1) } },
   vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }`,
-  fragmentShader: `uniform sampler2D tDiffuse; uniform float vignette; uniform float desat; varying vec2 vUv;
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float vignette; uniform float desat; uniform vec3 tint; varying vec2 vUv;
     void main(){ vec4 c = texture2D(tDiffuse, vUv);
       float l = dot(c.rgb, vec3(0.2126,0.7152,0.0722));
-      c.rgb = mix(c.rgb, vec3(l) * vec3(0.92,1.0,0.96), desat);
+      c.rgb = mix(c.rgb, vec3(l) * vec3(0.92,1.0,0.96), desat) * tint;
       vec2 d = vUv - 0.5; float v = smoothstep(0.85, 0.2, length(d * vec2(1.0, 0.8)));
       c.rgb *= mix(1.0 - vignette, 1.0, v);
       gl_FragColor = c; }`,
 };
 
-export function makeComposer(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera) {
-  const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples: 4 });
+export function makeComposer(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.Camera, samples = 4) {
+  const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType, samples });
   const composer = new EffectComposer(renderer, rt);
   composer.addPass(new RenderPass(scene, camera));
   const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.45, 0.45, 1.0);

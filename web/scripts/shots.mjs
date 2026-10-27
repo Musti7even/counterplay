@@ -8,6 +8,9 @@ const toolDir = new URL('../../../.tools/pl-browsers/chrome-headless-shell/', im
 const CHROME = process.env.CHROME ?? (existsSync(toolDir) ? readdirSync(toolDir).map((v) => `${toolDir}${v}/chrome-headless-shell-linux64/chrome-headless-shell`).find(existsSync) : '/usr/bin/chromium-browser');
 const M = process.env.MATCH ?? 'match', F = process.env.FORK ?? 'fork-step_up', T = process.env.T ?? '30.5';
 const SHOTS = {
+  'landing': '',
+  'quad': `?view=quad&from=63&paused=1`,
+  'control': `?cues=data/fork-step_up.casual.en.cues.json&control=1&controlAt=62-70&t=67&paused=1`,
   'broadcast-casual': `?match=${M}&t=${T}&lens=0&paused=1`,
   'broadcast-tactical': `?match=${M}&t=${T}&lens=1&paused=1`,
   'tactical-cam': `?match=${M}&t=${T}&lens=1&cam=tactical&paused=1`,

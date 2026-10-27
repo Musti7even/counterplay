@@ -23,7 +23,7 @@ function chipText(st: Step): { text: string; kind: 'tool' | 'err' | 'rec' | 'ok'
 }
 
 export async function loadTrace(url: string): Promise<Trace> {
-  const r = await fetch(url);
+  const r = await fetch(url.replace(/^\//, ''));
   if (!r.ok) throw new Error(`trace ${url}: ${r.status}`);
   return r.json();
 }

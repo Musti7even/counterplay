@@ -19,6 +19,20 @@ Modules (`src/`): `data` (load, interpolation, formation/line/offside metrics), 
 `players` (figures, ball, trail, ghosts), `graphics` (3D overlays with lens weights), `cameras` (rig + blends),
 `hud` (DOM overlay), `main` (views, split/ghost, loop, controls).
 
+## Static deploy
+
+`npm run build` writes a self-contained `dist/`:
+- relative base path, so it runs at a domain root or any subpath;
+- `data/*.json`, `data/audio/` and `directors/` are copied in, minus dev mocks and engine checkpoints.
+
+Upload `dist/` to any static host (GitHub Pages, Azure Static Web Apps). Check it locally with:
+`cd dist && python3 -m http.server`. Opening the site with no query string shows the **Counterplay** start screen, which links to the four demos. Press `?` for keys.
+
+**Performance:**
+- Pixel ratio is capped at 1.5, or 1 in split and quad.
+- Split and quad use 2× MSAA and a 1024 shadow map; a single view uses 4× MSAA and a 2048 shadow map.
+- The pitch and crowd canvases are drawn once and shared by every view.
+
 ## Filming (deterministic, any machine)
 
 ```bash

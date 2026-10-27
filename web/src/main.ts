@@ -2,6 +2,7 @@ import '@fontsource/barlow-condensed/600.css';
 import '@fontsource/barlow-condensed/700.css';
 import '@fontsource/barlow-condensed/800.css';
 import '@fontsource/barlow-condensed/800-italic.css';
+import '@fontsource/barlow/500.css';
 import './style.css';
 import * as THREE from 'three';
 import { Match, Side, loadMatch, mergeFork, snapshot, positionsAt, duration, startTime, clock } from './data';
@@ -11,7 +12,7 @@ import { Graphics, Ribbon } from './graphics';
 import { CameraRig, CamMode } from './cameras';
 import { initHud } from './hud';
 import { loadScript, evalCues, ViewMode, Script } from './director';
-import { Overlay, loadCommentary, Commentary } from './overlay';
+import { Overlay, loadCommentary, Variant, PlayerCard } from './overlay';
 import { ControlStrip, loadTrace } from './control';
 
 const q = new URLSearchParams(location.search);
@@ -22,7 +23,7 @@ class View {
   scene = new THREE.Scene();
   cam = new THREE.PerspectiveCamera(24, 16 / 9, 0.5, 600);
   rig = new CameraRig(this.cam);
-  post = makeComposer(this.renderer, this.scene, this.cam);
+  post: ReturnType<typeof makeComposer>;
   players: Players; gfx: Graphics; ghosts: Players | null = null;
   label: HTMLElement;
   // per-view lens/cam/selection: the shared global state, except in quad where each quadrant has its own
@@ -31,7 +32,9 @@ class View {
   // selected player's path since the fork: [original (white), what-if (lime)]
   paths = [new Ribbon(0.45, new THREE.Color(1.5, 1.5, 1.5), 160), new Ribbon(0.45, new THREE.Color(1.5, 2.2, 0.35), 160)];
 
-  constructor(public match: Match, labelText: string, ghostOf: Match | null, public whatIf = false) {
+  // lite: multi-view budget (pixel ratio 1, 2x MSAA, 1024 shadow map)
+  constructor(public match: Match, labelText: string, ghostOf: Match | null, public whatIf = false, public lite = false) {
+    this.post = makeComposer(this.renderer, this.scene, this.cam, lite ? 2 : 4);
     this.el.className = 'view';
     this.el.append(this.renderer.domElement);
     this.label = document.createElement('div');
@@ -42,7 +45,7 @@ class View {
     this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.toneMapping = THREE.NoToneMapping;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-    buildStadium(this.renderer, this.scene, [match.meta.home.name, match.meta.away.name]);
+    buildStadium(this.renderer, this.scene, [match.meta.home.name, match.meta.away.name], lite);
     this.players = new Players(match); this.gfx = new Graphics(match);
     this.scene.add(this.players.group, this.gfx.group, ...this.paths.map((p) => p.mesh));
     if (ghostOf) { this.ghosts = new Players(ghostOf, true); this.scene.add(this.ghosts.group); }
@@ -50,7 +53,7 @@ class View {
   }
 
   resize() {
-    const w = this.el.clientWidth, h = this.el.clientHeight, dpr = Math.min(devicePixelRatio, 2);
+    const w = this.el.clientWidth, h = this.el.clientHeight, dpr = Math.min(devicePixelRatio, this.lite ? 1 : 1.5);
     this.renderer.setPixelRatio(dpr); this.renderer.setSize(w, h, false);
     this.post.composer.setPixelRatio(dpr); this.post.composer.setSize(w, h);
     this.cam.aspect = w / h; this.cam.updateProjectionMatrix();
@@ -118,13 +121,18 @@ const capture = q.get('capture') === '1'; // recorder drives time via demo.step(
 
 async function main() {
   await Promise.all(['600', '700', '800'].map((w) => document.fonts.load(`${w} 40px "Barlow Condensed"`)));
+  // "?" help overlay (button + key), everywhere
+  const help = document.getElementById('help')!;
+  document.getElementById('help-btn')!.onclick = () => help.classList.toggle('show');
+  help.onclick = (e) => { if (e.target === help) help.classList.remove('show'); };
+  addEventListener('keydown', (e) => { if (e.key === '?') help.classList.toggle('show'); else if (e.key === 'Escape') help.classList.remove('show'); });
   if (q.get('view') === 'quad') return quad();
   const script = await loadScript(q);
   // agent run outputs: /data/<run>.cues.json has siblings <run>.commentary.json and <run>.trace.json
-  const run = q.get('cues')?.match(/\/data\/([^/]+)\.cues\.json$/)?.[1];
-  const comUrl = q.get('commentary') ?? (run ? `/data/${run}.commentary.json` : null);
+  const run = q.get('cues')?.match(/(?:^|\/)data\/([^/]+)\.cues\.json$/)?.[1];
+  const comUrl = q.get('commentary') ?? (run ? `data/${run}.commentary.json` : null);
   const commentary = comUrl && q.get('commentary') !== '0' ? await loadCommentary(comUrl).catch(() => null) : null;
-  const traceUrl = q.get('control') === '1' ? (run ? `/data/${run}.trace.json` : null) : q.get('control');
+  const traceUrl = q.get('control') === '1' ? (run ? `data/${run}.trace.json` : null) : q.get('control');
   const name = q.get('match') ?? script?.match ?? 'match';
   const orig = await loadMatch(name).catch(() => (q.get('match') || script?.match ? Promise.reject(new Error(`could not load /data/${name}.json`)) : loadMatch('mock')));
   const forkName = q.get('fork') ?? script?.fork;
@@ -133,7 +141,10 @@ async function main() {
   forkT = fork?.meta.forkOf?.t ?? forkRaw?.frames[0].t ?? Infinity;
   state.view = fork ? ((q.get('view') as ViewMode) ?? script?.view ?? 'split') : 'single';
   // loop window: the director's take, else the what-if story window (GRF diverges into noise later)
-  const win = script ? [script.from, script.to] : fork && q.get('loop') !== '0' ? [Math.max(startTime(orig), forkT - 5), forkT + 10] : null;
+  // landing (cold open, no params): the opener plays behind the start screen
+  const landing = !location.search && !capture;
+  if (landing) { document.body.classList.add('landing'); state.lens = state.lensTarget = 0.3; }
+  const win = landing ? [58, 72] : script ? [script.from, script.to] : fork && q.get('loop') !== '0' ? [Math.max(startTime(orig), forkT - 5), forkT + 10] : null;
   state.t = q.has('t') ? +q.get('t')! : win ? win[0] : startTime(orig);
   const selectId = (id: string | null | undefined) => {
     state.selected = null;
@@ -145,8 +156,8 @@ async function main() {
   selectId((fork?.meta.forkOf as any)?.params?.player);
 
   const viewsEl = document.getElementById('views')!;
-  const main = new View(orig, 'ORIGINAL', fork, false);
-  const alt = fork ? new View(fork, 'WHAT IF', null, true) : null;
+  const main = new View(orig, 'ORIGINAL', fork, false, !!fork);
+  const alt = fork ? new View(fork, 'WHAT IF', null, true, true) : null;
   viewsEl.append(main.el);
   if (alt) viewsEl.append(alt.el);
   const hud = initHud(orig, fork);
@@ -261,19 +272,23 @@ async function main() {
 // Persona quad: the same moment for four agent runs (cues + commentary each), one match clock.
 async function quad() {
   const runs = (q.get('quad') ?? 'match.casual.en,match.analyst.en,match.player-a6.de,match.casual.tr').split(',');
-  const scripts = await Promise.all(runs.map(async (r) => { const s = (await (await fetch(`/data/${r}.cues.json`)).json()) as Script; s.cues.sort((a, b) => a.t - b.t); return s; }));
-  const coms = await Promise.all(runs.map((r) => loadCommentary(`/data/${r}.commentary.json`).catch(() => null)));
+  const scripts = await Promise.all(runs.map(async (r) => { const s = (await (await fetch(`data/${r}.cues.json`)).json()) as Script; s.cues.sort((a, b) => a.t - b.t); return s; }));
+  const coms = await Promise.all(runs.map((r) => loadCommentary(`data/${r}.commentary.json`).catch(() => null)));
   const orig = await loadMatch(scripts[0].match ?? 'match');
   const from = +(q.get('from') ?? q.get('t') ?? 60), to = +(q.get('to') ?? from + 12);
   state.t = from;
   document.body.classList.add('quad', 'multi');
   const viewsEl = document.getElementById('views')!;
+  // each quadrant gets a distinct look: casual (clean, warm), analyst (tactical cam, full lens, cool), player cam + card, other language
+  const variants: Variant[] = runs.map((r) => { const [, p, l] = r.split('.'); return p === 'analyst' ? 'analyst' : p.startsWith('player') ? 'player' : l !== 'en' ? 'lang' : 'casual'; });
+  const TINT: Record<Variant, [number, number, number]> = { casual: [1.07, 1.0, 0.9], analyst: [0.88, 0.97, 1.1], player: [1, 1, 1], lang: [1.05, 1.0, 0.93] };
   const views = runs.map((r, i) => {
     const [, persona, lang] = r.split('.');
-    const v = new View(orig, '', null);
+    const v = new View(orig, '', null, false, true);
     v.vs = { lens: scripts[i].lens ?? 0.2, cam: scripts[i].cam ?? 'broadcast', selected: null };
+    v.post.grade.uniforms.tint.value.set(...TINT[variants[i]]);
     const label = `${persona.replace(/^player-/, 'player · ').toUpperCase()} · ${(lang ?? '').toUpperCase()}`;
-    v.overlay = new Overlay(v.el, { label, panel: persona === 'analyst', match: orig, commentary: coms[i], audio: i === 0 });
+    v.overlay = new Overlay(v.el, { label, panel: persona === 'analyst', match: orig, commentary: coms[i], audio: i === 0, variant: variants[i] });
     viewsEl.append(v.el);
     return v;
   });
@@ -283,6 +298,17 @@ async function quad() {
     if (id) for (const side of ['home', 'away'] as Side[]) { const idx = orig.meta[side].players.findIndex((p) => p.id === id); if (idx >= 0) vs.selected = { side, idx }; }
   };
   const lastSel: (string | null | undefined)[] = runs.map(() => undefined);
+  // live card for the player quadrant: speed from tracking, distance since kickoff, heart rate modelled from workload
+  const cum = new Map<string, Float32Array>();
+  const playerCard = (sel: View['vs']['selected'], s: ReturnType<typeof snapshot>): PlayerCard | null => {
+    if (!sel) return null;
+    const key = `${sel.side}${sel.idx}`, F = orig.frames;
+    if (!cum.has(key)) { const c = new Float32Array(F.length); for (let i = 1; i < F.length; i++) { const a = F[i - 1][sel.side][sel.idx], b = F[i][sel.side][sel.idx]; const d = Math.hypot(b[0] - a[0], b[1] - a[1]); c[i] = c[i - 1] + (d < 5 ? d : 0); } cum.set(key, c); }
+    const c = cum.get(key)!, fi = Math.min(F.length - 1, Math.max(0, Math.round((s.t - F[0].t) * orig.meta.fps))), w = Math.round(20 * orig.meta.fps);
+    const kmh = Math.hypot(...s.vel[sel.side][sel.idx]) * 3.6, avg = (c[fi] - c[Math.max(0, fi - w)]) / 20; // m/s over 20 s
+    const p = orig.meta[sel.side].players[sel.idx];
+    return { num: p.num, name: p.name, color: orig.meta[sel.side].color, kmh, dist: c[fi], hr: Math.min(192, 92 + 62 * Math.min(1, avg / 4) + 28 * Math.min(1, kmh / 30)) };
+  };
   if (q.get('ui') === '0' || capture) document.body.classList.add('noui');
   if (capture) document.body.classList.add('capture');
   views.forEach((v) => { v.resize(); v.rig.set(v.vs.cam, true); v.rig.snap(); });
@@ -295,14 +321,17 @@ async function quad() {
     const jumped = Math.abs(state.t - lastT) > 1; lastT = state.t;
     let s0 = null;
     views.forEach((v, i) => {
-      const d = evalCues(scripts[i], state.t);
+      const d = evalCues(scripts[i], state.t), vt = variants[i];
+      if (vt === 'analyst') { d.cam = 'tactical'; d.lens = 1; }
+      if (vt === 'player') { d.cam = 'player'; d.select ??= scripts[i].select; }
+      if (vt === 'casual' || vt === 'lang') d.lens = Math.min(d.lens, 0.15);
       if (i === 0) state.speed = d.speed; // one clock: the first quadrant's slow-mo drives all four
       if (d.cam !== v.vs.cam) { v.vs.cam = d.cam; v.rig.set(d.cam, d.cut || jumped); }
       if (d.select !== lastSel[i]) { lastSel[i] = d.select; if (d.select !== undefined) selectId(v.vs, d.select); }
       v.vs.lens = d.lens;
       if (jumped) v.rig.snap();
       const s = v.render(state.t, dt, now, false);
-      v.overlay!.update(s, d.captions, v.gfx.last, i === 0 && state.playing && !capture);
+      v.overlay!.update(s, d.captions, v.gfx.last, i === 0 && state.playing && !capture, vt === 'player' ? playerCard(v.vs.selected, s) : null);
       s0 ??= s;
     });
     hud.update(s0!, 0, undefined, 0, {});

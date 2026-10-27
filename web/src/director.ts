@@ -2,6 +2,7 @@
 // evalCues() folds all cues up to t from scratch, so it is scrub-safe and deterministic for the recorder.
 // Agents can emit the same JSON; load with ?director=<name> (web/public/directors/<name>.json) or ?cues=<url>.
 import type { CamMode } from './cameras';
+import { rel } from './data';
 
 export type ViewMode = 'single' | 'split' | 'ghost';
 export interface Caption { title?: string; text: string; dur?: number; side?: 'original' | 'whatif' } // side: that half in split
@@ -25,9 +26,9 @@ export interface DirectorState {
 }
 
 export async function loadScript(q: URLSearchParams): Promise<Script | null> {
-  const url = q.get('cues') ?? (q.get('director') ? `/directors/${q.get('director')}.json` : null);
+  const url = q.get('cues') ?? (q.get('director') ? `directors/${q.get('director')}.json` : null);
   if (!url) return null;
-  const res = await fetch(url);
+  const res = await fetch(rel(url));
   if (!res.ok) throw new Error(`director script ${url}: ${res.status}`);
   const s = (await res.json()) as Script;
   s.cues.sort((a, b) => a.t - b.t);

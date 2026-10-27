@@ -82,7 +82,7 @@ try {
   await new Promise((r) => ff.on('exit', r));
   // voice: each clip starts on the first frame whose match time reaches its t (slow-mo aware); mixed into one AAC track
   const clips = ((await page.evaluate(() => window.demo.audio ?? [])) || [])
-    .map((c) => ({ ...c, file: resolve(WEB, '..', c.url.replace(/^\//, '')), frame: ts.findIndex((x) => x >= c.t) }))
+    .map((c) => ({ ...c, file: resolve(WEB, '..', c.url.replace(/^\//, '').replace(/^\.\//, '')), frame: ts.findIndex((x) => x >= c.t) }))
     .filter((c) => c.frame >= 0 && c.t >= from - 0.01 && existsSync(c.file));
   if (clips.length) {
     const tmp = out.replace(/\.mp4$/, '.video.mp4');

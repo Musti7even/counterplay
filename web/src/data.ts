@@ -21,9 +21,12 @@ export const SIDES: Side[] = ['home', 'away'];
 export const dirOf = (s: Side) => (s === 'home' ? 1 : -1); // home attacks +x
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 
+// relative URLs everywhere so the static build works under any base path (GitHub Pages subdir, Azure SWA)
+export const rel = (u: string) => u.replace(/^\//, '');
+
 export async function loadMatch(name: string): Promise<Match> {
-  const res = await fetch(`/data/${name}.json`);
-  if (!res.ok) throw new Error(`/data/${name}.json: ${res.status}`);
+  const res = await fetch(`data/${name}.json`);
+  if (!res.ok) throw new Error(`data/${name}.json: ${res.status}`);
   const m = (await res.json()) as Match;
   m.name = name;
   return prepare(m);

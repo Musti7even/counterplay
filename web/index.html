@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>What If · Match Engine</title>
+  <title>Counterplay · AI what-if broadcast</title>
 </head>
 <body>
   <div id="views"></div>
@@ -33,6 +33,7 @@
   <div id="whatif" class="hud"><span class="wi-tag">WHAT IF</span><span class="wi-text"></span></div>
 
   <div id="controls" class="hud">
+    <a id="home-btn" href="./" title="Start screen">⌂</a>
     <button id="play" title="Play / pause (space)">▶</button>
     <div id="timeline"><div id="markers"></div><input id="scrub" type="range" min="0" max="1" step="0.05" value="0" /></div>
     <div id="time">00:00</div>
@@ -45,6 +46,32 @@
       <button data-view="single">MATCH</button><button data-view="split">SPLIT</button><button data-view="ghost">GHOST</button>
     </div>
   </div>
+  <div id="start">
+    <div class="st-inner">
+      <div class="st-kicker">AI MATCH ENGINE · LIVE TRACKING · WHAT-IF</div>
+      <h1>COUNTER<span>PLAY</span></h1>
+      <p class="st-pitch">Change one decision on the pitch, and watch the match replay differently. An AI crew analyses, fact-checks and calls it live in your language.</p>
+      <nav class="st-grid">
+        <a class="st-btn" href="?director=whatif"><b>01</b><span>Watch the what-if</span><small>Sørensen steps up. Does Redmoor still score? Original vs alternate timeline.</small></a>
+        <a class="st-btn" href="?director=goal"><b>02</b><span>Fan ↔ Analyst lens</span><small>One picture, from clean broadcast to full tactical overlay.</small></a>
+        <a class="st-btn" href="?view=quad&amp;from=60&amp;to=72"><b>03</b><span>Every fan</span><small>Casual, analyst, player cam and Turkish commentary, all on one clock.</small></a>
+        <a class="st-btn" href="?cues=data/fork-step_up.casual.en.cues.json&amp;control=1&amp;controlAt=62-70"><b>04</b><span>AI production gallery</span><small>Six agents, live tool calls, fact-checks and a recovery from failure.</small></a>
+      </nav>
+      <div class="st-foot">Fictional clubs · simulated match data · press ? for keys</div>
+    </div>
+  </div>
+  <button id="help-btn" title="Keys (?)">?</button>
+  <div id="help"><div class="hp-card"><h3>KEYS</h3>
+    <div><span><kbd>Space</kbd></span><span>Play / pause</span></div>
+    <div><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></span><span>Broadcast · tactical · player cam</span></div>
+    <div><span><kbd>←</kbd><kbd>→</kbd></span><span>Seek ±5 s</span></div>
+    <div><span><kbd>C</kbd><kbd>T</kbd></span><span>Lens: casual · tactical</span></div>
+    <div><span><kbd>S</kbd><kbd>G</kbd><kbd>M</kbd></span><span>Split · ghost · single (what-if)</span></div>
+    <div><span><kbd>F</kbd></span><span>Jump to the fork</span></div>
+    <div><span><kbd>Click</kbd></span><span>Select a player · <kbd>Esc</kbd> clears</span></div>
+    <div><span><kbd>H</kbd></span><span>Hide controls (filming)</span></div>
+    <div><span><kbd>?</kbd></span><span>This help · <a href="./" style="color:var(--cyan)">back to start</a></span></div>
+  </div></div>
   <div id="error"></div>
   <script type="module" src="/src/main.ts"></script>
 </body>

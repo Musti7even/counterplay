@@ -9,19 +9,23 @@ export interface Commentary { run: string; lang: string; lines: Line[]; voice: V
 
 // <run>.commentary.json + optional data/audio/<run>/voice.json [{t, file, dur, text}]
 export async function loadCommentary(url: string): Promise<Commentary> {
-  const res = await fetch(url);
+  const res = await fetch(url.replace(/^\//, ''));
   if (!res.ok) throw new Error(`commentary ${url}: ${res.status}`);
   const lines = ((await res.json()) as Line[]).sort((a, b) => a.t - b.t);
   const run = url.split('/').pop()!.replace(/\.commentary\.json$/, '');
   let voice: Voice[] = [];
-  const v = await fetch(`/data/audio/${run}/voice.json`).catch(() => null);
+  const v = await fetch(`data/audio/${run}/voice.json`).catch(() => null);
   if (v?.ok && (v.headers.get('content-type') ?? '').includes('json'))
-    voice = ((await v.json()) as { t: number; file: string; dur?: number }[]).map((e) => ({ t: e.t, dur: e.dur, url: `/data/audio/${run}/${e.file}` }));
+    voice = ((await v.json()) as { t: number; file: string; dur?: number }[]).map((e) => ({ t: e.t, dur: e.dur, url: `data/audio/${run}/${e.file}` }));
   return { run, lang: run.split('.').pop() ?? '', lines, voice };
 }
 
 const esc = (s: string) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
 const setText = (el: Element, s: string) => { if (el.textContent !== s) el.textContent = s; };
+
+export type Variant = 'casual' | 'analyst' | 'player' | 'lang';
+export interface PlayerCard { num: number; name: string; color: string; kmh: number; dist: number; hr: number }
+const LANGS: Record<string, string> = { en: 'ENGLISH', de: 'DEUTSCH', tr: 'TÜRKÇE', es: 'ESPAÑOL' };
 
 export class Overlay {
   root = document.createElement('div');
@@ -29,9 +33,10 @@ export class Overlay {
   private caps = new Map<string, HTMLElement>();
   private label?: HTMLElement; private panel?: HTMLElement;
   private playing: HTMLAudioElement[] = [];
+  private card?: HTMLElement; private wave?: HTMLElement[];
   private lastT = -1;
 
-  constructor(parent: HTMLElement, private o: { label?: string; panel?: boolean; match?: Match; commentary?: Commentary | null; audio?: boolean }) {
+  constructor(parent: HTMLElement, private o: { label?: string; panel?: boolean; match?: Match; commentary?: Commentary | null; audio?: boolean; variant?: Variant }) {
     this.root.className = 'ov';
     this.sub.className = 'ov-sub';
     this.sub.innerHTML = `<div class="ov-sub-tag">AI COMMENTARY<b></b></div><div class="ov-sub-text"></div>`;
@@ -48,11 +53,25 @@ export class Overlay {
         ${[['SHAPE', 'label'], ['IN POSS', 'poss'], ['LINE', 'line'], ['L × W', 'cmp']].map(([k, d]) => `<div class="ovp-r"><span>${k}</span><b data-k="${d}-home"></b><b data-k="${d}-away"></b></div>`).join('')}`;
       this.root.append(this.panel);
     }
+    if (o.variant) parent.classList.add(`v-${o.variant}`);
+    if (o.variant === 'player') {
+      this.card = document.createElement('div'); this.card.className = 'ov-card';
+      this.card.innerHTML = `<div class="pc-head"><span class="pc-num"></span><span class="pc-name"></span><span class="pc-live">LIVE</span></div>
+        <div class="pc-stats"><div><b class="pc-kmh"></b><span>KM/H</span></div><div><b class="pc-dist"></b><span>DISTANCE M</span></div>
+        <div><b class="pc-hr"></b><span>HR* BPM</span></div></div><div class="pc-bar"><i></i></div><div class="pc-note">*modelled from workload</div>`;
+      this.root.append(this.card);
+    }
+    if (o.variant === 'lang') {
+      const lang = o.commentary?.lang ?? '';
+      const b = document.createElement('div'); b.className = 'ov-lang';
+      b.innerHTML = `<span class="lg-code">${esc(lang.toUpperCase())}</span><span class="lg-name">${esc(LANGS[lang] ?? lang.toUpperCase())}</span><span class="lg-wave">${'<i></i>'.repeat(18)}</span>`;
+      this.root.append(b); this.wave = [...b.querySelectorAll<HTMLElement>('.lg-wave i')];
+    }
     parent.append(this.root);
     if (o.commentary) setText(this.sub.querySelector('b')!, ` · ${o.commentary.lang.toUpperCase()}`);
   }
 
-  update(s: Snapshot, captions: DirectorState['captions'] | null, met?: Record<Side, TeamMetrics>, playingAudio = false) {
+  update(s: Snapshot, captions: DirectorState['captions'] | null, met?: Record<Side, TeamMetrics>, playingAudio = false, card?: PlayerCard | null) {
     const t = s.t;
     if (this.label) { setText(this.label.querySelector('.ov-score')!, s.score.join(' – ')); setText(this.label.querySelector('.ov-clock')!, clock(t)); }
     if (this.panel && met) for (const side of ['home', 'away'] as Side[]) {
@@ -82,6 +101,22 @@ export class Overlay {
     this.sub.style.opacity = String(a); this.sub.style.transform = `translateX(-50%) translateY(${(1 - a) * 10}px)`;
     if (line) setText(this.sub.querySelector('.ov-sub-text')!, line.text);
     this.sub.classList.toggle('excited', line?.voice_style === 'excited');
+    // voice waveform: animates while a line is being spoken (deterministic from t, so it records identically)
+    if (this.wave) this.wave.forEach((b, j) => {
+      const h = a * (0.25 + 0.75 * Math.abs(Math.sin(t * 13 + j * 1.7) * Math.sin(t * 5.3 + j * 0.9)));
+      b.style.transform = `scaleY(${Math.max(0.08, h)})`;
+    });
+    if (this.card) {
+      this.card.style.opacity = card ? '1' : '0';
+      if (card) {
+        const q = (c: string) => this.card!.querySelector(c)!;
+        (q('.pc-num') as HTMLElement).style.background = card.color;
+        setText(q('.pc-num'), String(card.num)); setText(q('.pc-name'), card.name.toUpperCase());
+        setText(q('.pc-kmh'), card.kmh.toFixed(1)); setText(q('.pc-dist'), card.dist.toFixed(0)); setText(q('.pc-hr'), card.hr.toFixed(0));
+        (q('.pc-bar i') as HTMLElement).style.width = `${Math.min(100, (card.kmh / 34) * 100)}%`;
+        this.card.classList.toggle('sprint', card.kmh > 27);
+      }
+    }
     // voice: realtime playback only (the recorder muxes audio from demo.audio instead)
     if (this.o.audio && playingAudio) {
       for (const v of this.o.commentary?.voice ?? []) if (this.lastT < v.t && t >= v.t && t - v.t < 0.5) {
