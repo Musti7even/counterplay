@@ -232,7 +232,8 @@ async function main() {
       if (d.cam !== state.cam) setCam(d.cam, d.cut || jumped);
       if (d.view && fork && d.view !== state.view) { state.view = d.view; applyView(); }
       if (d.select !== lastSel) { lastSel = d.select; if (d.select !== undefined) selectId(d.select); }
-      state.speed = d.speed; state.lens = state.lensTarget = d.lens; lens.value = String(d.lens);
+      // the kick-off wipe always runs at normal speed, even inside a slow-mo cue
+      state.speed = orig.cuts.some((c) => state.t > c - 0.3 && state.t < c + 0.5) ? Math.max(1, d.speed) : d.speed; state.lens = state.lensTarget = d.lens; lens.value = String(d.lens);
       captions = d.captions;
     } else state.lens += (state.lensTarget - state.lens) * (1 - Math.exp(-dt * 5));
     if (jumped) [main, alt].forEach((v) => v?.rig.snap());
@@ -324,7 +325,7 @@ async function quad() {
       if (vt === 'analyst') { d.cam = 'tactical'; d.lens = 1; }
       if (vt === 'player') { d.cam = 'player'; d.select ??= scripts[i].select; }
       if (vt === 'casual' || vt === 'lang') d.lens = Math.min(d.lens, 0.15);
-      if (i === 0) state.speed = d.speed; // one clock: the first quadrant's slow-mo drives all four
+      if (i === 0) state.speed = orig.cuts.some((c) => state.t > c - 0.3 && state.t < c + 0.5) ? Math.max(1, d.speed) : d.speed; // one clock: the first quadrant's slow-mo drives all four
       if (d.cam !== v.vs.cam) { v.vs.cam = d.cam; v.rig.set(d.cam, d.cut || jumped); }
       if (d.select !== lastSel[i]) { lastSel[i] = d.select; if (d.select !== undefined) selectId(v.vs, d.select); }
       v.vs.lens = d.lens;

@@ -318,7 +318,7 @@ const GradeShader = {
       c.rgb = mix(c.rgb, vec3(l) * vec3(0.92,1.0,0.96), desat) * tint;
       vec2 d = vUv - 0.5; float v = smoothstep(0.85, 0.2, length(d * vec2(1.0, 0.8)));
       c.rgb *= mix(1.0 - vignette, 1.0, v);
-      c.rgb += (hash(gl_FragCoord.xy) - 0.5) * 0.018;                                // sensor grain
+      c.rgb += (hash(gl_FragCoord.xy) - 0.5) * 0.009;                                // sensor grain
       gl_FragColor = c; }`,
 };
 

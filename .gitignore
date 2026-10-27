@@ -8,3 +8,5 @@ __pycache__/
 data/audio/
 web/shots/demo-*.mp4
 web/shots/quick-*.mp4
+web/shots/*.mp4
+web/shots/*.frames.json

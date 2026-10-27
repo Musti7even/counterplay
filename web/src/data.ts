@@ -15,7 +15,7 @@ export interface MatchEvent {
   t: number; type: string; team?: Side; idx?: number; toIdx?: number; from?: V2; to?: V2; ok?: boolean;
   dur?: number; // derived: flight time for pass/shot
 }
-export interface Match { meta: Meta; frames: Frame[]; events: MatchEvent[]; name: string; poss: (Side | null)[]; cuts: number[]; formCache?: Map<string, Formation> }
+export interface Match { meta: Meta; frames: Frame[]; events: MatchEvent[]; name: string; poss: (Side | null)[]; cuts: number[]; holds: Hold[]; formCache?: Map<string, Formation> }
 
 export const SIDES: Side[] = ['home', 'away'];
 export const dirOf = (s: Side) => (s === 'home' ? 1 : -1); // home attacks +x
@@ -47,7 +47,17 @@ function prepare(m: Match): Match {
   m.poss = m.frames.map((f) => (last = f.owner?.team ?? (f.mode === 'play' ? last : null)));
   m.formCache = new Map();
   // teleports (kickoff resets): frames where >=6 players jump >4 m in one sample
-  m.cuts = m.frames.slice(1).filter((f, i) => SIDES.reduce((n, sd) => n + f[sd].filter((p, j) => Math.hypot(p[0] - m.frames[i][sd][j][0], p[1] - m.frames[i][sd][j][1]) > 4).length, 0) >= 6).map((f) => f.t);
+  const teleports = m.frames.slice(1).filter((f, i) => SIDES.reduce((n, sd) => n + f[sd].filter((p, j) => Math.hypot(p[0] - m.frames[i][sd][j][0], p[1] - m.frames[i][sd][j][1]) > 4).length, 0) >= 6).map((f) => f.t);
+  // goal hold: the engine resets to kick-off on the goal frame; hold the scene from the last pre-reset frame instead,
+  // and move the cut (the wipe) to the end of the hold
+  m.holds = [];
+  m.cuts = teleports.map((c) => {
+    const g = m.events.find((e) => e.type === 'goal' && Math.abs(e.t - c) < 0.25);
+    if (!g) return c;
+    const t0 = Math.round((c - 1 / m.meta.fps) * 1000) / 1000;
+    m.holds.push({ t0, t1: t0 + GOAL_HOLD, scorer: g.team != null && g.idx != null ? { side: g.team, idx: g.idx } : null });
+    return t0 + GOAL_HOLD;
+  });
   return m;
 }
 
@@ -84,7 +94,30 @@ export interface Snapshot {
   owner: Frame['owner']; score: [number, number]; mode: string; frame: Frame;
 }
 
+// ---------- goal hold (display only; match time keeps running, so cues/clock stay aligned) ----------
+export const GOAL_HOLD = 1.8;
+export interface Hold { t0: number; t1: number; scorer: { side: Side; idx: number } | null }
+function holdPositions(m: Match, h: Hold, tau: number) {
+  const fps = m.meta.fps, i0 = clamp(Math.round((h.t0 - m.frames[0].t) * fps), 1, m.frames.length - 1);
+  const f = m.frames[i0], p = m.frames[i0 - 1];
+  const ease = (k: number) => (1 - Math.exp(-k * tau)) / k; // distance factor for velocity decaying at rate k
+  const pos = {} as Record<Side, V2[]>;
+  for (const side of SIDES)
+    pos[side] = f[side].map((q, j) => {
+      const scorer = h.scorer?.side === side && h.scorer.idx === j, k = scorer ? 0.7 : 2.4; // scorer jogs on, the rest pull up
+      const vx = (q[0] - p[side][j][0]) * fps, vy = (q[1] - p[side][j][1]) * fps, e = ease(k);
+      return [clamp(q[0] + vx * e, -52, 52), clamp(q[1] + vy * e, -33.5, 33.5)] as V2;
+    });
+  // ball carries on into the net and dies in the mesh (net depth ~2 m, under the bar)
+  const [bx, by, bz] = f.ball, [px, py, pz] = p.ball, sx = Math.sign(bx) || 1;
+  const e = ease(3.2), nx = sx * clamp((bx + (bx - px) * fps * e) * sx, 52.6, 54.3);
+  const ball: [number, number, number] = [nx, clamp(by + (by - py) * fps * e, -3.4, 3.4), clamp(bz + (bz - pz) * fps * e - 3 * tau * tau, 0.11, 2.3)];
+  return { ball, pos };
+}
+
 export function positionsAt(m: Match, t: number): { ball: [number, number, number]; pos: Record<Side, V2[]> } {
+  const h = m.holds?.find((x) => t >= x.t0 && t < x.t1);
+  if (h) return holdPositions(m, h, t - h.t0);
   const F = m.frames, ft = (t - F[0].t) * m.meta.fps, i = clamp(Math.floor(ft), 0, F.length - 1), s = clamp(ft - i, 0, 1);
   const a = F[Math.max(0, i - 1)], b = F[i], c = F[Math.min(F.length - 1, i + 1)], d = F[Math.min(F.length - 1, i + 2)];
   const ball = [0, 1, 2].map((k) => interp(a.ball, b.ball, c.ball, d.ball, s, k)) as [number, number, number];
