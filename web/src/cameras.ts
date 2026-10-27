@@ -15,7 +15,7 @@ export class CameraRig {
   private prev: CamMode = 'broadcast';
   private blend = 1;
   private poses: Record<CamMode, Pose> = {
-    broadcast: { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 30 },
+    broadcast: { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 20 },
     tactical: { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 40 },
     player: { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 42 },
   };
@@ -40,9 +40,9 @@ export class CameraRig {
       const p = this.poses.broadcast;
       const near = [...s.pos.home, ...s.pos.away].map((q) => Math.hypot(q[0] - s.ball[0], q[1] - s.ball[1])).sort((a, b) => a - b);
       const spread = near[7];
-      const zoomFov = THREE.MathUtils.clamp(14 + spread * 0.9, 20, 36) + (Math.abs(s.ball[0]) > 36 ? 3 : 0);
+      const zoomFov = THREE.MathUtils.clamp(10 + spread * 0.62, 14, 25) + (Math.abs(s.ball[0]) > 36 ? 3 : 0);
       dampV(p.look, new THREE.Vector3(THREE.MathUtils.clamp(ball.x, -42, 42), 0, THREE.MathUtils.clamp(ball.z, -14, 16) * 0.75), 2.2 * k, dt);
-      dampV(p.pos, this.tight ? new THREE.Vector3(p.look.x * 0.5, 30, 46) : new THREE.Vector3(p.look.x * 0.35, 24, 57), 1.2 * k, dt); // gantry under the near-stand roof
+      dampV(p.pos, this.tight ? new THREE.Vector3(p.look.x * 0.5, 21, 41) : new THREE.Vector3(p.look.x * 0.35, 20, 56), 1.2 * k, dt); // gantry under the near-stand roof
       p.fov = damp(p.fov, this.tight ? zoomFov * 0.95 : zoomFov, 0.8 * k, dt);
     }
     // tactical: high, steep, sees the whole width
