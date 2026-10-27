@@ -8,6 +8,7 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { HDRLoader } from 'three/examples/jsm/loaders/HDRLoader.js';
+import { FONT, W as FW } from './tokens';
 
 export const L = 105, W = 68;
 // data (x, y, z-up) -> three (x, y-up, z toward broadcast camera)
@@ -34,6 +35,7 @@ const tl = new THREE.TextureLoader();
 const [grassCol, grassNrm, grassRgh, hdr] = await Promise.all([
   tl.loadAsync('assets/textures/grass/color.jpg'), tl.loadAsync('assets/textures/grass/normal.jpg'),
   tl.loadAsync('assets/textures/grass/roughness.jpg'), new HDRLoader().loadAsync('assets/hdri/kloppenheim_02_puresky_1k.hdr'),
+  document.fonts.load(`${FW.strong} 40px ${FONT}`), // LED board text is drawn into a canvas: load the face first
 ]);
 grassCol.colorSpace = THREE.SRGBColorSpace;
 for (const t of [grassCol, grassNrm, grassRgh]) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; }
@@ -200,7 +202,7 @@ function boardTexture(home: string, away: string) {
   const c = document.createElement('canvas'); c.width = 2048; c.height = 64;
   const g = c.getContext('2d')!;
   g.fillStyle = '#06101f'; g.fillRect(0, 0, c.width, c.height);
-  g.font = '700 40px "Barlow Condensed", sans-serif'; g.textBaseline = 'middle';
+  g.font = `${FW.strong} 36px ${FONT}`; g.textBaseline = 'middle';
   const words = [home.toUpperCase(), 'COUNTERPLAY', away.toUpperCase(), 'MATCH ENGINE'];
   let x = 40;
   for (let i = 0; x < c.width; i++) { const w = words[i % words.length]; g.fillStyle = i % 2 ? '#9fdcff' : '#f2f5fa'; g.fillText(w, x, 34); x += g.measureText(w).width + 120; }

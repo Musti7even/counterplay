@@ -5,13 +5,16 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { Match, Side, SIDES, Snapshot, positionsAt } from './data';
 import { toWorld, filmic } from './scene';
+import { C, FONT, W as FW } from './tokens';
 
 // ---------- one-time asset prep ----------
-const gltf = await new GLTFLoader().loadAsync('assets/players/mannequin.glb');
+// font first: shirt numbers are drawn into canvases at construction, so the recorder never captures the fallback face
+const [gltf] = await Promise.all([new GLTFLoader().loadAsync('assets/players/mannequin.glb'), document.fonts.load(`${FW.strong} 100px ${FONT}`)]);
 const template = gltf.scene;
 template.updateMatrixWorld(true);
 
 // body regions from the dominant skinning bone + bind-pose height, so one mesh can wear any kit
+const WHATIF = new THREE.Color(C.whatif);
 const R = { skin: 0, shirt: 1, shorts: 2, socks: 3, boots: 4, hair: 5, hands: 6, trim: 7 };
 const skinned: THREE.SkinnedMesh[] = [];
 template.traverse((o) => { if ((o as THREE.SkinnedMesh).isSkinnedMesh) skinned.push(o as THREE.SkinnedMesh); });
@@ -60,7 +63,8 @@ const HAIR = ['#1b1410', '#2e1f14', '#5a3b22', '#8a6a3c', '#c8a46a', '#0e0e0e'].
 const BOOTS = ['#111111', '#f2f2f2', '#d8ff3a', '#ff5a1f', '#1e6bff'].map((c) => new THREE.Color(c));
 
 function kitMaterial(cols: THREE.Color[], ghost: boolean) {
-  if (ghost) return new THREE.MeshBasicMaterial({ color: cols[R.shirt].clone().lerp(new THREE.Color('#fff'), 0.35).multiplyScalar(1.3), transparent: true, opacity: 0.5, depthWrite: false });
+  // ghosts are the alternate timeline: one what-if tint for both teams, translucent
+  if (ghost) return new THREE.MeshBasicMaterial({ color: WHATIF, transparent: true, opacity: 0.5, depthWrite: false });
   const m = new THREE.MeshStandardMaterial({ roughness: 0.62, metalness: 0 });
   return filmic(m, 'kit', (s) => {
     s.uniforms.uRegion = { value: cols };
@@ -77,7 +81,7 @@ function kitMaterial(cols: THREE.Color[], ghost: boolean) {
 function numberTexture(num: number, fg: string) {
   const c = document.createElement('canvas'); c.width = c.height = 128;
   const g = c.getContext('2d')!;
-  g.font = '700 100px "Barlow Condensed", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = `${FW.strong} 92px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
   g.fillStyle = fg; g.fillText(String(num), 64, 70);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
 }
@@ -140,8 +144,7 @@ export class Players {
         this.figs[side].push(f); this.group.add(f.root);
         if (ghost) {
           const ring = new THREE.Mesh(new THREE.RingGeometry(0.75, 1.0, 32), new THREE.MeshBasicMaterial({
-            color: new THREE.Color(tm.color).lerp(new THREE.Color('#fff'), 0.4).multiplyScalar(1.8), transparent: true, opacity: 0.8,
-            depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+            color: WHATIF, transparent: true, opacity: 0.8, depthWrite: false, toneMapped: false }));
           ring.rotation.x = -Math.PI / 2; this.rings.push(ring); this.group.add(ring);
         }
       });
@@ -180,8 +183,8 @@ export class Players {
       for (const side of SIDES) s.pos[side].forEach(([x, y], i) => {
         const [rx, ry] = ref.pos[side][i], d = Math.hypot(x - rx, y - ry), al = vis(d), f = this.figs[side][i];
         const ln = al * Math.min(1, Math.max(0, (22 - d) / 6)); // no links once the timelines have fully diverged
-        a.setXYZ(k, x, 0.08, -y); c.setXYZ(k++, 1.3 * ln, 1.6 * ln, 0.6 * ln);
-        a.setXYZ(k, rx, 0.08, -ry); c.setXYZ(k++, 0.3 * ln, 0.35 * ln, 0.15 * ln);
+        a.setXYZ(k, x, 0.08, -y); c.setXYZ(k++, WHATIF.r * ln, WHATIF.g * ln, WHATIF.b * ln);
+        a.setXYZ(k, rx, 0.08, -ry); c.setXYZ(k++, WHATIF.r * ln * 0.25, WHATIF.g * ln * 0.25, WHATIF.b * ln * 0.25);
         const ring = this.rings[(side === 'home' ? 0 : 11) + i];
         ring.position.set(x, 0.05, -y); ring.visible = f.root.visible = al > 0.02;
         (ring.material as THREE.MeshBasicMaterial).opacity = 0.8 * al;
