@@ -78,7 +78,7 @@ export class ControlStrip {
       const failed = mine.some((s) => !s.ok), recovered = failed && mine.some((s, j) => s.fallback && j > mine.findIndex((x) => !x.ok));
       const llmFallback = this.tr.mode !== 'template' && mine.some((s) => s.fallback);
       let state = '', cls = 'idle';
-      if (mine.length) { cls = 'done'; state = 'Done'; }
+      if (mine.length) { cls = 'done'; state = '✓'; }
       if (id === cur && !done) { cls = 'live'; state = 'Live'; }
       if (failed && !recovered) { cls = 'err'; state = 'Error'; }
       if (recovered || llmFallback) { cls = 'rec'; state = 'Recovered'; }

@@ -65,10 +65,11 @@ button, select, input { font: inherit; color: inherit; }
   border-radius: var(--radius); box-shadow: inset 0 calc(var(--u) * 0.6) 0 var(--sig, var(--rule)); }
 .ag-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--s2); }
 .ag-idx { font-size: var(--fs-1); font-weight: 700; color: var(--text-2); }
-.ag-name { font-size: var(--fs-2); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.ag-name { font-size: var(--fs-2); font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
 .ag-state { margin-left: auto; font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sig, var(--text-2)); white-space: nowrap; }
 .ag-role { font-size: var(--fs-1); color: var(--text-2); line-height: 1.35; }
-.ag-chips { display: flex; flex-wrap: wrap; gap: var(--s1); overflow: hidden; max-height: calc(var(--u) * 11); }
+.ag-chips { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s1); min-width: 0; }
+.ag-chips > :nth-last-child(n+3) { display: none; } /* newest two only */
 .chip { font-size: var(--fs-1); font-weight: 500; padding: calc(var(--u) * 0.6) var(--s2); background: var(--surface); border-radius: var(--radius);
   color: var(--text-2); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 .chip.new { color: var(--text); }
@@ -155,7 +156,7 @@ body.noui #controls:hover { opacity: 1; }
 #error { position: fixed; inset: 0; display: none; place-items: center; font-size: var(--fs-3); color: var(--alert); background: var(--surface-solid); }
 
 /* ---------- AI production gallery strip ---------- */
-body.control { --inset: calc(var(--u) * 34); }
+body.control { --inset: calc(var(--u) * 38); }
 body.control #views { bottom: var(--inset); }
 #control { position: fixed; left: 0; right: 0; bottom: 0; height: var(--inset); z-index: 6; display: flex; gap: var(--s4);
   padding: var(--s4) var(--safe-x) var(--safe-y); background: var(--surface-solid); border-top: 1px solid var(--rule); }
@@ -164,7 +165,7 @@ body.control:not(.capture):not(.noui) #control { padding-bottom: var(--s4); }
 .cr-run { font-size: var(--fs-2); font-weight: 700; }
 .cr-out { margin-top: auto; font-size: var(--fs-1); color: var(--text-2); }
 .cr-crew { flex: 1; display: flex; align-items: stretch; min-width: 0; }
-.cr-crew .agent { flex: 1; }
+.cr-crew .agent { flex: 1; padding-left: var(--s3); padding-right: var(--s3); }
 .cr-link { width: var(--s4); flex: none; align-self: center; height: 1px; background: var(--rule); position: relative; }
 .cr-link.on { background: var(--text-2); }
 .cr-link i { position: absolute; top: calc(var(--u) * -0.6); left: 0; width: calc(var(--u) * 1.2); height: calc(var(--u) * 1.2); margin-left: calc(var(--u) * -0.6);

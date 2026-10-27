@@ -69,7 +69,7 @@ Case: CAPS + 0.1 em tracking only for kickers, labels, team codes and player tag
    quad persona label, gallery title, the line-height label on the pitch (canvas `drawLabel`), Microsoft stack on the architecture card.
 6. **Agent card** `.agent`: `[idx NAME state][role][chips]` on `--surface-2` with a 3 px top rule in its state colour
    (idle 40 % opacity, live = accent, done = rule, error/recovered = alert). Also the start-screen entry tiles and architecture nodes.
-   Chips: tool calls (newest in `--text`, older `--text-2`), ✓ claims that aired, struck-through claims in alert.
+   Chips (newest two shown): tool calls (newest in `--text`), ✓ claims that aired, struck-through claims in alert.
 7. **Full-screen card**: `--surface-solid`, kicker (`fs-2`, caps, text-2) + title (`fs-5`, 800) + line (`fs-3`, 500), left-aligned at title-safe.
    Interstitials, rewind, architecture, end card (`video/cards.*`) and the start screen.
 
