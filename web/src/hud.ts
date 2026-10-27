@@ -47,6 +47,7 @@ export function initHud(m: Match, fork: Match | null) {
       scrub.style.setProperty('--p', pct(s.t));
       if (met) for (const side of ['home', 'away'] as Side[]) {
         setText($(`[data-k=label-${side}]`), met[side].label);
+        setText($(`[data-k=poss-${side}]`), met[side].inPoss ?? '—');
         setText($(`[data-k=line-${side}]`), `${met[side].lineHeight.toFixed(1)} m`);
         setText($(`[data-k=cmp-${side}]`), `${met[side].length.toFixed(0)}×${met[side].width.toFixed(0)}`);
       }

@@ -1,12 +1,11 @@
 // Headless screenshots of the key looks -> web/shots/*.png. Needs a running dev/preview server.
 // CHROME=/path/to/chrome BASE=http://localhost:5173 node scripts/shots.mjs [name...]
 import puppeteer from 'puppeteer-core';
-import { mkdirSync } from 'node:fs';
 
 const BASE = process.env.BASE ?? 'http://localhost:5173';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, mkdirSync } from 'node:fs';
 const toolDir = new URL('../../../.tools/pl-browsers/chrome-headless-shell/', import.meta.url).pathname;
-const CHROME = process.env.CHROME ?? (existsSync(toolDir) ? readdirSync(toolDir).map((v) => `${toolDir}${v}/chrome-headless-shell-linux64/chrome-headless-shell`)[0] : '/usr/bin/chromium-browser');
+const CHROME = process.env.CHROME ?? (existsSync(toolDir) ? readdirSync(toolDir).map((v) => `${toolDir}${v}/chrome-headless-shell-linux64/chrome-headless-shell`).find(existsSync) : '/usr/bin/chromium-browser');
 const M = process.env.MATCH ?? 'match', F = process.env.FORK ?? 'fork-step_up', T = process.env.T ?? '30.5';
 const SHOTS = {
   'broadcast-casual': `?match=${M}&t=${T}&lens=0&paused=1`,

@@ -19,9 +19,24 @@ Modules (`src/`): `data` (load, interpolation, formation/line/offside metrics), 
 `players` (figures, ball, trail, ghosts), `graphics` (3D overlays with lens weights), `cameras` (rig + blends),
 `hud` (DOM overlay), `main` (views, split/ghost, loop, controls).
 
+## Filming (deterministic, any machine)
+
+```bash
+npm run record -- --url '?director=whatif' --out shots/whatif.mp4      # window from the script
+npm run record -- --url '?match=match&cam=broadcast&lens=0' --from 60 --to 72 --fps 30 --out shots/x.mp4
+```
+The recorder builds a frozen copy of the app, opens it with `&capture=1` and steps match time by exactly 1/fps per frame (slow-mo cues add frames).
+Each frame is screenshotted in headless Chrome (swiftshader) and piped to ffmpeg (h264, yuv420p, 1920×1080).
+On this box that is about 1.5 s per frame, or 2 views ≈ 3 s per frame in split.
+
+**Director cues** (`src/director.ts`, scripts in `public/directors/*.json`, or `?cues=<url>`): a list of
+`{ t, cam, cut, lens, lensTo, over, speed, view, select, caption: { title, text, dur } }` keyed on match time.
+They are folded from scratch each frame, so scrubbing and recording are exact. Agents can emit the same JSON.
+
+`npm run check` runs the formation snapper self-check.
+
 Screenshots: `npm run shots`. This needs a running server plus a Chrome that works headless. The snap chromium on the box does not, so use:
 ```bash
-npx @puppeteer/browsers install chrome-headless-shell@stable --path /tmp/pl-browsers
-CHROME=$(ls /tmp/pl-browsers/chrome-headless-shell/*/chrome-headless-shell-linux64/chrome-headless-shell) \
-  BASE=http://localhost:5173 T=64.5 npm run shots
+npx @puppeteer/browsers install chrome-headless-shell@stable --path ../../.tools/pl-browsers   # found automatically there
+BASE=http://localhost:5173 T=64.5 npm run shots
 ```

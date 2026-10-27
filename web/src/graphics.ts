@@ -28,7 +28,7 @@ const ribbonMat = (color: THREE.Color) => new THREE.ShaderMaterial({
     }`,
 });
 
-class Ribbon {
+export class Ribbon {
   mesh: THREE.Mesh; mat: THREE.ShaderMaterial; geo = new THREE.BufferGeometry();
   pos: Float32Array; uv: Float32Array;
   constructor(public width: number, color: THREE.Color, max = 64) {
@@ -94,18 +94,21 @@ class Disc {
 }
 
 // ---------- screen-sized text tag anchored in the world ----------
+let tagIds = 0;
 class Tag {
   canvas = document.createElement('canvas'); g: CanvasRenderingContext2D; tex: THREE.CanvasTexture; sprite: THREE.Sprite; key = '';
+  id = tagIds++; contentW: number; screenH = 0; alpha = 0;
   constructor(public w = 640, public h = 96) {
-    this.canvas.width = w; this.canvas.height = h; this.g = this.canvas.getContext('2d')!;
+    this.canvas.width = w; this.canvas.height = h; this.g = this.canvas.getContext('2d')!; this.contentW = w;
     this.tex = new THREE.CanvasTexture(this.canvas); this.tex.colorSpace = THREE.SRGBColorSpace;
     this.tex.minFilter = THREE.LinearFilter; this.tex.generateMipmaps = false;
     this.sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.tex, transparent: true, depthTest: false, depthWrite: false, sizeAttenuation: false }));
     this.sprite.center.set(0.5, 0); this.sprite.renderOrder = 10;
   }
-  draw(key: string, fn: (g: CanvasRenderingContext2D, w: number, h: number) => void) {
+  draw(key: string, fn: (g: CanvasRenderingContext2D, w: number, h: number) => number | void) {
     if (key === this.key) return;
-    this.key = key; this.g.clearRect(0, 0, this.w, this.h); fn(this.g, this.w, this.h); this.tex.needsUpdate = true;
+    this.key = key; this.g.clearRect(0, 0, this.w, this.h);
+    this.contentW = Math.min(this.w, fn(this.g, this.w, this.h) ?? this.w); this.tex.needsUpdate = true;
   }
   place(p: THREE.Vector3 | null, screenH: number, cam: THREE.PerspectiveCamera, opacity: number) {
     this.sprite.visible = !!p && opacity > 0.01;
@@ -113,7 +116,7 @@ class Tag {
     this.sprite.position.copy(p);
     const s = screenH * 2 * Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2);
     this.sprite.scale.set((s * this.w) / this.h, s, 1);
-    this.sprite.material.opacity = opacity;
+    this.sprite.material.opacity = this.alpha = opacity; this.screenH = screenH;
   }
 }
 
@@ -135,6 +138,7 @@ function chip(g: CanvasRenderingContext2D, w: number, h: number, color: string, 
     g.fillText(accent, x0 + numW + nameW + accW / 2, y0 + ch / 2 + 2);
   }
   g.fillStyle = 'rgba(255,255,255,0.9)'; g.fillRect(x0, y0 + ch, total, 3); // underline
+  return total;
 }
 function metricChip(g: CanvasRenderingContext2D, w: number, h: number, color: string, parts: [string, string][]) {
   const fs = h * 0.5, pad = 14;
@@ -150,6 +154,7 @@ function metricChip(g: CanvasRenderingContext2D, w: number, h: number, color: st
     g.font = `800 ${fs}px ${FONT}`; g.fillStyle = '#fff'; g.fillText(v, x + pad * 2 + kw, y0 + ch / 2 + 2);
     x += widths[i];
   });
+  return total;
 }
 
 // ---------- flat text on the grass ----------
@@ -369,5 +374,25 @@ export class Graphics {
       });
     } else { this.pressure.set(null, 0, new THREE.Color(), 0, now); this.pressLines.forEach((r) => r.set([], 0)); }
     this.pressureCount = n;
+    this.declutter(cam, dt);
+  }
+
+  // screen-space collision: walk tags by priority, hide (fade) any that overlap an already-kept one
+  private declutter(cam: THREE.PerspectiveCamera, dt: number) {
+    cam.updateMatrixWorld();
+    const order = [this.ownerTag, this.selTag, ...this.flareTags, this.lineTag, ...this.numTags.home, ...this.numTags.away];
+    const kept: number[][] = [], v = new THREE.Vector3(), pad = 0.006;
+    for (const t of order) {
+      let ok = t.sprite.visible && t.alpha > 0.01;
+      if (ok) {
+        v.copy(t.sprite.position).project(cam);
+        const hh = t.screenH * 2, ww = (hh * t.contentW) / t.h / cam.aspect; // NDC units
+        const r = [v.x - ww / 2 - pad, v.x + ww / 2 + pad, v.y - pad, v.y + hh + pad];
+        ok = !kept.some((k) => r[0] < k[1] && r[1] > k[0] && r[2] < k[3] && r[3] > k[2]);
+        if (ok) kept.push(r);
+      }
+      const f = this.fade(`tag${t.id}`, ok ? 1 : 0, dt, 12);
+      t.sprite.material.opacity = t.alpha * f;
+    }
   }
 }

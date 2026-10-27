@@ -24,7 +24,7 @@ function findChrome() {
   for (const root of [resolve(WEB, '../../.tools/pl-browsers'), '/tmp/pl-browsers']) {
     const dir = `${root}/chrome-headless-shell`;
     if (!existsSync(dir)) continue;
-    for (const v of readdirSync(dir)) {
+    for (const v of readdirSync(dir)) { // skips .metadata etc.
       const p = `${dir}/${v}/chrome-headless-shell-linux64/chrome-headless-shell`;
       if (existsSync(p)) return p;
     }

@@ -15,7 +15,7 @@ export interface MatchEvent {
   t: number; type: string; team?: Side; idx?: number; toIdx?: number; from?: V2; to?: V2; ok?: boolean;
   dur?: number; // derived: flight time for pass/shot
 }
-export interface Match { meta: Meta; frames: Frame[]; events: MatchEvent[]; name: string; shapes: Record<Side, string[]> }
+export interface Match { meta: Meta; frames: Frame[]; events: MatchEvent[]; name: string; poss: (Side | null)[]; formCache?: Map<string, Formation> }
 
 export const SIDES: Side[] = ['home', 'away'];
 export const dirOf = (s: Side) => (s === 'home' ? 1 : -1); // home attacks +x
@@ -40,7 +40,9 @@ function prepare(m: Match): Match {
   m.frames.sort((a, b) => a.t - b.t);
   m.events.sort((a, b) => a.t - b.t);
   for (const e of m.events) if (e.type === 'pass' || e.type === 'shot') e.dur = flightTime(m, e);
-  m.shapes = { home: m.frames.map((f) => shapeOf(m, f, 'home').label), away: m.frames.map((f) => shapeOf(m, f, 'away').label) };
+  let last: Side | null = null; // possession = last owner, so passes in flight still count
+  m.poss = m.frames.map((f) => (last = f.owner?.team ?? (f.mode === 'play' ? last : null)));
+  m.formCache = new Map();
   return m;
 }
 
@@ -125,14 +127,59 @@ export function shapeOf(m: Match, f: { home: V2[]; away: V2[] }, side: Side): Sh
   return { label: lines.map((l) => l.length).join('-'), lines, gk, def };
 }
 
-// Most common label over the last few seconds, so the on-screen formation doesn't flicker.
-export function stableShape(m: Match, side: Side, t: number, window = 6) {
-  const i1 = frameIndex(m, t), i0 = Math.max(0, i1 - Math.round(window * m.meta.fps)), count = new Map<string, number>();
-  for (let i = i0; i <= i1; i += 2) count.set(m.shapes[side][i], (count.get(m.shapes[side][i]) ?? 0) + 1);
-  return [...count.entries()].sort((a, b) => b[1] - a[1])[0][0];
+// ---------- formation label: rolling-window average depths snapped to known shapes ----------
+const SHAPES: Record<string, number[]> = { '4-4-2': [4, 4, 2], '4-3-3': [4, 3, 3], '4-2-3-1': [4, 2, 3, 1], '3-5-2': [3, 5, 2], '5-3-2': [5, 3, 2] };
+const POSS_SHAPES: Record<string, number[]> = { ...SHAPES, '3-2-5': [3, 2, 5], '2-3-5': [2, 3, 5], '3-4-3': [3, 4, 3], '2-4-4': [2, 4, 4] };
+const LINE_COST = 6; // m² per extra line, so a 4-line shape must really separate
+
+// sorted depths split into the template's line sizes; cost = mean within-line depth variance (+ per-line penalty)
+export function fitShape(depths: number[], sizes: number[]) {
+  const d = [...depths].sort((a, b) => a - b);
+  let i = 0, ss = 0;
+  for (const n of sizes) {
+    const g = d.slice(i, i + n), mu = g.reduce((a, b) => a + b, 0) / n;
+    ss += g.reduce((a, x) => a + (x - mu) ** 2, 0); i += n;
+  }
+  return ss / d.length + LINE_COST * (sizes.length - 3);
+}
+// prefer: label to favour (hysteresis); back: listed number of defenders (role prior for the back line)
+export function classify(depths: number[], shapes = SHAPES, prefer?: string, back?: number) {
+  const r = Object.entries(shapes).map(([label, sz]) => ({ label,
+    cost: fitShape(depths, sz) - (label === prefer ? 1.5 : 0) + (back && sz[0] !== back ? 2 : 0) })).sort((a, b) => a.cost - b.cost);
+  return r[0];
 }
 
-export interface TeamMetrics { shape: Shape; label: string; lineHeight: number; length: number; width: number; offsideX: number }
+export interface Formation { label: string; inPoss: string | null }
+// Out-of-possession shape over ~20 s; in-possession shape only when the base shape clearly doesn't fit it.
+export function formationAt(m: Match, side: Side, t: number, window = 20): Formation {
+  const i1 = frameIndex(m, t), key = `${side}${Math.floor(i1 / 5)}`;
+  const hit = m.formCache?.get(key); if (hit) return hit;
+  const d = dirOf(side), metaP = m.meta[side].players, gk = Math.max(0, metaP.findIndex((p) => p.pos === 'GK'));
+  const acc = { in: { s: new Array(11).fill(0), n: 0 }, out: { s: new Array(11).fill(0), n: 0 } };
+  const step = Math.max(1, Math.round(m.meta.fps / 2));
+  for (let i = Math.max(0, i1 - window * m.meta.fps); i <= i1; i += step) {
+    const p = m.poss[i]; if (!p) continue;
+    const a = p === side ? acc.in : acc.out;
+    m.frames[i][side].forEach((q, j) => (a.s[j] += q[0] * d)); a.n++;
+  }
+  const avg = (a: typeof acc.in) => a.s.map((v) => v / a.n).filter((_, j) => j !== gk);
+  const all = acc.in.n + acc.out.n;
+  let res: Formation = { label: '—', inPoss: null };
+  if (all) {
+    const outD = acc.out.n >= 6 ? avg(acc.out) : avg({ s: acc.in.s.map((v, j) => v + acc.out.s[j]), n: all });
+    const back = metaP.filter((p) => DEF.test(p.pos)).length || undefined;
+    const base = classify(outD, SHAPES, undefined, back).label;
+    res = { label: base, inPoss: null };
+    if (acc.in.n >= 6) {
+      const inD = avg(acc.in), best = classify(inD, POSS_SHAPES, base);
+      if (best.label !== base && fitShape(inD, POSS_SHAPES[base]) - best.cost > 4) res.inPoss = best.label;
+    }
+  }
+  m.formCache?.set(key, res);
+  return res;
+}
+
+export interface TeamMetrics { shape: Shape; label: string; inPoss: string | null; lineHeight: number; length: number; width: number; offsideX: number }
 export function metrics(m: Match, s: Snapshot, side: Side): TeamMetrics {
   const d = dirOf(side), P = s.pos[side], shape = shapeOf(m, s.pos, side);
   const out = P.filter((_, i) => i !== shape.gk), depth = (p: V2) => p[0] * d + 52.5;
@@ -143,7 +190,7 @@ export function metrics(m: Match, s: Snapshot, side: Side): TeamMetrics {
   const sorted = P.map(depth).sort((a, b) => a - b), ballDepth = s.ball[0] * d + 52.5;
   const offDepth = Math.min(sorted[1], 52.5, Math.max(ballDepth, 0));
   return {
-    shape, label: stableShape(m, side, s.t), lineHeight,
+    shape, ...formationAt(m, side, s.t), lineHeight,
     length: Math.max(...xs) - Math.min(...xs), width: Math.max(...ys) - Math.min(...ys),
     offsideX: (offDepth - 52.5) * d,
   };

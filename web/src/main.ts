@@ -4,10 +4,10 @@ import '@fontsource/barlow-condensed/800.css';
 import '@fontsource/barlow-condensed/800-italic.css';
 import './style.css';
 import * as THREE from 'three';
-import { Match, Side, loadMatch, mergeFork, snapshot, duration, startTime, clock } from './data';
-import { buildStadium, makeComposer } from './scene';
+import { Match, Side, loadMatch, mergeFork, snapshot, positionsAt, duration, startTime, clock } from './data';
+import { buildStadium, makeComposer, toWorld } from './scene';
 import { Players } from './players';
-import { Graphics } from './graphics';
+import { Graphics, Ribbon } from './graphics';
 import { CameraRig, CamMode } from './cameras';
 import { initHud } from './hud';
 import { loadScript, evalCues, ViewMode } from './director';
@@ -23,8 +23,10 @@ class View {
   post = makeComposer(this.renderer, this.scene, this.cam);
   players: Players; gfx: Graphics; ghosts: Players | null = null;
   label: HTMLElement;
+  // selected player's path since the fork: [original (white), what-if (lime)]
+  paths = [new Ribbon(0.45, new THREE.Color(1.5, 1.5, 1.5), 160), new Ribbon(0.45, new THREE.Color(1.5, 2.2, 0.35), 160)];
 
-  constructor(public match: Match, labelText: string, ghostOf: Match | null, whatIf = false) {
+  constructor(public match: Match, labelText: string, ghostOf: Match | null, public whatIf = false) {
     this.el.className = 'view';
     this.el.append(this.renderer.domElement);
     this.label = document.createElement('div');
@@ -36,7 +38,7 @@ class View {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     buildStadium(this.renderer, this.scene, [match.meta.home.name, match.meta.away.name]);
     this.players = new Players(match); this.gfx = new Graphics(match);
-    this.scene.add(this.players.group, this.gfx.group);
+    this.scene.add(this.players.group, this.gfx.group, ...this.paths.map((p) => p.mesh));
     if (ghostOf) { this.ghosts = new Players(ghostOf, true); this.scene.add(this.ghosts.group); }
     this.renderer.domElement.addEventListener('click', (ev) => this.pick(ev));
   }
@@ -63,6 +65,15 @@ class View {
       this.ghosts.group.visible = on;
       if (on) this.ghosts.update(fs, dt, s);
     }
+    const sel = state.selected, after = t > forkT;
+    const trail = (m: Match, r: Ribbon, on: boolean) => {
+      if (!on || !sel) return r.set([], 0);
+      const t0 = Math.max(forkT - 1, t - 14), n = Math.max(2, Math.min(150, Math.ceil((t - t0) / 0.1)));
+      const pts = Array.from({ length: n + 1 }, (_, k) => { const [x, y] = positionsAt(m, t0 + ((t - t0) * k) / n).pos[sel.side][sel.idx]; return toWorld(x, y, 0.06); });
+      r.set(pts, 0.85);
+    };
+    trail(this.match, this.paths[this.whatIf ? 1 : 0], after);
+    if (!this.whatIf) trail(this.ghosts?.match ?? this.match, this.paths[1], after && !!this.ghosts?.group.visible);
     this.rig.update(s, state.cam === 'player' ? state.selected : null, dt);
     this.gfx.update(s, { lens: state.lens, selected: state.selected, now, dt, cam: this.cam });
     this.post.grade.uniforms.desat.value = state.lens * 0.22;

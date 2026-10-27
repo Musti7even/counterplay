@@ -14,7 +14,7 @@ function numberTexture(num: number, fg = '#ffffff') {
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
 
-export interface Figure { root: THREE.Group; legs: THREE.Object3D[]; arms: THREE.Object3D[]; phase: number; yaw: number; last: THREE.Vector3 }
+export interface Figure { mats: THREE.Material[]; root: THREE.Group; legs: THREE.Object3D[]; arms: THREE.Object3D[]; phase: number; yaw: number; last: THREE.Vector3 }
 
 const geo = {
   torso: new THREE.CapsuleGeometry(0.2, 0.42, 4, 10),
@@ -49,7 +49,7 @@ function figure(shirt: THREE.Color, shorts: THREE.Color, skin: number, num: numb
     body.traverse((o) => { if ((o as THREE.Mesh).isMesh && o !== back && o !== front) o.castShadow = true; });
   }
   body.traverse((o) => { o.userData.figureRoot = root; });
-  return { root, legs, arms, phase: Math.random() * 6, yaw: 0, last: new THREE.Vector3() };
+  return { mats: [shirtM, shortsM, skinM, sockM], root, legs, arms, phase: Math.random() * 6, yaw: 0, last: new THREE.Vector3() };
 }
 
 export class Players {
@@ -84,7 +84,9 @@ export class Players {
     this.ball.castShadow = !ghost; this.group.add(this.ball);
     if (ghost) {
       const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(22 * 6), 3));
-      this.links = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: new THREE.Color(2.2, 2.6, 1.0), transparent: true, opacity: 0.9, toneMapped: false }));
+      g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(22 * 6), 3));
+      this.links = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending,
+        depthWrite: false, toneMapped: false }));
       this.links.frustumCulled = false; this.group.add(this.links);
     }
     if (!ghost) {
@@ -99,14 +101,23 @@ export class Players {
 
   update(s: Snapshot, dt: number, ref?: Snapshot) {
     const v = new THREE.Vector3();
+    // ghost: only players whose what-if position differs (>~1.5 m) show up, fading in with the difference
     if (this.links && ref) {
-      const a = this.links.geometry.attributes.position as THREE.BufferAttribute; let k = 0;
+      const a = this.links.geometry.attributes.position as THREE.BufferAttribute, c = this.links.geometry.attributes.color as THREE.BufferAttribute;
+      let k = 0;
+      const vis = (d: number) => Math.min(1, Math.max(0, (d - 1.0) / 1.5));
       for (const side of SIDES) s.pos[side].forEach(([x, y], i) => {
-        const [rx, ry] = ref.pos[side][i], far = Math.hypot(x - rx, y - ry) > 1.5;
-        a.setXYZ(k++, x, 0.08, -y); a.setXYZ(k++, far ? rx : x, 0.08, far ? -ry : -y);
-        this.rings[(side === 'home' ? 0 : 11) + i].position.set(x, 0.05, -y);
+        const [rx, ry] = ref.pos[side][i], d = Math.hypot(x - rx, y - ry), al = vis(d), f = this.figs[side][i];
+        const ln = al * Math.min(1, Math.max(0, (22 - d) / 6)); // no links once the timelines have fully diverged
+        a.setXYZ(k, x, 0.08, -y); c.setXYZ(k++, 1.3 * ln, 1.6 * ln, 0.6 * ln);
+        a.setXYZ(k, rx, 0.08, -ry); c.setXYZ(k++, 0.3 * ln, 0.35 * ln, 0.15 * ln);
+        const ring = this.rings[(side === 'home' ? 0 : 11) + i];
+        ring.position.set(x, 0.05, -y); ring.visible = f.root.visible = al > 0.02;
+        (ring.material as THREE.MeshBasicMaterial).opacity = 0.8 * al;
+        for (const m of f.mats) m.opacity = 0.55 * al;
       });
-      a.needsUpdate = true;
+      a.needsUpdate = c.needsUpdate = true;
+      (this.ball.material as THREE.MeshBasicMaterial).opacity = 0.6 * vis(Math.hypot(s.ball[0] - ref.ball[0], s.ball[1] - ref.ball[1]));
     }
     for (const side of SIDES)
       this.figs[side].forEach((f, i) => {
