@@ -168,8 +168,9 @@ function stand(len: number, rows: number, crowdColors: THREE.Color[], lite: bool
   const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   for (let r = 0; r < rows; r++) for (let i = 0; i < seats; i++) {
     const empty = rnd() < 0.06;
-    m4.makeScale(empty ? 0 : 0.92 + rnd() * 0.16, empty ? 0 : 0.9 + rnd() * 0.2, 1)
-      .setPosition(-len / 2 + (i + 0.5) * (len / seats) + (rnd() - 0.5) * 0.12, 1.2 + r * rise + rise + 0.05, -(r + 0.55) * step);
+    const standing = rnd() < 0.12 ? 1.35 : 1; // some fans on their feet
+    m4.makeScale(empty ? 0 : (0.86 + rnd() * 0.28) * (standing > 1 ? 0.95 : 1), empty ? 0 : (0.85 + rnd() * 0.3) * standing, 1)
+      .setPosition(-len / 2 + (i + 0.5) * (len / seats) + (rnd() - 0.5) * 0.3, 1.2 + r * rise + rise + 0.05 + (rnd() - 0.5) * 0.06, -(r + 0.45 + rnd() * 0.2) * step);
     crowd.setMatrixAt(k, m4);
     // lit by the floodlights near the front, darker toward the back under the roof
     const light = 0.4 - (r / rows) * 0.22;
@@ -186,7 +187,7 @@ function stand(len: number, rows: number, crowdColors: THREE.Color[], lite: bool
   const roof = new THREE.Mesh(new THREE.BoxGeometry(len + 4, 0.6, depth + 6), concrete); roof.position.set(0, roofY, -depth / 2 + 2); grp.add(roof);
   const fascia = new THREE.Mesh(new THREE.BoxGeometry(len + 4, 1.6, 0.4), filmic(new THREE.MeshStandardMaterial({ color: 0x3a3f48, roughness: 0.6 }), 'fascia'));
   fascia.position.set(0, roofY - 0.5, 5); grp.add(fascia);
-  const lamp = new THREE.MeshBasicMaterial({ color: new THREE.Color(3.6, 3.45, 3.1), toneMapped: false });
+  const lamp = new THREE.MeshBasicMaterial({ color: new THREE.Color(2.2, 2.1, 1.9), toneMapped: false });
   const lampGeo = new THREE.BoxGeometry(0.9, 0.5, 0.25);
   const lamps = new THREE.InstancedMesh(lampGeo, lamp, Math.floor(len / 2.4));
   for (let i = 0; i < lamps.count; i++) lamps.setMatrixAt(i, m4.makeTranslation(-len / 2 + (i + 0.5) * 2.4, roofY - 1.5, 5.15));
@@ -251,7 +252,7 @@ const GREY = new THREE.Color(0.35, 0.35, 0.37);
 export function buildStadium(renderer: THREE.WebGLRenderer, scene: THREE.Scene, names: [string, string], lite = false) {
   scene.background = hdr; scene.backgroundIntensity = 0.18;
   scene.environment = hdr; scene.environmentIntensity = 0.25;
-  scene.fog = new THREE.Fog(0x0b1424, 160, 360);
+  scene.fog = new THREE.Fog(0x0d1626, 110, 330); // faint haze under the floodlights
 
   const pitch = new THREE.Mesh(new THREE.PlaneGeometry(TW, TH), pitchMaterial(renderer));
   pitch.rotation.x = -Math.PI / 2; pitch.receiveShadow = true; scene.add(pitch);
@@ -277,6 +278,11 @@ export function buildStadium(renderer: THREE.WebGLRenderer, scene: THREE.Scene, 
   const sides: [number, number, number, number, number][] = [ // x, z, length, rotY, rows
     [0, -(W / 2 + 9), L + 30, 0, 34], [0, W / 2 + 9, L + 30, Math.PI, 26], [L / 2 + 10, 0, W + 18, -Math.PI / 2, 30], [-(L / 2 + 10), 0, W + 18, Math.PI / 2, 30]];
   for (const [x, z, len, ry, rows] of sides) { const s = stand(len, rows, crowdCols, lite); s.position.set(x, 0, z); s.rotation.y = ry; scene.add(s); }
+  // corner stands close the bowl (no black gaps between the four sides)
+  for (const [cx, cz] of [[1, 1], [1, -1], [-1, 1], [-1, -1]]) {
+    const c = stand(30, 28, crowdCols, lite);
+    c.position.set(cx * (L / 2 + 9), 0, cz * (W / 2 + 7)); c.rotation.y = Math.atan2(-cx, -cz); scene.add(c);
+  }
 
   // floodlights: two shadow-casting keys from opposite roof corners (soft double shadows) + cool fill
   scene.add(new THREE.HemisphereLight(0x8fa6cc, 0x0b140c, 0.18));
