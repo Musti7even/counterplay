@@ -33,6 +33,7 @@ class View {
     this.label.className = `view-label${whatIf ? ' whatif' : ''}`;
     this.label.innerHTML = `<span class="vl-name">${labelText}</span><span class="vl-score"></span>`;
     this.el.append(this.label);
+    this.wipe.className = 'wipe'; this.wipe.innerHTML = '<span>WHAT IF · MATCH ENGINE</span>'; this.el.append(this.wipe);
     this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.toneMapping = THREE.NoToneMapping;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -57,8 +58,19 @@ class View {
     state.selected = hit ? hit.object.userData.figureRoot.userData.pick : null;
   }
 
-  render(t: number, dt: number, now: number, showGhost: boolean) {
+  wipe = document.createElement('div');
+  private lastT = -1;
+
+  // camBall: what the rig follows (split: midpoint of both balls); camFrom: copy another view's camera (identical pose)
+  render(t: number, dt: number, now: number, showGhost: boolean, o: { camBall?: [number, number, number]; camFrom?: THREE.PerspectiveCamera; tight?: boolean } = {}) {
     const s = snapshot(this.match, t);
+    // kickoff snaps (GRF teleports players after a goal): hide under a quick branded wipe, cut the camera under it
+    // covered by c-0.06 (interp swaps samples at the midpoint), held briefly, gone by c+0.45
+    const cut = this.match.cuts.find((c) => t > c - 0.2 && t < c + 0.45);
+    const x = cut == null ? null : t < cut - 0.06 ? -1 + (t - cut + 0.2) / 0.14 : t < cut + 0.15 ? 0 : (t - cut - 0.15) / 0.3;
+    this.wipe.style.transform = x == null ? 'translateX(-200%)' : `translateX(${x * 135}%) skewX(-14deg)`;
+    if (this.match.cuts.some((c) => this.lastT < c && t >= c)) this.rig.snap();
+    this.lastT = t;
     this.players.update(s, dt);
     if (this.ghosts) {
       const fs = snapshot(this.ghosts.match, t), on = showGhost && t >= forkT;
@@ -74,7 +86,13 @@ class View {
     };
     trail(this.match, this.paths[this.whatIf ? 1 : 0], after);
     if (!this.whatIf) trail(this.ghosts?.match ?? this.match, this.paths[1], after && !!this.ghosts?.group.visible);
-    this.rig.update(s, state.cam === 'player' ? state.selected : null, dt);
+    if (o.camFrom) {
+      this.cam.position.copy(o.camFrom.position); this.cam.quaternion.copy(o.camFrom.quaternion);
+      this.cam.fov = o.camFrom.fov; this.cam.updateProjectionMatrix(); this.cam.updateMatrixWorld();
+    } else {
+      this.rig.tight = !!o.tight;
+      this.rig.update(o.camBall ? { ...s, ball: o.camBall } : s, state.cam === 'player' ? state.selected : null, dt);
+    }
     this.gfx.update(s, { lens: state.lens, selected: state.selected, now, dt, cam: this.cam });
     this.post.grade.uniforms.desat.value = state.lens * 0.22;
     this.post.grade.uniforms.vignette.value = 0.3 + state.lens * 0.1;
@@ -178,19 +196,25 @@ async function main() {
     state.t = Math.max(startTime(orig), state.t);
     const jumped = Math.abs(state.t - lastT) > 1;
     lastT = state.t;
-    let caption = null;
+    let captions = {};
     if (script) {
       const d = evalCues(script, state.t);
       if (d.cam !== state.cam) setCam(d.cam, d.cut || jumped);
       if (d.view && fork && d.view !== state.view) { state.view = d.view; applyView(); }
       if (d.select !== lastSel) { lastSel = d.select; if (d.select !== undefined) selectId(d.select); }
       state.speed = d.speed; state.lens = state.lensTarget = d.lens; lens.value = String(d.lens);
-      caption = d.caption;
+      captions = d.captions;
     } else state.lens += (state.lensTarget - state.lens) * (1 - Math.exp(-dt * 5));
     if (jumped) [main, alt].forEach((v) => v?.rig.snap());
-    const s = main.render(state.t, dt, now, state.view === 'ghost');
-    if (alt && state.view === 'split') alt.render(state.t, dt, now, false);
-    hud.update(s, state.lens, main.gfx.last, main.gfx.pressureCount, caption);
+    const split = !!alt && state.view === 'split';
+    let camBall: [number, number, number] | undefined;
+    if (split) { // one shared camera: follow the midpoint of both balls so the only difference is the play
+      const a = snapshot(orig, state.t).ball, b = snapshot(fork!, state.t).ball;
+      camBall = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, 0];
+    }
+    const s = main.render(state.t, dt, now, state.view === 'ghost', { camBall, tight: split });
+    if (split) alt!.render(state.t, dt, now, false, { camFrom: main.cam });
+    hud.update(s, state.lens, main.gfx.last, main.gfx.pressureCount, captions);
     (window as any).__frames = ++frames;
   };
 

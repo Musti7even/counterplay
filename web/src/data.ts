@@ -15,7 +15,7 @@ export interface MatchEvent {
   t: number; type: string; team?: Side; idx?: number; toIdx?: number; from?: V2; to?: V2; ok?: boolean;
   dur?: number; // derived: flight time for pass/shot
 }
-export interface Match { meta: Meta; frames: Frame[]; events: MatchEvent[]; name: string; poss: (Side | null)[]; formCache?: Map<string, Formation> }
+export interface Match { meta: Meta; frames: Frame[]; events: MatchEvent[]; name: string; poss: (Side | null)[]; cuts: number[]; formCache?: Map<string, Formation> }
 
 export const SIDES: Side[] = ['home', 'away'];
 export const dirOf = (s: Side) => (s === 'home' ? 1 : -1); // home attacks +x
@@ -43,6 +43,8 @@ function prepare(m: Match): Match {
   let last: Side | null = null; // possession = last owner, so passes in flight still count
   m.poss = m.frames.map((f) => (last = f.owner?.team ?? (f.mode === 'play' ? last : null)));
   m.formCache = new Map();
+  // teleports (kickoff resets): frames where >=6 players jump >4 m in one sample
+  m.cuts = m.frames.slice(1).filter((f, i) => SIDES.reduce((n, sd) => n + f[sd].filter((p, j) => Math.hypot(p[0] - m.frames[i][sd][j][0], p[1] - m.frames[i][sd][j][1]) > 4).length, 0) >= 6).map((f) => f.t);
   return m;
 }
 

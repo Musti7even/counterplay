@@ -20,6 +20,7 @@ export class CameraRig {
     player: { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 42 },
   };
   private snapNext = true;
+  tight = false; // split halves: steeper, closer gantry so the pitch fills the narrow frame
   constructor(public cam: THREE.PerspectiveCamera) {}
 
   set(mode: CamMode, instant = false) {
@@ -41,8 +42,8 @@ export class CameraRig {
       const spread = near[7];
       const zoomFov = THREE.MathUtils.clamp(14 + spread * 0.9, 20, 36) + (Math.abs(s.ball[0]) > 36 ? 3 : 0);
       dampV(p.look, new THREE.Vector3(THREE.MathUtils.clamp(ball.x, -42, 42), 0, THREE.MathUtils.clamp(ball.z, -14, 16) * 0.75), 2.2 * k, dt);
-      dampV(p.pos, new THREE.Vector3(p.look.x * 0.35, 24, 57), 1.2 * k, dt); // gantry under the near-stand roof
-      p.fov = damp(p.fov, zoomFov, 0.8 * k, dt);
+      dampV(p.pos, this.tight ? new THREE.Vector3(p.look.x * 0.5, 30, 46) : new THREE.Vector3(p.look.x * 0.35, 24, 57), 1.2 * k, dt); // gantry under the near-stand roof
+      p.fov = damp(p.fov, this.tight ? zoomFov * 0.95 : zoomFov, 0.8 * k, dt);
     }
     // tactical: high, steep, sees the whole width
     {
@@ -69,7 +70,7 @@ export class CameraRig {
     const look = new THREE.Vector3().lerpVectors(a.look, b.look, t);
     this.cam.fov = a.fov + (b.fov - a.fov) * t;
     // narrow viewports (split view): widen a bit and aim nearer so the pitch, not the stands, fills the frame
-    const narrow = Math.max(1, Math.pow(1.6 / this.cam.aspect, 0.3));
+    const narrow = this.tight ? 1 : Math.max(1, Math.pow(1.6 / this.cam.aspect, 0.3));
     this.cam.fov *= narrow; look.z += (narrow - 1) * 60;
     this.cam.lookAt(look);
     this.cam.updateProjectionMatrix();

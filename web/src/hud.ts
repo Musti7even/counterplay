@@ -33,9 +33,12 @@ export function initHud(m: Match, fork: Match | null) {
   }
 
   const scoreEls = [$('.sb-score .h'), $('.sb-score .a')];
+  const banners = [{ el: $('#banner'), match: m }];
+  if (fork) { const el = $('#banner').cloneNode(true) as HTMLElement; el.id = 'banner2'; document.body.append(el); banners.push({ el, match: fork }); }
+  const capEls = new Map<string, HTMLElement>();
   let lastScore = '';
   return {
-    update(s: Snapshot, lens: number, met: Record<Side, TeamMetrics> | undefined, pressure: number, caption: DirectorState['caption'] = null) {
+    update(s: Snapshot, lens: number, met: Record<Side, TeamMetrics> | undefined, pressure: number, captions: DirectorState['captions'] = {}) {
       root.setProperty('--lens', lens.toFixed(3));
       setText($('.sb-clock'), clock(s.t)); setText($('#time'), clock(s.t));
       const sc = s.score.join('-');
@@ -53,24 +56,28 @@ export function initHud(m: Match, fork: Match | null) {
       }
       setText($('[data-k=press]'), pressure ? `${pressure} WITHIN 5 M` : '—');
 
-      // goal banner: big moment, shown at every lens setting. Animated from match time (recorder-safe), not CSS transitions.
-      const g = m.events.find((e) => e.type === 'goal' && s.t >= e.t && s.t < e.t + 5);
-      const banner = $('#banner');
-      const ga = g ? Math.min(1, (s.t - g.t) / 0.35, (g.t + 5 - s.t) / 0.35) : 0, ge = 1 - (1 - ga) ** 3;
-      banner.style.opacity = String(ga); banner.style.transform = `translateX(-50%) scaleX(${0.6 + 0.4 * ge})`;
-      const cap = $('#caption');
-      if (caption) {
-        const age = s.t - caption.t0, out = (caption.dur ?? 4) - age;
+      // goal banners: big moment at every lens. Split: each banner lives in the half where its goal happened.
+      // Animated from match time (recorder-safe), not CSS transitions.
+      for (const { el, match } of banners) {
+        const g = match.events.find((e) => e.type === 'goal' && s.t >= e.t && s.t < e.t + 5);
+        const ga = g ? Math.min(1, (s.t - g.t) / 0.35, (g.t + 5 - s.t) / 0.35) : 0, ge = 1 - (1 - ga) ** 3;
+        el.style.opacity = String(ga); el.style.transform = `translateX(-50%) scaleX(${0.6 + 0.4 * ge})`;
+        if (!g) continue;
+        const side = g.team ?? 'home', shot = [...match.events].reverse().find((e) => e.type === 'shot' && e.t <= g.t && e.team === side);
+        const p = shot?.idx != null ? match.meta[side].players[shot.idx] : null;
+        (el.querySelector('.bn-bar') as HTMLElement).style.background = match.meta[side].color;
+        setText(el.querySelector('.bn-sub')!, `${match.meta[side].name.toUpperCase()}${p ? `  ·  ${p.num} ${p.name.toUpperCase()}` : ''}  ·  ${clock(g.t)}`);
+      }
+      // director captions, one lower third per side key ('all' | 'original' | 'whatif')
+      for (const [key, el] of capEls) if (!captions[key]) el.style.opacity = '0';
+      for (const [key, c] of Object.entries(captions)) {
+        let el = capEls.get(key);
+        if (!el) { el = $('#caption').cloneNode(true) as HTMLElement; el.id = ''; el.className = `hud caption cap-${key}`; document.body.append(el); capEls.set(key, el); }
+        const age = s.t - c.t0, out = (c.dur ?? 4) - age;
         const a = Math.max(0, Math.min(1, age / 0.4, out / 0.4)), e = 1 - (1 - a) ** 3;
-        cap.style.opacity = String(a); cap.style.transform = `translateX(${(1 - e) * -40}px)`;
-        setText($('.cp-title'), caption.title ?? ''); setText($('.cp-text'), caption.text);
-        ($('.cp-title').style.display = caption.title ? '' : 'none');
-      } else cap.style.opacity = '0';
-      if (g) {
-        const side = g.team ?? 'home', shot = [...m.events].reverse().find((e) => e.type === 'shot' && e.t <= g.t && e.team === side);
-        const p = shot?.idx != null ? m.meta[side].players[shot.idx] : null;
-        $('.bn-bar').style.background = m.meta[side].color;
-        setText($('.bn-sub'), `${m.meta[side].name.toUpperCase()}${p ? `  ·  ${p.num} ${p.name.toUpperCase()}` : ''}  ·  ${clock(g.t)}`);
+        el.style.opacity = String(a); el.style.transform = `translateX(${(1 - e) * -40}px)`;
+        const ti = el.querySelector('.cp-title') as HTMLElement;
+        setText(ti, c.title ?? ''); ti.style.display = c.title ? '' : 'none'; setText(el.querySelector('.cp-text')!, c.text);
       }
     },
   };

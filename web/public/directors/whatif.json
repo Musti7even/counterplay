@@ -2,17 +2,80 @@
   "name": "whatif",
   "match": "match",
   "fork": "fork-step_up",
-  "from": 61.5, "to": 74.5,
-  "view": "split", "cam": "broadcast", "lens": 0.3, "select": "a6",
+  "from": 61.5,
+  "to": 74.5,
+  "view": "split",
+  "cam": "broadcast",
+  "lens": 0.3,
+  "select": "a6",
   "cues": [
-    { "t": 61.6, "caption": { "title": "WHAT IF", "text": "Rewind to the build-up of Redmoor's opener", "dur": 3.6 } },
-    { "t": 64.5, "lensTo": 0.7, "over": 1.5 },
-    { "t": 66.0, "speed": 0.4 },
-    { "t": 66.5, "caption": { "title": "THE CHANGE", "text": "5 H. Sørensen steps up", "dur": 2.6 } },
-    { "t": 67.4, "view": "ghost", "cam": "broadcast", "cut": true, "speed": 0.6 },
-    { "t": 67.5, "caption": { "title": "GHOST VIEW", "text": "What-if positions over the original", "dur": 1.7 } },
-    { "t": 69.2, "view": "split", "cut": true, "speed": 0.4 },
-    { "t": 69.5, "caption": { "title": "RESULT", "text": "Original: Moreau scores  ·  What if: no goal", "dur": 4 } },
-    { "t": 70.3, "speed": 1 }
+    {
+      "t": 61.6,
+      "caption": {
+        "title": "WHAT IF",
+        "text": "Rewind to the build-up of Redmoor's opener",
+        "dur": 3.6
+      }
+    },
+    {
+      "t": 64.5,
+      "lensTo": 0.7,
+      "over": 1.5
+    },
+    {
+      "t": 66.0,
+      "speed": 0.4
+    },
+    {
+      "t": 66.5,
+      "caption": {
+        "title": "THE CHANGE",
+        "text": "5 H. Sørensen steps up",
+        "dur": 2.6
+      }
+    },
+    {
+      "t": 67.4,
+      "view": "ghost",
+      "cam": "broadcast",
+      "cut": true,
+      "speed": 0.6
+    },
+    {
+      "t": 67.5,
+      "caption": {
+        "title": "GHOST VIEW",
+        "text": "What-if positions over the original",
+        "dur": 1.7
+      }
+    },
+    {
+      "t": 69.2,
+      "view": "split",
+      "cut": true,
+      "speed": 0.4
+    },
+    {
+      "t": 69.6,
+      "caption": {
+        "side": "original",
+        "title": "ORIGINAL",
+        "text": "Moreau scores",
+        "dur": 4
+      }
+    },
+    {
+      "t": 69.6,
+      "caption": {
+        "side": "whatif",
+        "title": "WHAT IF",
+        "text": "Sørensen's step-up: no goal",
+        "dur": 4
+      }
+    },
+    {
+      "t": 70.3,
+      "speed": 1
+    }
   ]
 }
