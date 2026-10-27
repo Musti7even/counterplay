@@ -1,0 +1,43 @@
+/* Counterplay design tokens. The only place colours, type, spacing and motion are defined (see web/DESIGN.md).
+   Mirrored for three.js in tokens.ts: keep the two in sync. */
+@font-face { font-family: 'Onest'; font-weight: 100 900; font-display: block; src: url(./fonts/onest-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Onest'; font-weight: 100 900; font-display: block; src: url(./fonts/onest-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+20A0-20AB, U+20AD-20C0, U+2C60-2C7F, U+A720-A7FF; }
+
+:root {
+  /* surfaces */
+  --surface: rgba(20, 7, 34, 0.94);   /* every plate on air */
+  --surface-solid: #140722;           /* the same surface where nothing sits behind it (full-screen cards, gallery) */
+  --surface-2: #2a0f47;               /* a nested segment inside a plate: score, card head, current item */
+  /* text */
+  --text: #ffffff;                    /* values, names, headlines */
+  --text-2: rgba(255, 255, 255, 0.62);/* labels, units, secondary lines */
+  --rule: rgba(255, 255, 255, 0.12);  /* hairline dividers */
+  /* signal colours: one meaning each */
+  --accent: #38ff8b;                  /* LIVE FOCUS: the one subject the picture is about right now */
+  --alert: #ffb020;                   /* RISK: pressure, failure, a claim that did not air */
+  --whatif: #34ddff;                  /* ALTERNATE TIMELINE: anything that exists only in the re-simulation */
+  --home: #d7263d; --away: #1b6ca8;   /* IDENTITY: team colour, as a 4 px bar only (set from match data) */
+
+  --radius: 2px;
+
+  /* scale: everything is a multiple of --u, which tracks frame height (5 px at 1080p). --k shrinks a subtree (quad) */
+  --k: 1;
+  --font: 'Onest', system-ui, sans-serif;
+  --ease: cubic-bezier(0.25, 1, 0.5, 1); /* the only easing (= easeOutQuart, tokens.ts ease()) */
+  --t-fast: 200ms; --t-base: 400ms; --t-draw: 800ms;
+  --lens: 0.2;
+}
+:root, .scaled {
+  --u: calc(var(--k) * 100vh / 216);
+  --bar: calc(var(--u) * 0.8);  /* team / signal bar width (4 px at 1080p) */
+  --s1: var(--u); --s2: calc(var(--u) * 2); --s3: calc(var(--u) * 3); --s4: calc(var(--u) * 4); --s6: calc(var(--u) * 6);
+  --fs-1: calc(var(--u) * 3);    /* 15 px: caps labels, units */
+  --fs-2: calc(var(--u) * 4);    /* 20 px: body, chips, stat labels */
+  --fs-3: calc(var(--u) * 5.6);  /* 28 px: scorebug, stat values, subtitles */
+  --fs-4: calc(var(--u) * 8);    /* 40 px: lower-third line */
+  --fs-5: calc(var(--u) * 17);   /* 85 px: full-screen titles */
+  --safe-x: calc(100vw * 0.05 * var(--k)); --safe-y: calc(100vh * 0.05 * var(--k)); /* 5 % graphics-safe */
+  font-family: var(--font);
+}

@@ -1,9 +1,6 @@
-import '@fontsource/barlow-condensed/600.css';
-import '@fontsource/barlow-condensed/700.css';
-import '@fontsource/barlow-condensed/800.css';
-import '@fontsource/barlow-condensed/800-italic.css';
-import '@fontsource/barlow/500.css';
+import './tokens.css';
 import './style.css';
+import { C, LINE } from './tokens';
 import * as THREE from 'three';
 import { Match, Side, loadMatch, mergeFork, snapshot, positionsAt, duration, startTime, clock } from './data';
 import { buildStadium, makeComposer, toWorld } from './scene';
@@ -29,8 +26,8 @@ class View {
   // per-view lens/cam/selection: the shared global state, except in quad where each quadrant has its own
   vs: { lens: number; cam: CamMode; selected: { side: Side; idx: number } | null } = state;
   overlay?: Overlay;
-  // selected player's path since the fork: [original (white), what-if (lime)]
-  paths = [new Ribbon(0.45, new THREE.Color(1.5, 1.5, 1.5), 160), new Ribbon(0.45, new THREE.Color(1.5, 2.2, 0.35), 160)];
+  // selected player's path since the fork: [original (white), what-if (alternate timeline colour)]
+  paths = [new Ribbon(LINE.primary, new THREE.Color(C.text), 160), new Ribbon(LINE.primary, new THREE.Color(C.whatif), 160)];
 
   // lite: multi-view budget (pixel ratio 1, 2x MSAA, 1024 shadow map)
   constructor(public match: Match, labelText: string, ghostOf: Match | null, public whatIf = false, public lite = false) {
@@ -38,10 +35,10 @@ class View {
     this.el.className = 'view';
     this.el.append(this.renderer.domElement);
     this.label = document.createElement('div');
-    this.label.className = `view-label${whatIf ? ' whatif' : ''}`;
-    this.label.innerHTML = `<span class="vl-name">${labelText}</span><span class="vl-score"></span>`;
+    this.label.className = `badge view-label ${whatIf ? 'whatif' : 'neutral'}`;
+    this.label.innerHTML = `<span class="vl-name">${labelText}</span><span class="bd-v vl-score"></span>`;
     this.el.append(this.label);
-    this.wipe.className = 'wipe'; this.wipe.innerHTML = '<span>WHAT IF · MATCH ENGINE</span>'; this.el.append(this.wipe);
+    this.wipe.className = 'wipe'; this.wipe.innerHTML = '<span>KICK-OFF</span>'; this.el.append(this.wipe);
     this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.toneMapping = THREE.NoToneMapping;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -90,7 +87,7 @@ class View {
       if (!on || !sel) return r.set([], 0);
       const t0 = Math.max(forkT - 1, t - 14), n = Math.max(2, Math.min(150, Math.ceil((t - t0) / 0.1)));
       const pts = Array.from({ length: n + 1 }, (_, k) => { const [x, y] = positionsAt(m, t0 + ((t - t0) * k) / n).pos[sel.side][sel.idx]; return toWorld(x, y, 0.06); });
-      r.set(pts, 0.85);
+      r.set(pts, 0.9);
     };
     trail(this.match, this.paths[this.whatIf ? 1 : 0], after);
     if (!this.whatIf) trail(this.ghosts?.match ?? this.match, this.paths[1], after && !!this.ghosts?.group.visible);
@@ -120,7 +117,7 @@ let forkT = Infinity;
 const capture = q.get('capture') === '1'; // recorder drives time via demo.step(); no realtime clock
 
 async function main() {
-  await Promise.all(['600', '700', '800'].map((w) => document.fonts.load(`${w} 40px "Barlow Condensed"`)));
+  await Promise.all(['500', '700', '800'].map((w) => document.fonts.load(`${w} 40px "Onest"`)));
   // "?" help overlay (button + key), everywhere
   const help = document.getElementById('help')!;
   document.getElementById('help-btn')!.onclick = () => help.classList.toggle('show');
@@ -157,13 +154,14 @@ async function main() {
 
   const viewsEl = document.getElementById('views')!;
   const main = new View(orig, 'ORIGINAL', fork, false, !!fork);
-  const alt = fork ? new View(fork, 'WHAT IF', null, true, true) : null;
+  const alt = fork ? new View(fork, 'What if', null, true, true) : null;
   viewsEl.append(main.el);
   if (alt) viewsEl.append(alt.el);
   const hud = initHud(orig, fork);
   const end = Math.max(duration(orig), fork ? duration(fork) : 0);
   const subs = commentary ? new Overlay(document.body, { commentary, audio: true }) : null;
   subs?.root.classList.add('ov-fixed');
+  if (subs) document.body.classList.add('has-subs');
   let control: ControlStrip | null = null;
   if (traceUrl) {
     const ca = q.get('controlAt')?.split('-').map(Number);
@@ -175,7 +173,7 @@ async function main() {
     if (alt) alt.el.style.display = state.view === 'split' ? '' : 'none';
     document.body.classList.toggle('split', state.view === 'split');
     document.querySelectorAll<HTMLButtonElement>('#viewmode button').forEach((b) => b.classList.toggle('on', b.dataset.view === state.view));
-    (main.label.querySelector('.vl-name') as HTMLElement).textContent = state.view === 'ghost' ? 'ORIGINAL + WHAT IF GHOSTS' : 'ORIGINAL';
+    (main.label.querySelector('.vl-name') as HTMLElement).textContent = state.view === 'ghost' ? 'Original · what-if ghosts' : 'Original';
     document.body.classList.toggle('multi', state.view !== 'single');
     [main, alt].forEach((v) => v?.resize()); // sync: the recorder captures right after
   };
@@ -244,7 +242,7 @@ async function main() {
     }
     const s = main.render(state.t, dt, now, state.view === 'ghost', { camBall, tight: split });
     if (split) alt!.render(state.t, dt, now, false, { camFrom: main.cam });
-    hud.update(s, state.lens, main.gfx.last, main.gfx.pressureCount, captions);
+    hud.update(s, state.lens, main.gfx.last, captions);
     subs?.update(s, null, undefined, state.playing && !capture);
     control?.update(state.t);
     (window as any).__frames = ++frames;
@@ -281,13 +279,11 @@ async function quad() {
   const viewsEl = document.getElementById('views')!;
   // each quadrant gets a distinct look: casual (clean, warm), analyst (tactical cam, full lens, cool), player cam + card, other language
   const variants: Variant[] = runs.map((r) => { const [, p, l] = r.split('.'); return p === 'analyst' ? 'analyst' : p.startsWith('player') ? 'player' : l !== 'en' ? 'lang' : 'casual'; });
-  const TINT: Record<Variant, [number, number, number]> = { casual: [1.07, 1.0, 0.9], analyst: [0.88, 0.97, 1.1], player: [1, 1, 1], lang: [1.05, 1.0, 0.93] };
   const views = runs.map((r, i) => {
     const [, persona, lang] = r.split('.');
     const v = new View(orig, '', null, false, true);
     v.vs = { lens: scripts[i].lens ?? 0.2, cam: scripts[i].cam ?? 'broadcast', selected: null };
-    v.post.grade.uniforms.tint.value.set(...TINT[variants[i]]);
-    const label = `${persona.replace(/^player-/, 'player · ').toUpperCase()} · ${(lang ?? '').toUpperCase()}`;
+    const label = `${persona.startsWith('player') ? 'Player cam' : persona} · ${lang ?? ''}`;
     v.overlay = new Overlay(v.el, { label, panel: persona === 'analyst', match: orig, commentary: coms[i], audio: i === 0, variant: variants[i] });
     viewsEl.append(v.el);
     return v;
@@ -334,7 +330,7 @@ async function quad() {
       v.overlay!.update(s, d.captions, v.gfx.last, i === 0 && state.playing && !capture, vt === 'player' ? playerCard(v.vs.selected, s) : null);
       s0 ??= s;
     });
-    hud.update(s0!, 0, undefined, 0, {});
+    hud.update(s0!, 0, undefined, {});
     (window as any).__frames = ++frames;
   };
   let clockNow = 0;

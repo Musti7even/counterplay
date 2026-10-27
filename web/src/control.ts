@@ -1,8 +1,8 @@
 // Control-room strip: the six-agent crew as a broadcast gallery, replaying a run's trace.json in sync with playback.
 // Trace steps are spread evenly (by order) over a playback window; wall-clock gaps in a template run are ~ms.
 const AGENTS = [
-  ['analyst', 'ANALYST', 'picks moments'], ['tactician', 'TACTICIAN', 'explains why'], ['whatif', 'WHAT-IF', 'runs the fork'],
-  ['factcheck', 'FACT-CHECK', 'verifies numbers'], ['producer', 'PRODUCER', 'cues the show'], ['localizer', 'LOCALIZER', 'speaks the language'],
+  ['analyst', 'Analyst', 'Picks the moments'], ['tactician', 'Tactician', 'Explains why'], ['whatif', 'What-if', 'Runs the fork'],
+  ['factcheck', 'Fact-check', 'Verifies every number'], ['producer', 'Producer', 'Cues the show'], ['localizer', 'Localizer', 'Speaks the language'],
 ] as const;
 
 interface Step { t_wall: number; agent: string; action: string; input_summary: string; output_summary: string; ok: boolean; fallback: boolean }
@@ -40,16 +40,16 @@ export class ControlStrip {
     this.times = tr.steps.map((_, i) => span[0] + ((span[1] - span[0]) * i) / Math.max(1, n - 1));
     const llm = tr.mode !== 'template';
     this.el.id = 'control';
-    this.el.innerHTML = `<div class="cr-head"><div class="cr-onair"><i></i>AI PRODUCTION GALLERY</div>
-      <div class="cr-run">${esc(tr.run)}</div><div class="cr-mode ${llm ? 'llm' : ''}">${llm ? 'LLM AGENTS' : 'TEMPLATE MODE'} · MCP</div>
+    this.el.innerHTML = `<div class="cr-head"><span class="badge plain"><span>AI production gallery</span></span>
+      <div class="cr-run">${esc(tr.run)}</div><div class="ag-role">${llm ? 'LLM agents' : 'Template mode'} · MCP tools</div>
       <div class="cr-out"></div></div><div class="cr-crew"></div>`;
     const crew = this.el.querySelector('.cr-crew')!;
     AGENTS.forEach(([id, name, role], i) => {
       if (i) { const l = document.createElement('div'); l.className = 'cr-link'; l.innerHTML = '<i></i>'; crew.append(l); this.links.push(l); }
       const node = document.createElement('div');
-      node.className = 'cr-node';
-      node.innerHTML = `<div class="cr-n-top"><span class="cr-idx">0${i + 1}</span><span class="cr-name">${name}</span><span class="cr-state"></span></div>
-        <div class="cr-role">${role}</div><div class="cr-chips"></div>`;
+      node.className = 'agent';
+      node.innerHTML = `<div class="ag-top"><span class="ag-idx">0${i + 1}</span><span class="ag-name">${name}</span><span class="ag-state"></span></div>
+        <div class="ag-role">${role}</div><div class="ag-chips"></div>`;
       crew.append(node); this.nodes.set(id, node);
     });
     document.body.append(this.el);
@@ -78,29 +78,29 @@ export class ControlStrip {
       const failed = mine.some((s) => !s.ok), recovered = failed && mine.some((s, j) => s.fallback && j > mine.findIndex((x) => !x.ok));
       const llmFallback = this.tr.mode !== 'template' && mine.some((s) => s.fallback);
       let state = '', cls = 'idle';
-      if (mine.length) { cls = 'done'; state = '✓'; }
-      if (id === cur && !done) { cls = 'live'; state = 'LIVE'; }
-      if (failed && !recovered) { cls = 'err'; state = 'ERROR'; }
-      if (recovered || llmFallback) { cls = 'rec'; state = 'RECOVERED · template'; }
-      node.className = `cr-node ${cls}`;
-      node.querySelector('.cr-state')!.textContent = state;
+      if (mine.length) { cls = 'done'; state = 'Done'; }
+      if (id === cur && !done) { cls = 'live'; state = 'Live'; }
+      if (failed && !recovered) { cls = 'err'; state = 'Error'; }
+      if (recovered || llmFallback) { cls = 'rec'; state = 'Recovered'; }
+      node.className = `agent ${cls}`;
+      node.querySelector('.ag-state')!.textContent = state;
       // chips: newest last; fact-check shows aired/rejected claims
       const chips = mine.map((s) => ({ s, c: chipText(s) })).filter((x) => x.c);
       const firstErr = chips.find((x) => x.c!.kind === 'err');
       const pick = (failed ? [firstErr, ...chips.filter((x) => x.c!.kind === 'tool').slice(-1)] : chips.slice(-2)).filter((x) => !!x) as typeof chips;
-      let html = pick.map(({ c }, j, arr) => `<span class="cr-chip ${c!.kind}${j === arr.length - 1 ? ' new' : ''}">${esc(c!.text)}</span>`).join('');
+      let html = pick.map(({ c }, j, arr) => `<span class="chip ${c!.kind === 'err' ? 'alert' : ''}${j === arr.length - 1 ? ' new' : ''}">${esc(c!.text)}</span>`).join('');
       const verify = mine.find((s) => s.action === 'verify');
       if (verify) {
         const v = json(verify.output_summary) ?? {};
         const ok = (v.aired_ok ?? []) as unknown[], rej = (v.rejected ?? []) as any[];
-        html = `<span class="cr-chip tool">${esc(verify.input_summary)}</span>` +
-          ok.map((c) => `<span class="cr-claim ok">${esc(String(c))} ✓</span>`).join('') +
-          rej.map((c) => `<span class="cr-claim rej">${esc(String(c?.claim ?? c?.id ?? c))}</span>`).join('');
+        html = `<span class="chip">${esc(verify.input_summary)}</span>` +
+          ok.map((c) => `<span class="chip ok new">${esc(String(c))}</span>`).join('') +
+          rej.map((c) => `<span class="chip rej">${esc(String(c?.claim ?? c?.id ?? c))}</span>`).join('');
       }
-      if (cls === 'rec') html += `<span class="cr-chip rec">RECOVERED · template</span>`;
-      node.querySelector('.cr-chips')!.innerHTML = html;
+      if (cls === 'rec') html += `<span class="chip alert new">Template took over</span>`;
+      node.querySelector('.ag-chips')!.innerHTML = html;
     }
     const fin = seen.find((s) => s.agent === 'crew' && s.action === 'done');
-    this.el.querySelector('.cr-out')!.textContent = fin ? `ON AIR · ${fin.output_summary}` : `${k}/${S.length} steps`;
+    this.el.querySelector('.cr-out')!.textContent = fin ? `On air · ${fin.output_summary}` : `Step ${k} of ${S.length}`;
   }
 }

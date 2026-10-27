@@ -1,7 +1,7 @@
-// Per-view broadcast overlay: persona label chip, director captions, AI commentary subtitles (+ voice), mini tactics panel.
-// Used by the quad view (one per quadrant) and, for subtitles only, by the single/split views.
+// AI commentary loading + the per-view overlay (quad quadrants; subtitles only in single/split).
 import { Match, Snapshot, Side, TeamMetrics, clock } from './data';
 import type { DirectorState } from './director';
+import { lowerThird, showLowerThird, setText } from './hud';
 
 export interface Line { t: number; text: string; voice_style?: string; claim?: string }
 export interface Voice { t: number; url: string; dur?: number }
@@ -22,74 +22,70 @@ export async function loadCommentary(url: string): Promise<Commentary> {
 }
 
 const esc = (s: string) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!);
-const setText = (el: Element, s: string) => { if (el.textContent !== s) el.textContent = s; };
 
 export type Variant = 'casual' | 'analyst' | 'player' | 'lang';
 export interface PlayerCard { num: number; name: string; color: string; kmh: number; dist: number; hr: number }
-const LANGS: Record<string, string> = { en: 'ENGLISH', de: 'DEUTSCH', tr: 'TÜRKÇE', es: 'ESPAÑOL' };
+const LANGS: Record<string, string> = { en: 'English', de: 'Deutsch', tr: 'Türkçe', es: 'Español' };
 
+// Per-view overlay built from the shared components: scorebug + persona badge (top left), stat card (top right),
+// lower thirds (bottom left), AI commentary subtitle (bottom centre). In quad the subtree is scaled down with --k.
 export class Overlay {
   root = document.createElement('div');
-  private sub = document.createElement('div');
+  private sub = lowerThird('sub');
+  private zone = document.createElement('div');
   private caps = new Map<string, HTMLElement>();
-  private label?: HTMLElement; private panel?: HTMLElement;
+  private sb?: HTMLElement; private panel?: HTMLElement; private card?: HTMLElement;
   private playing: HTMLAudioElement[] = [];
-  private card?: HTMLElement; private wave?: HTMLElement[];
   private lastT = -1;
 
   constructor(parent: HTMLElement, private o: { label?: string; panel?: boolean; match?: Match; commentary?: Commentary | null; audio?: boolean; variant?: Variant }) {
     this.root.className = 'ov';
-    this.sub.className = 'ov-sub';
-    this.sub.innerHTML = `<div class="ov-sub-tag">AI COMMENTARY<b></b></div><div class="ov-sub-text"></div>`;
-    this.root.append(this.sub);
-    if (o.label) {
-      this.label = document.createElement('div'); this.label.className = 'ov-label';
-      this.label.innerHTML = `<span class="ov-persona">${esc(o.label)}</span><span class="ov-score"></span><span class="ov-clock"></span>`;
-      this.root.append(this.label);
+    this.sub.classList.add('ov-sub');
+    this.zone.className = 'ov-zone';
+    this.root.append(this.zone, this.sub);
+    const m = o.match;
+    if (o.label && m) {
+      this.root.classList.add('scaled');
+      const top = document.createElement('div'); top.className = 'ov-top';
+      top.innerHTML = `<div class="sb"><span class="sb-team home"><i style="background:${m.meta.home.color}"></i>${m.meta.home.short}</span>
+        <span class="sb-score"><span class="h"></span><span class="sep">–</span><span class="a"></span></span>
+        <span class="sb-team away">${m.meta.away.short}<i style="background:${m.meta.away.color}"></i></span><span class="sb-clock"></span></div>
+        <span class="badge plain"><span>${esc(o.label)}</span></span>`;
+      this.root.append(top); this.sb = top.querySelector('.sb')!;
     }
-    if (o.panel && o.match) {
-      const m = o.match;
-      this.panel = document.createElement('div'); this.panel.className = 'ov-panel';
-      this.panel.innerHTML = `<div class="ovp-h"><span></span><b style="border-color:${m.meta.home.color}">${m.meta.home.short}</b><b style="border-color:${m.meta.away.color}">${m.meta.away.short}</b></div>
-        ${[['SHAPE', 'label'], ['IN POSS', 'poss'], ['LINE', 'line'], ['L × W', 'cmp']].map(([k, d]) => `<div class="ovp-r"><span>${k}</span><b data-k="${d}-home"></b><b data-k="${d}-away"></b></div>`).join('')}`;
+    if (o.panel && m) {
+      this.panel = document.createElement('div'); this.panel.className = 'card ov-tr';
+      this.panel.innerHTML = `<div class="card-head"><span>Shape · 20 s</span><b style="--team:${m.meta.home.color}">${m.meta.home.short}</b><b style="--team:${m.meta.away.color}">${m.meta.away.short}</b></div>
+        ${[['Formation', 'label'], ['Line height', 'line'], ['Length × width', 'cmp']].map(([k, d]) => `<div class="card-row"><span>${k}</span><b data-k="${d}-home"></b><b data-k="${d}-away"></b></div>`).join('')}`;
       this.root.append(this.panel);
     }
     if (o.variant) parent.classList.add(`v-${o.variant}`);
     if (o.variant === 'player') {
-      this.card = document.createElement('div'); this.card.className = 'ov-card';
-      this.card.innerHTML = `<div class="pc-head"><span class="pc-num"></span><span class="pc-name"></span><span class="pc-live">LIVE</span></div>
-        <div class="pc-stats"><div><b class="pc-kmh"></b><span>KM/H</span></div><div><b class="pc-dist"></b><span>DISTANCE M</span></div>
-        <div><b class="pc-hr"></b><span>HR* BPM</span></div></div><div class="pc-bar"><i></i></div><div class="pc-note">*modelled from workload</div>`;
+      this.card = document.createElement('div'); this.card.className = 'card one ov-tr';
+      this.card.innerHTML = `<div class="card-head player"><i></i><span class="num"></span><span class="name"></span></div>
+        <div class="card-row"><span>Speed</span><b class="pc-kmh"></b></div><div class="card-row"><span>Distance</span><b class="pc-dist"></b></div>
+        <div class="card-row"><span>Heart rate*</span><b class="pc-hr"></b></div><div class="card-note">*modelled from workload</div>`;
       this.root.append(this.card);
     }
-    if (o.variant === 'lang') {
-      const lang = o.commentary?.lang ?? '';
-      const b = document.createElement('div'); b.className = 'ov-lang';
-      b.innerHTML = `<span class="lg-code">${esc(lang.toUpperCase())}</span><span class="lg-name">${esc(LANGS[lang] ?? lang.toUpperCase())}</span><span class="lg-wave">${'<i></i>'.repeat(18)}</span>`;
-      this.root.append(b); this.wave = [...b.querySelectorAll<HTMLElement>('.lg-wave i')];
-    }
     parent.append(this.root);
-    if (o.commentary) setText(this.sub.querySelector('b')!, ` · ${o.commentary.lang.toUpperCase()}`);
+    const lang = o.commentary?.lang ?? '';
+    setText(this.sub.querySelector('.lt-kicker')!, `AI commentary · ${LANGS[lang] ?? lang.toUpperCase()}`);
   }
 
   update(s: Snapshot, captions: DirectorState['captions'] | null, met?: Record<Side, TeamMetrics>, playingAudio = false, card?: PlayerCard | null) {
     const t = s.t;
-    if (this.label) { setText(this.label.querySelector('.ov-score')!, s.score.join(' – ')); setText(this.label.querySelector('.ov-clock')!, clock(t)); }
+    if (this.sb) { setText(this.sb.querySelector('.h')!, String(s.score[0])); setText(this.sb.querySelector('.a')!, String(s.score[1])); setText(this.sb.querySelector('.sb-clock')!, clock(t)); }
     if (this.panel && met) for (const side of ['home', 'away'] as Side[]) {
-      const m = met[side], q = (k: string) => this.panel!.querySelector(`[data-k=${k}-${side}]`)!;
-      setText(q('label'), m.label); setText(q('poss'), m.inPoss ?? '—');
-      setText(q('line'), `${m.lineHeight.toFixed(1)}`); setText(q('cmp'), `${m.length.toFixed(0)}×${m.width.toFixed(0)}`);
+      const mt = met[side], q = (k: string) => this.panel!.querySelector(`[data-k=${k}-${side}]`)!;
+      setText(q('label'), mt.label); setText(q('line'), `${mt.lineHeight.toFixed(1)} m`); setText(q('cmp'), `${mt.length.toFixed(0)}×${mt.width.toFixed(0)}`);
     }
-    // captions (quad: inside this quadrant)
+    // captions: lower thirds inside this view
     if (captions) {
-      for (const [k, el] of this.caps) if (!captions[k]) el.style.opacity = '0';
+      for (const [k, el] of this.caps) if (!captions[k]) el.style.display = 'none';
       for (const [k, c] of Object.entries(captions)) {
         let el = this.caps.get(k);
-        if (!el) { el = document.createElement('div'); el.className = 'ov-cap'; el.innerHTML = '<div class="cp-title"></div><div class="cp-text"></div>'; this.root.append(el); this.caps.set(k, el); }
-        const age = t - c.t0, out = (c.dur ?? 4) - age, a = Math.max(0, Math.min(1, age / 0.4, out / 0.4)), e = 1 - (1 - a) ** 3;
-        el.style.opacity = String(a); el.style.transform = `translateX(${(1 - e) * -30}px)`;
-        const ti = el.querySelector('.cp-title') as HTMLElement;
-        setText(ti, c.title ?? ''); ti.style.display = c.title ? '' : 'none'; setText(el.querySelector('.cp-text')!, c.text);
+        if (!el) { el = lowerThird(k === 'whatif' ? 'whatif' : ''); this.zone.append(el); this.caps.set(k, el); }
+        showLowerThird(el, t, c.t0, c.dur ?? 4, c.title ?? '', c.text);
       }
     }
     // commentary subtitle: from its t until ~reading time or the next line
@@ -98,24 +94,16 @@ export class Overlay {
     for (let k = 0; k < L.length && L[k].t <= t; k++) i = k;
     const line = i >= 0 ? L[i] : null;
     const dur = line ? Math.min(Math.max(3, line.text.split(/\s+/).length * 0.42 + 1), (L[i + 1]?.t ?? Infinity) - line.t) : 0;
-    const a = line ? Math.max(0, Math.min(1, (t - line.t) / 0.25, (line.t + dur - t) / 0.35)) : 0;
-    this.sub.style.opacity = String(a); this.sub.style.transform = `translateX(-50%) translateY(${(1 - a) * 10}px)`;
-    if (line) setText(this.sub.querySelector('.ov-sub-text')!, line.text);
-    this.sub.classList.toggle('excited', line?.voice_style === 'excited');
-    // voice waveform: animates while a line is being spoken (deterministic from t, so it records identically)
-    if (this.wave) this.wave.forEach((b, j) => {
-      const h = a * (0.25 + 0.75 * Math.abs(Math.sin(t * 13 + j * 1.7) * Math.sin(t * 5.3 + j * 0.9)));
-      b.style.transform = `scaleY(${Math.max(0.08, h)})`;
-    });
+    if (line) showLowerThird(this.sub, t, line.t, dur, (this.sub.querySelector('.lt-kicker') as HTMLElement).textContent!, line.text);
+    else this.sub.style.display = 'none';
     if (this.card) {
-      this.card.style.opacity = card ? '1' : '0';
+      this.card.style.display = card ? '' : 'none';
       if (card) {
-        const q = (c: string) => this.card!.querySelector(c)!;
-        (q('.pc-num') as HTMLElement).style.background = card.color;
-        setText(q('.pc-num'), String(card.num)); setText(q('.pc-name'), card.name.toUpperCase());
-        setText(q('.pc-kmh'), card.kmh.toFixed(1)); setText(q('.pc-dist'), card.dist.toFixed(0)); setText(q('.pc-hr'), card.hr.toFixed(0));
-        (q('.pc-bar i') as HTMLElement).style.width = `${Math.min(100, (card.kmh / 34) * 100)}%`;
-        this.card.classList.toggle('sprint', card.kmh > 27);
+        const q = (c: string) => this.card!.querySelector(c)! as HTMLElement;
+        this.card.style.setProperty('--team', card.color);
+        setText(q('.num'), String(card.num)); setText(q('.name'), card.name);
+        q('.pc-kmh').innerHTML = `${card.kmh.toFixed(1)}<small>km/h</small>`; q('.pc-kmh').classList.toggle('live', card.kmh > 27);
+        q('.pc-dist').innerHTML = `${card.dist.toFixed(0)}<small>m</small>`; q('.pc-hr').innerHTML = `${card.hr.toFixed(0)}<small>bpm</small>`;
       }
     }
     // voice: realtime playback only (the recorder muxes audio from demo.audio instead)
