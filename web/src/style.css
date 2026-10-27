@@ -107,6 +107,7 @@ body.split #tactics, body.quad #tactics { display: none; }
 /* split / ghost: one badge per half, top centre */
 .view-label { position: absolute; top: var(--safe-y); left: 50%; transform: translateX(-50%); z-index: 2; }
 body:not(.multi) .view-label, body.quad .view-label { display: none; }
+body:not(.split) .vl-score { display: none; } /* ghost: the scorebug already carries the score */
 
 /* lower-third zones: stack bottom-left of the frame (zone-r = right half in split), above the subtitle row */
 .zone { position: fixed; z-index: 4; bottom: calc(var(--base-b) + var(--subrow, 0px)); left: var(--safe-x); max-width: calc(50vw - 2 * var(--safe-x));

@@ -17,3 +17,4 @@ body.c-rewind, html:has(body.c-rewind) { background: transparent; }
 .ar-stack { display: flex; gap: var(--s2); margin-top: calc(var(--u) * 12); align-items: center; }
 .ar-stack .fs-kicker { margin-right: var(--s4); font-size: var(--fs-1); white-space: nowrap; }
 .ar-stack .badge { --k: 1.2; flex: none; }
+.ar-row .ag-top { flex-wrap: nowrap; }
