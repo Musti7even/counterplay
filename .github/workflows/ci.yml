@@ -1,0 +1,26 @@
+# Checks that need neither the GRF engine build nor any credentials.
+name: ci
+on: [push, pull_request]
+
+jobs:
+  web:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: web } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm, cache-dependency-path: web/package-lock.json }
+      - run: npm ci
+      - run: npx tsc --noEmit          # typecheck
+      - run: npm run check             # formation snapper self-check
+      - run: npm run build             # static site (what GitHub Pages serves)
+
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install 'numpy<3'
+      - run: python engine/insights.py --selftest   # pass difficulty, xG, load, window stats
+      - run: python agents/phrases.py               # every claim kind renders in en/es/tr/de, no unverified digits
