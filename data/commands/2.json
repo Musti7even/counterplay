@@ -1,0 +1,44 @@
+{
+ "n": 2,
+ "text": "Show me that goal from four angles.",
+ "source": "faster-whisper small",
+ "audio": {
+  "file": "2.mp3",
+  "start": 0.0,
+  "end": 2.0
+ },
+ "mode": "rules",
+ "backend": "rule-based intent router (no LLM)",
+ "tool_calls": [
+  {
+   "name": "set_view",
+   "args": {
+    "view": "angles4"
+   },
+   "result": {
+    "view": "angles4"
+   }
+  }
+ ],
+ "cues": [
+  {
+   "t": 63.0,
+   "view": "angles4",
+   "cut": true
+  },
+  {
+   "t": 63.0,
+   "select": "h8"
+  }
+ ],
+ "state": {
+  "view": "angles4",
+  "persona": "casual",
+  "lang": "en",
+  "level": "simple",
+  "highlight": [],
+  "fork": null
+ },
+ "run": "match.casual.en.goal",
+ "ms": 0
+}

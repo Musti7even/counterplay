@@ -1,0 +1,27 @@
+{
+ "n": 9,
+ "text": "Counterplay, your match on command.",
+ "source": "faster-whisper small",
+ "audio": {
+  "file": "9.mp3",
+  "start": 0.0,
+  "end": 2.0
+ },
+ "mode": "rules",
+ "backend": "rule-based intent router (no LLM)",
+ "tool_calls": [],
+ "cues": [],
+ "state": {
+  "view": "split",
+  "persona": "analyst",
+  "lang": "en",
+  "level": "expert",
+  "highlight": [
+   "h8",
+   "a6"
+  ],
+  "fork": "fork-step_up"
+ },
+ "run": "match.analyst.en.goal",
+ "ms": 0
+}

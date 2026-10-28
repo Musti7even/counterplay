@@ -1,0 +1,41 @@
+{
+ "n": 6,
+ "text": "How would a German commentator call it?",
+ "source": "faster-whisper small",
+ "audio": {
+  "file": "6.mp3",
+  "start": 0.0,
+  "end": 2.0
+ },
+ "mode": "rules",
+ "backend": "rule-based intent router (no LLM)",
+ "tool_calls": [
+  {
+   "name": "set_language",
+   "args": {
+    "lang": "de"
+   },
+   "result": {
+    "lang": "de",
+    "run": "match.casual.de.goal"
+   }
+  }
+ ],
+ "cues": [
+  {
+   "t": 63.0,
+   "view": "single",
+   "cut": true
+  }
+ ],
+ "state": {
+  "view": "split",
+  "persona": "casual",
+  "lang": "de",
+  "level": "simple",
+  "highlight": [],
+  "fork": "fork-step_up"
+ },
+ "run": "match.casual.de.goal",
+ "ms": 0
+}

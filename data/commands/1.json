@@ -1,0 +1,39 @@
+{
+ "n": 1,
+ "text": "We're watching a match live, minute 69, watch this.",
+ "source": "faster-whisper small",
+ "audio": {
+  "file": "1.mp3",
+  "start": 0.0,
+  "end": 2.6
+ },
+ "mode": "rules",
+ "backend": "rule-based intent router (no LLM)",
+ "tool_calls": [
+  {
+   "name": "seek",
+   "args": {
+    "t": 63.0
+   },
+   "result": {
+    "t": 63.0
+   }
+  }
+ ],
+ "cues": [
+  {
+   "t": 63.0,
+   "speed": 1
+  }
+ ],
+ "state": {
+  "view": "single",
+  "persona": "casual",
+  "lang": "en",
+  "level": "simple",
+  "highlight": [],
+  "fork": null
+ },
+ "run": "match.casual.en.goal",
+ "ms": 129
+}

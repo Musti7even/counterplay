@@ -95,6 +95,14 @@ def _pid(id):
 
 
 @mcp.tool()
+def get_roster(match: str = 'match') -> dict:
+    """Both squads: team names and players (id, number, name, position), to resolve names like 'Sørensen' to ids."""
+    doc, _ = load(match)
+    return {s: {'name': doc['meta'][s]['name'], 'short': doc['meta'][s]['short'], 'players': doc['meta'][s]['players']}
+            for s in I.SIDES}
+
+
+@mcp.tool()
 def get_player_events(id: str, match: str = 'match') -> dict:
     """Events a player is part of: his passes/shots/tackles/interceptions (role actor) and tackles suffered (role beaten), with the other player's name."""
     doc, ins = load(match)

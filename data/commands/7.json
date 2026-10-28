@@ -1,0 +1,87 @@
+{
+ "n": 7,
+ "text": "When I watch alone, I want the full tactics.",
+ "source": "faster-whisper small",
+ "audio": {
+  "file": "7.mp3",
+  "start": 0.0,
+  "end": 2.0
+ },
+ "mode": "rules",
+ "backend": "rule-based intent router (no LLM)",
+ "tool_calls": [
+  {
+   "name": "set_commentary_level",
+   "args": {
+    "level": "expert"
+   },
+   "result": {
+    "level": "expert",
+    "run": null
+   }
+  },
+  {
+   "name": "highlight_players",
+   "args": {
+    "players": [
+     "h8",
+     "a6"
+    ]
+   },
+   "result": {
+    "players": [
+     "h8",
+     "a6"
+    ]
+   }
+  },
+  {
+   "name": "set_language",
+   "args": {
+    "lang": "en"
+   },
+   "result": {
+    "lang": "en",
+    "run": "match.analyst.en.goal"
+   }
+  }
+ ],
+ "cues": [
+  {
+   "t": 63.0,
+   "view": "single",
+   "cut": true
+  },
+  {
+   "t": 63.0,
+   "lensTo": 1.0,
+   "over": 1.5
+  },
+  {
+   "t": 63.0,
+   "view": "single",
+   "cut": true
+  },
+  {
+   "t": 63.5,
+   "select": "h8"
+  },
+  {
+   "t": 66.5,
+   "select": "a6"
+  }
+ ],
+ "state": {
+  "view": "split",
+  "persona": "analyst",
+  "lang": "en",
+  "level": "expert",
+  "highlight": [
+   "h8",
+   "a6"
+  ],
+  "fork": "fork-step_up"
+ },
+ "run": "match.analyst.en.goal",
+ "ms": 0
+}

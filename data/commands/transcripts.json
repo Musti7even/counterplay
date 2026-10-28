@@ -1,0 +1,59 @@
+{
+ "model": "faster-whisper small",
+ "utterances": [
+  {
+   "file": "1.mp3",
+   "start": 0.0,
+   "end": 2.6,
+   "text": "We're watching a match live, minute 69, watch this."
+  },
+  {
+   "file": "2.mp3",
+   "start": 0.0,
+   "end": 2.0,
+   "text": "Show me that goal from four angles."
+  },
+  {
+   "file": "3.mp3",
+   "start": 0.0,
+   "end": 4.0,
+   "text": "My uncle says it's Sørensen's fault. Show me what happens if he steps up."
+  },
+  {
+   "file": "4.mp3",
+   "start": 0.0,
+   "end": 2.4,
+   "text": "My uncle's new to football. Make the commentary simple."
+  },
+  {
+   "file": "5.mp3",
+   "start": 0.0,
+   "end": 0.8,
+   "text": "Now in Spanish."
+  },
+  {
+   "file": "6.mp3",
+   "start": 0.0,
+   "end": 2.0,
+   "text": "How would a German commentator call it?"
+  },
+  {
+   "file": "7.mp3",
+   "start": 0.0,
+   "end": 2.0,
+   "text": "When I watch alone, I want the full tactics."
+  },
+  {
+   "file": "8.mp3",
+   "start": 0.0,
+   "end": 6.24,
+   "text": "Behind every command, six agents. They find the moment, re-simulate it, check every number, and direct the show."
+  },
+  {
+   "file": "9.mp3",
+   "start": 0.0,
+   "end": 2.0,
+   "text": "Counterplay, your match on command."
+  }
+ ]
+}

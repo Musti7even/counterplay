@@ -1,0 +1,83 @@
+{
+ "n": 3,
+ "text": "My uncle says it's Sørensen's fault. Show me what happens if he steps up.",
+ "source": "faster-whisper small",
+ "audio": {
+  "file": "3.mp3",
+  "start": 0.0,
+  "end": 4.0
+ },
+ "mode": "rules",
+ "backend": "rule-based intent router (no LLM)",
+ "tool_calls": [
+  {
+   "name": "fork_what_if",
+   "args": {
+    "at": 66.5,
+    "tweak": "step_up",
+    "player": "a6"
+   },
+   "result": {
+    "fork": "fork-step_up",
+    "reused": true,
+    "at": 66.5,
+    "player": "a6",
+    "tweak": "step_up",
+    "goalsPrevented": [
+     [
+      69.5,
+      "home"
+     ]
+    ],
+    "scoreAt": 76.5,
+    "original": "1–0",
+    "whatIf": "0–0"
+   }
+  }
+ ],
+ "cues": [
+  {
+   "t": 61.5,
+   "caption": {
+    "title": "WHAT IF · SIMULATING",
+    "text": "5 H. Sørensen · step up",
+    "dur": 3
+   }
+  },
+  {
+   "t": 61.5,
+   "view": "split",
+   "cut": true,
+   "select": "a6"
+  },
+  {
+   "t": 67.5,
+   "view": "ghost",
+   "cut": true
+  },
+  {
+   "t": 69.5,
+   "view": "split",
+   "cut": true
+  },
+  {
+   "t": 69.5,
+   "caption": {
+    "title": "RESULT",
+    "text": "1–0 becomes 0–0",
+    "dur": 4,
+    "side": "whatif"
+   }
+  }
+ ],
+ "state": {
+  "view": "split",
+  "persona": "casual",
+  "lang": "en",
+  "level": "simple",
+  "highlight": [],
+  "fork": "fork-step_up"
+ },
+ "run": "match.casual.en.goal",
+ "ms": 422
+}
