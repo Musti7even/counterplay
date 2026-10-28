@@ -38,3 +38,15 @@ body.c-bar, body.c-cap, body.c-hook, html:has(body.c-bar), html:has(body.c-cap),
 body.c-qlabels, html:has(body.c-qlabels) { background: transparent; }
 .c-qlabels #card { padding: 0; display: block; }
 .qlab { position: absolute; height: 36px; font-size: 14px; }
+
+/* v4: voice command pill + tool chip, simulating badge, commentary subtitle */
+body.c-cmd, body.c-sim, body.c-sub, html:has(body.c-cmd), html:has(body.c-sim), html:has(body.c-sub) { background: transparent; }
+.c-cmd #card, .c-sim #card, .c-sub #card { padding: 0; display: block; }
+.cmdz { position: absolute; left: var(--safe-x); bottom: calc(var(--u) * 44); display: flex; flex-direction: column; align-items: flex-start; gap: var(--s2); max-width: 62%; }
+.pill { display: flex; align-items: center; gap: var(--s3); background: var(--surface); border-radius: calc(var(--u) * 6); padding: var(--s3) var(--s5) var(--s3) var(--s5);
+  font-size: var(--fs-3); font-weight: 500; line-height: 1.25; }
+.pill .mic { flex: none; width: calc(var(--u) * 2.4); height: calc(var(--u) * 2.4); border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 calc(var(--u) * 1) rgba(56, 255, 139, 0.18); }
+.cmdchip { font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace; font-size: calc(var(--fs-1) * 1.05); margin-left: calc(var(--u) * 3); }
+.hid { visibility: hidden; }
+.simz { position: absolute; left: var(--safe-x); top: var(--safe-y); --k: 1.4; }
+.subz { position: absolute; left: 50%; bottom: var(--safe-y); transform: translateX(-50%); max-width: 80%; width: max-content; }

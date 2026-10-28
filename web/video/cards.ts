@@ -31,5 +31,11 @@ if (card === 'cap') el.innerHTML = `<div class="capz ${q.get('up') ? 'up' : ''}"
 // quad persona labels, drawn over the baked ones (same spot in each quadrant of a 1920x1080 quad frame)
 if (card === 'qlabels') el.innerHTML = ['l1', 'l2', 'l3', 'l4'].map((k, i) =>
   `<span class="badge plain qlab" style="left:${(i % 2) * 960 + 46}px;top:${Math.floor(i / 2) * 540 + 62}px"><span>${q.get(k) ?? ''}</span></span>`).join('');
+// v4: voice command pill (bottom-left) + tool-call chip under it; part=pill|chip renders one, both at fixed positions
+if (card === 'cmd') { const part = q.get('part') ?? 'pill';
+  el.innerHTML = `<div class="cmdz"><div class="pill ${part === 'pill' ? '' : 'hid'}"><i class="mic"></i><span>${q.get('t') ?? ''}</span></div>
+    <div class="chip new cmdchip ${part === 'chip' ? '' : 'hid'}">${q.get('c') ?? ''}</div></div>`; }
+if (card === 'sim') el.innerHTML = `<div class="simz"><span class="badge whatif"><span>What if</span><span class="bd-v">Simulating…</span></span></div>`;
+if (card === 'sub') el.innerHTML = `<div class="subz"><div class="lt sub"><div class="lt-body"><div class="lt-kicker">${q.get('k') ?? ''}</div><div class="lt-line">${q.get('t') ?? ''}</div></div></div></div>`;
 if (card === 'hook') el.innerHTML = `<h1 class="fs-title hook">${q.get('t') ?? ''}</h1>`;
 document.fonts.ready.then(() => { (window as any).__ready = true; });
