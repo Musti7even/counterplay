@@ -125,7 +125,7 @@ async function main() {
   document.getElementById('help-btn')!.onclick = () => help.classList.toggle('show');
   help.onclick = (e) => { if (e.target === help) help.classList.remove('show'); };
   addEventListener('keydown', (e) => { if (e.key === '?') help.classList.toggle('show'); else if (e.key === 'Escape') help.classList.remove('show'); });
-  if (q.get('view') === 'quad') return quad();
+  if (q.get('view') === 'quad' || q.get('view') === 'angles4') return quad();
   const script = await loadScript(q);
   // agent run outputs: /data/<run>.cues.json has siblings <run>.commentary.json and <run>.trace.json
   const run = q.get('cues')?.match(/(?:^|\/)data\/([^/]+)\.cues\.json$/)?.[1];
@@ -276,23 +276,28 @@ async function main() {
 }
 
 // Persona quad: the same moment for four agent runs (cues + commentary each), one match clock.
+// angles4: the same moment from four cameras (no captions/commentary); quad: four persona runs
+const ANGLES: { cam: CamMode; label: string; lens: number }[] = [
+  { cam: 'broadcast', label: 'Broadcast', lens: 0.15 }, { cam: 'tactical', label: 'High tactical', lens: 0.3 },
+  { cam: 'player', label: 'Player cam · Moreau', lens: 0.15 }, { cam: 'goal', label: 'Behind the goal', lens: 0.15 }];
 async function quad() {
-  const runs = (q.get('quad') ?? 'match.casual.en,match.analyst.en,match.player-a6.de,match.casual.tr').split(',');
+  const angles = q.get('view') === 'angles4';
+  const runs = angles ? ANGLES.map(() => 'match.casual.en') : (q.get('quad') ?? 'match.casual.en,match.analyst.en,match.player-a6.de,match.casual.tr').split(',');
   const scripts = await Promise.all(runs.map(async (r) => { const s = (await (await fetch(`data/${r}.cues.json`)).json()) as Script; s.cues.sort((a, b) => a.t - b.t); return s; }));
-  const coms = await Promise.all(runs.map((r) => loadCommentary(`data/${r}.commentary.json`).catch(() => null)));
+  const coms = angles ? runs.map(() => null) : await Promise.all(runs.map((r) => loadCommentary(`data/${r}.commentary.json`).catch(() => null)));
   const orig = await loadMatch(scripts[0].match ?? 'match');
   const from = +(q.get('from') ?? q.get('t') ?? 60), to = +(q.get('to') ?? from + 12);
   state.t = from;
   document.body.classList.add('quad', 'multi');
   const viewsEl = document.getElementById('views')!;
   // each quadrant gets a distinct look: casual (clean, warm), analyst (tactical cam, full lens, cool), player cam + card, other language
-  const variants: Variant[] = runs.map((r) => { const [, p, l] = r.split('.'); return p === 'analyst' ? 'analyst' : p.startsWith('player') ? 'player' : l !== 'en' ? 'lang' : 'casual'; });
+  const variants: Variant[] = angles ? ANGLES.map(() => 'casual') : runs.map((r) => { const [, p, l] = r.split('.'); return p === 'analyst' ? 'analyst' : p.startsWith('player') ? 'player' : l !== 'en' ? 'lang' : 'casual'; });
   const views = runs.map((r, i) => {
     const [, persona, lang] = r.split('.');
     const v = new View(orig, '', null, false, true);
     v.vs = { lens: scripts[i].lens ?? 0.2, cam: scripts[i].cam ?? 'broadcast', selected: null };
     v.gfx.tagScale = 1.5; // = overlay --k 0.75 / quadrant height 0.5
-    const label = `${persona.startsWith('player') ? 'Player cam' : persona} · ${lang ?? ''}`;
+    const label = angles ? ANGLES[i].label : `${persona.startsWith('player') ? 'Player cam' : persona} · ${lang ?? ''}`;
     v.overlay = new Overlay(v.el, { label, panel: persona === 'analyst', match: orig, commentary: coms[i], audio: i === 0, variant: variants[i] });
     viewsEl.append(v.el);
     return v;
@@ -331,6 +336,7 @@ async function quad() {
       if (vt === 'analyst') { d.cam = 'tactical'; d.lens = 1; }
       if (vt === 'player') { d.cam = 'player'; d.select ??= scripts[i].select; }
       if (vt === 'casual' || vt === 'lang') d.lens = Math.min(d.lens, 0.15);
+      if (angles) { d.cam = ANGLES[i].cam; d.lens = ANGLES[i].lens; d.select = ANGLES[i].cam === 'player' ? 'h8' : null; d.captions = {}; }
       if (i === 0) state.speed = orig.cuts.some((c) => state.t > c - 0.3 && state.t < c + 0.5) ? Math.max(1, d.speed) : d.speed; // one clock: the first quadrant's slow-mo drives all four
       if (d.cam !== v.vs.cam) { v.vs.cam = d.cam; v.rig.set(d.cam, d.cut || jumped); }
       if (d.select !== lastSel[i]) { lastSel[i] = d.select; if (d.select !== undefined) selectId(v.vs, d.select); }

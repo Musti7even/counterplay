@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { Side, Snapshot, dirOf } from './data';
 import { toWorld } from './scene';
 
-export type CamMode = 'broadcast' | 'tactical' | 'player';
+export type CamMode = 'broadcast' | 'tactical' | 'player' | 'goal';
 interface Pose { pos: THREE.Vector3; look: THREE.Vector3; fov: number }
 const damp = (a: number, b: number, k: number, dt: number) => a + (b - a) * (1 - Math.exp(-k * dt));
 const dampV = (a: THREE.Vector3, b: THREE.Vector3, k: number, dt: number) => a.lerp(b, 1 - Math.exp(-k * dt));
@@ -18,6 +18,7 @@ export class CameraRig {
     broadcast: { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 20 },
     tactical: { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 40 },
     player: { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 42 },
+    goal: { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 34 },
   };
   private snapNext = true;
   tight = false; // split halves: steeper, closer gantry so the pitch fills the narrow frame
@@ -60,6 +61,15 @@ export class CameraRig {
       dampV(p.look, look, 3 * k, dt);
       dampV(p.pos, new THREE.Vector3(pw.x - d * 13, 7.5, pw.z + 9), 2 * k, dt);
       p.fov = 42;
+    }
+
+    // behind the goal: low, between the net and the boards of the goal the attack is heading for, watching the ball come in
+    {
+      const p = this.poses.goal, sx = s.ball[0] >= 0 ? 1 : -1;
+      dampV(p.pos, new THREE.Vector3(sx * 56.6, 3.4, THREE.MathUtils.clamp(ball.z * 0.15, -4, 4)), 2 * k, dt);
+      const look = ball.clone(); look.y = 1.0; look.x = THREE.MathUtils.clamp(look.x, -60, 60);
+      dampV(p.look, look, 3 * k, dt);
+      p.fov = 34;
     }
 
     this.blend = Math.min(1, this.blend + dt / 1.4);
