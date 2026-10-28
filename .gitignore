@@ -10,3 +10,6 @@ web/shots/quick-*.mp4
 web/shots/*.mp4
 web/shots/*.frames.json
 web/shots/v2/
+# dev mocks (npm run mock) and regenerated video cards (scripts/cards*.mjs)
+data/*mock*.json
+web/shots/cards/v[234]-*
