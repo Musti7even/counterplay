@@ -209,4 +209,4 @@ body.landing #scorebug, body.landing #tactics, body.landing #whatif, body.landin
 
 /* video chapters: chapter bar is composited top-left, so top-left chrome moves down one row; app lower thirds off */
 body.chapterbar #scorebug, body.chapterbar #whatif, body.chapterbar .ov-label { transform: translateY(calc(var(--u) * 10)); }
-body.nol3 .zone, body.nol3 .ov-sub, body.nol3 #tactics { display: none !important; }
+body.nol3 .zone, body.nol3 .ov-sub, body.nol3 #tactics, body.nol3 #whatif { display: none !important; }
