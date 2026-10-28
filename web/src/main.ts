@@ -83,10 +83,12 @@ class View {
       if (on) this.ghosts.update(fs, dt, s);
     }
     const sel = this.vs.selected, after = t > forkT;
+    // ?path=a-b (video): draw both paths over a fixed window, e.g. the whole what-if run on a frozen frame
+    const pw = q.get('path')?.split('-').map(Number);
     const trail = (m: Match, r: Ribbon, on: boolean) => {
-      if (!on || !sel) return r.set([], 0);
-      const t0 = Math.max(forkT - 1, t - 14), n = Math.max(2, Math.min(150, Math.ceil((t - t0) / 0.1)));
-      const pts = Array.from({ length: n + 1 }, (_, k) => { const [x, y] = positionsAt(m, t0 + ((t - t0) * k) / n).pos[sel.side][sel.idx]; return toWorld(x, y, 0.06); });
+      if (!(on || pw) || !sel) return r.set([], 0);
+      const t0 = pw ? pw[0] : Math.max(forkT - 1, t - 14), te = pw ? pw[1] : t, n = Math.max(2, Math.min(150, Math.ceil((te - t0) / 0.1)));
+      const pts = Array.from({ length: n + 1 }, (_, k) => { const [x, y] = positionsAt(m, t0 + ((te - t0) * k) / n).pos[sel.side][sel.idx]; return toWorld(x, y, 0.06); });
       r.set(pts, 0.9);
     };
     trail(this.match, this.paths[this.whatIf ? 1 : 0], after);
@@ -212,6 +214,7 @@ async function main() {
   });
   if (q.get('ui') === '0' || capture) document.body.classList.add('noui');
   if (capture) document.body.classList.add('capture');
+  for (const c of ['chapterbar', 'nol3']) if (q.get(c) === '1') document.body.classList.add(c); // video chapters
   if (q.has('sel')) { const [side, idx] = q.get('sel')!.split(':'); state.selected = { side: side as Side, idx: +idx }; }
   addEventListener('resize', () => [main, alt].forEach((v) => v?.resize()));
 
@@ -313,6 +316,7 @@ async function quad() {
   };
   if (q.get('ui') === '0' || capture) document.body.classList.add('noui');
   if (capture) document.body.classList.add('capture');
+  for (const c of ['chapterbar', 'nol3']) if (q.get(c) === '1') document.body.classList.add(c); // video chapters
   views.forEach((v) => { v.resize(); v.rig.set(v.vs.cam, true); v.rig.snap(); });
   addEventListener('resize', () => views.forEach((v) => v.resize()));
   addEventListener('keydown', (e) => { if (e.key === ' ') { e.preventDefault(); state.playing = !state.playing; } });

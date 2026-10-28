@@ -206,3 +206,7 @@ body.landing #scorebug, body.landing #tactics, body.landing #whatif, body.landin
 #help .card-row b { text-align: left; font-size: var(--fs-2); font-weight: 500; }
 #help kbd { font: 700 var(--fs-1) var(--font); background: var(--surface-2); border-radius: var(--radius); padding: 0.1em 0.5em; margin-right: 0.3em; color: var(--text); }
 #help a { color: var(--text); }
+
+/* video chapters: chapter bar is composited top-left, so top-left chrome moves down one row; app lower thirds off */
+body.chapterbar #scorebug, body.chapterbar #whatif, body.chapterbar .ov-label { transform: translateY(calc(var(--u) * 10)); }
+body.nol3 .zone, body.nol3 .ov-sub, body.nol3 #tactics { display: none !important; }

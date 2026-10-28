@@ -20,3 +20,18 @@ body.c-rewind, html:has(body.c-rewind) { background: transparent; }
 .ar-row .ag-top { flex-wrap: nowrap; }
 
 .ar-note { margin-top: calc(var(--u) * 12); font-size: var(--fs-2); color: var(--text-2); letter-spacing: 0.02em; }
+
+/* demo v2 overlays: transparent full frames */
+body.c-bar, body.c-cap, body.c-hook, html:has(body.c-bar), html:has(body.c-cap), html:has(body.c-hook) { background: transparent; }
+.c-bar #card, .c-cap #card { padding: 0; display: block; }
+.chbar { position: absolute; top: var(--safe-y); left: var(--safe-x); display: flex; height: calc(var(--u) * 8); background: var(--surface); border-radius: var(--radius); overflow: hidden; }
+.chbar span { display: flex; align-items: center; gap: var(--s2); padding: 0 var(--s4); font-size: var(--fs-1); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-2); }
+.chbar span b { color: var(--text-2); font-weight: 800; }
+.chbar span.on { color: var(--text); background: var(--surface-2); box-shadow: inset 0 calc(var(--bar) * -1) 0 var(--accent); }
+.chbar span.on b { color: var(--accent); }
+.capz { position: absolute; left: var(--safe-x); bottom: calc(var(--safe-y) * 1.6); max-width: 60%; }
+.capz .lt-line { font-size: calc(var(--fs-4) * 1.15); }
+.c-hook #card { align-items: center; text-align: center; }
+.hook { max-width: 16em; text-shadow: 0 4px 30px rgba(0,0,0,0.6); }
+.capz.up { bottom: calc(var(--u) * 46); }
+.capz.alert .lt, .lt.alert { --sig: var(--alert); }

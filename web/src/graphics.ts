@@ -174,6 +174,12 @@ function arrowHead() {
 export interface GfxCtx { lens: number; selected: { side: Side; idx: number } | null; now: number; dt: number; cam: THREE.PerspectiveCamera }
 
 const W = (x: number, y: number, z = 0.04) => toWorld(x, y, z);
+// video chapters: ?gfx=line,lineTag,run,gap,owner,shot,pass,press,offside,shape,flare forces exactly these graphics on
+// (one new graphic at a time); ?run=home:7:66:69 = a player's run drawn as an accent arrow over that window.
+const _gq = new URLSearchParams(location.search);
+const ONLY = _gq.has('gfx') ? new Set(_gq.get('gfx')!.split(',')) : null;
+const RUN = _gq.get('run')?.split(':');
+const on = (k: string, w: number) => (ONLY ? (ONLY.has(k) ? 1 : 0) : w);
 const WHITE = col(C.text), ACCENT = col(C.accent), ALERT = col(C.alert);
 const TAG_H0 = 0.04 / PLATE; // plate = 4 % of the view height // plate height = 3.4 % of the frame (= --u * 7 at 1080p)
 
@@ -187,6 +193,7 @@ export class Graphics {
   private hullLine: Record<Side, Ribbon> = {} as any; private hullFill: Record<Side, THREE.Mesh> = {} as any;
   private arrows: { rib: Ribbon; head: THREE.Mesh }[] = [];
   private pressLines: Ribbon[] = [];
+  private runRib = new Ribbon(LINE.primary, ACCENT.clone(), 64); private runHead = arrowHead(); private gapRib = new Ribbon(LINE.primary, ACCENT.clone(), 2);
   private fades = new Map<string, number>();
   last?: Record<Side, TeamMetrics>;
   pressureCount = 0;
@@ -206,6 +213,7 @@ export class Graphics {
     }
     for (let i = 0; i < 6; i++) { const a = { rib: new Ribbon(LINE.primary, WHITE.clone()), head: arrowHead() }; this.arrows.push(a); add(a.rib.mesh, a.head); }
     for (let i = 0; i < 4; i++) { const r = new Ribbon(LINE.secondary, ALERT.clone(), 2, LINE.dash * 0.6); this.pressLines.push(r); add(r.mesh); }
+    add(this.runRib.mesh, this.runHead, this.gapRib.mesh);
   }
 
   // eased per-key value so things fade in/out over time, not just with the lens
@@ -221,8 +229,9 @@ export class Graphics {
     Ribbon.k = THREE.MathUtils.clamp((cam.position.distanceTo(W(s.ball[0], s.ball[1], 0)) * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)) / 10.6) ** 1.5, 0.25, 1.6);
     // lens weights (DESIGN.md density): casual = carrier + one speed tag; analysis = + back line, passes, pressure;
     // tactical = + offside, shape (speed tags drop out)
-    const wPass = smooth(0.15, 0.45, lens), wPress = smooth(0.35, 0.6, lens), wLine = smooth(0.35, 0.65, lens);
-    const wOff = smooth(0.6, 0.85, lens), wShape = smooth(0.65, 0.95, lens), wFlare = 1 - smooth(0.55, 0.75, lens);
+    const wPass = on('pass', smooth(0.15, 0.45, lens)), wPress = on('press', smooth(0.35, 0.6, lens)), wLine = on('line', smooth(0.35, 0.65, lens));
+    const wOff = on('offside', smooth(0.6, 0.85, lens)), wShape = on('shape', smooth(0.65, 0.95, lens)), wFlare = on('flare', 1 - smooth(0.55, 0.75, lens));
+    const wOwner = on('owner', 1), wTag = on('lineTag', 1), wShot = on('shot', 1);
     const live = s.mode === 'play' ? 1 : 0;
     const pp = (side: Side, i: number) => s.pos[side][i];
     const speed = (side: Side, i: number) => Math.hypot(...s.vel[side][i]);
@@ -230,7 +239,7 @@ export class Graphics {
     const kmh = (sp: number): [string, string] => [(sp * 3.6).toFixed(1), 'km/h'];
 
     // ball carrier: white ring + tag (every lens)
-    const own = s.owner, fOwn = this.fade('own', own ? 1 : 0, dt, 8);
+    const own = s.owner, fOwn = this.fade('own', own ? 1 : 0, dt, 8) * wOwner;
     if (own) {
       const [x, y] = pp(own.team, own.idx), tm = m.meta[own.team], p = tm.players[own.idx], sp = speed(own.team, own.idx), fast = sp > SPRINT && wFlare > 0.5;
       this.ownerRing.set(W(x, y), 1.0, LINE.secondary, WHITE, fOwn, ease(fOwn));
@@ -276,7 +285,7 @@ export class Graphics {
       const far = line[0] && line[line.length - 1];
       const hgt = mt.lineHeight.toFixed(1);
       this.lineTag.draw(`${hgt}`, (g, cw, ch) => drawLabel(g, cw, ch, 'LINE HEIGHT', `${hgt} m`));
-      this.lineTag.place(far ? far.clone().add(new THREE.Vector3(0, 0.3, -2)) : null, TAG_H * 0.9, cam, smooth(0.6, 1, w)); // same size as player tags
+      this.lineTag.place(far ? far.clone().add(new THREE.Vector3(0, 0.3, -2)) : null, TAG_H * 0.9, cam, smooth(0.6, 1, w) * wTag); // same size as player tags
       // offside line across the pitch at the second-last defender: secondary dashed
       const wo = wOff * fd[side] * live;
       this.offside.set([W(mt.offsideX, -34, 0.05), W(mt.offsideX, 34, 0.05)], Math.min(1, wo * 3) * 0.6, ease(wo));
@@ -308,7 +317,7 @@ export class Graphics {
       const from: V2 = e.from ?? (positionsAt(m, e.t).pos[side][e.idx ?? 0]);
       const to: V2 = e.to ?? (isShot ? [52.5 * dirOf(side), 0] : positionsAt(m, e.t + (e.dur ?? 1)).ball.slice(0, 2) as V2);
       const prog = ease(Math.min(1, (s.t - e.t) / (e.dur ?? 1))), fade = 1 - Math.min(1, Math.max(0, (s.t - e.t - (e.dur ?? 1)) / 1.4));
-      const weight = isShot ? 1 : wPass;
+      const weight = isShot ? wShot : wPass;
       const color = e.ok === false ? ALERT : WHITE;
       const pts: THREE.Vector3[] = [];
       for (let i = 0; i <= 24; i++) { const u = i / 24; pts.push(W(from[0] + (to[0] - from[0]) * u, from[1] + (to[1] - from[1]) * u, 0.05)); }
@@ -337,6 +346,25 @@ export class Graphics {
       });
     } else { this.pressRing.hide(); this.pressLines.forEach((r) => r.set([], 0)); }
     this.pressureCount = n;
+
+    // chapter graphics: a player's run (accent arrow) and the gap in the back line he runs into
+    if (RUN) {
+      const side = RUN[0] as Side, idx = +RUN[1], t0 = +RUN[2], t1 = +RUN[3];
+      const wr = on('run', 0), pts: THREE.Vector3[] = [];
+      for (let k = 0; k <= 40; k++) { const p = positionsAt(m, t0 + ((t1 - t0) * k) / 40).pos[side][idx]; pts.push(W(p[0], p[1], 0.06)); }
+      this.runRib.set(pts, wr, 1);
+      const a = pts[pts.length - 2], b = pts[pts.length - 1];
+      this.runHead.visible = wr > 0.01; this.runHead.position.copy(b);
+      this.runHead.rotation.set(-Math.PI / 2, 0, Math.atan2(-(b.z - a.z), b.x - a.x) - Math.PI / 2);
+      this.runHead.scale.setScalar(Ribbon.k); (this.runHead.material as THREE.MeshBasicMaterial).color.copy(ACCENT);
+      (this.runHead.material as THREE.MeshBasicMaterial).opacity = wr;
+      // gap: the two back-line defenders either side of the runner's line toward goal
+      const opp: Side = side === 'home' ? 'away' : 'home', D = met[opp].shape.def.map((i) => s.pos[opp][i]).sort((p, q) => p[1] - q[1]);
+      const ry = positionsAt(m, t1).pos[side][idx][1];
+      const j = D.findIndex((p) => p[1] > ry);
+      const wg = on('gap', 0);
+      this.gapRib.set(j > 0 ? [W(D[j - 1][0], D[j - 1][1], 0.07), W(D[j][0], D[j][1], 0.07)] : [], wg, 1);
+    }
     this.declutter(cam, dt);
   }
 

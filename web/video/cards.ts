@@ -23,4 +23,10 @@ if (card === 'arch') el.innerHTML = `<div class="fs-kicker">How it works</div>
     ${node('06', 'Renderer', 'three.js broadcast: split, ghost, quad')}
   </div>
   <div class="ar-note">Model + voice backends: Azure OpenAI / Foundry · Azure AI Speech (configurable)</div>`;
+// demo v2 overlays (transparent, composited in ffmpeg): chapter bar, lower-third caption, hook lines
+const CH = ['What happened', 'Why', 'What if', 'Every fan', 'How'];
+if (card === 'bar') { const n = +(q.get('n') ?? 1);
+  el.innerHTML = `<div class="chbar">${CH.map((c, i) => `<span class="${i + 1 === n ? 'on' : ''}"><b>${i + 1}</b>${c}</span>`).join('')}</div>`; }
+if (card === 'cap') el.innerHTML = `<div class="capz ${q.get('up') ? 'up' : ''}"><div class="lt ${q.get('sig') ?? ''}"><div class="lt-body">${q.get('k') ? `<div class="lt-kicker">${q.get('k')}</div>` : ''}<div class="lt-line">${q.get('t') ?? ''}</div></div></div></div>`;
+if (card === 'hook') el.innerHTML = `<h1 class="fs-title hook">${q.get('t') ?? ''}</h1>`;
 document.fonts.ready.then(() => { (window as any).__ready = true; });

@@ -28,6 +28,9 @@ export async function loadTrace(url: string): Promise<Trace> {
   return r.json();
 }
 
+const _cs = new URLSearchParams(location.search).get('controlStep');
+const FORCE_STEP = _cs != null ? +_cs : null;
+
 export class ControlStrip {
   el = document.createElement('div');
   private nodes = new Map<string, HTMLElement>();
@@ -60,6 +63,7 @@ export class ControlStrip {
     const S = this.tr.steps;
     let k = 0;
     while (k < S.length && this.times[k] <= t) k++;
+    if (FORCE_STEP != null) k = FORCE_STEP; // video: show the crew exactly at step k
     // handoff pulses travel along the link into the receiving agent
     this.links.forEach((l, i) => {
       const hi = S.findIndex((s, j) => j < k && s.action === 'handoff' && s.agent === AGENTS[i + 1][0] && t - this.times[j] < 0.6);
