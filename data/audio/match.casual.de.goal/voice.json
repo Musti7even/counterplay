@@ -1,0 +1,21 @@
+[
+ {
+  "t": 63.0,
+  "file": "000.mp3",
+  "dur": 6.31,
+  "text": "Redmoor FC hat sich in der Hälfte von Halvard Athletic festgesetzt, Halvard Athletic kommt gar nicht mehr an den Ball.",
+  "spoken": "Redmoor FC hat sich in der Hälfte von Halvard Athletic festgesetzt, Halvard Athletic kommt gar nicht mehr an den Ball.",
+  "engine": "elevenlabs",
+  "voice": "elevenlabs:Adam",
+  "tempo": 1.068
+ },
+ {
+  "t": 69.5,
+  "file": "001.mp3",
+  "dur": 5.48,
+  "text": "TOOOR! D. Moreau versenkt ihn! Redmoor FC stellt auf 1-0.",
+  "spoken": "Tor! Moreau versenkt ihn! Redmoor FC stellt auf eins zu null.",
+  "engine": "elevenlabs",
+  "voice": "elevenlabs:Adam"
+ }
+]

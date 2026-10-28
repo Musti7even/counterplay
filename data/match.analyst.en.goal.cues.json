@@ -1,0 +1,40 @@
+{
+ "name": "match.analyst.en.goal",
+ "match": "match",
+ "from": 63.0,
+ "to": 72.0,
+ "cam": "broadcast",
+ "lens": 0.8,
+ "select": null,
+ "cues": [
+  {
+   "t": 1,
+   "lensTo": 0.8,
+   "over": 3
+  },
+  {
+   "t": 63.0,
+   "caption": {
+    "title": "BUILD-UP",
+    "text": "Redmoor FC · 100% · line 31 m",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 67.5,
+   "speed": 0.5
+  },
+  {
+   "t": 69.5,
+   "caption": {
+    "title": "GOAL",
+    "text": "D. Moreau · xG 0.236",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 70.0,
+   "speed": 1
+  }
+ ]
+}

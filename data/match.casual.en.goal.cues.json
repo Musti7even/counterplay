@@ -1,0 +1,35 @@
+{
+ "name": "match.casual.en.goal",
+ "match": "match",
+ "from": 63.0,
+ "to": 72.0,
+ "cam": "broadcast",
+ "lens": 0.15,
+ "select": null,
+ "cues": [
+  {
+   "t": 63.0,
+   "caption": {
+    "title": "ALL Redmoor FC",
+    "text": "Halvard Athletic can't get out",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 67.5,
+   "speed": 0.5
+  },
+  {
+   "t": 69.5,
+   "caption": {
+    "title": "GOAL!",
+    "text": "D. Moreau · Redmoor FC",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 70.0,
+   "speed": 1
+  }
+ ]
+}
