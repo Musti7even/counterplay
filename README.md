@@ -74,7 +74,7 @@ Every handoff, tool call, retry and fallback is written to `data/<run>.trace.jso
 
 ## MCP tools
 
-`engine/mcp_server.py` is a FastMCP server (official `mcp` SDK), over stdio or streamable HTTP. Every tool takes `match` (`"match"` or a fork name).
+`engine/mcp_server.py` is a FastMCP server (official `mcp` SDK), over stdio or streamable HTTP. Tools take `match` (`"match"` or a fork name); `compare_fork` takes the fork name.
 
 | tool | returns |
 |---|---|
@@ -88,7 +88,7 @@ Every handoff, tool call, retry and fallback is written to `data/<run>.trace.jso
 | `explain_evidence(event_id)` | metrics for an event `e<N>` or moment `m<N>`, the frame around it, linked events |
 | `list_forks()` | existing what-if forks of a match |
 | `compare_fork(fork)` | goals prevented or created, score, player displacement vs the original |
-| `fork_what_if(at, tweak, player, len, secs)` | re-simulates from `at` with one tweak (3–15 s), writes the fork and its insights, returns the divergence |
+| `fork_what_if(at, tweak, player, len, secs)` | re-simulates from `at` with one tweak (takes 3–15 s), writes the fork and its insights, returns the divergence |
 
 A real transcript of these calls is in [`engine/README.md`](engine/README.md#insights--mcp-server-agent-layer).
 
