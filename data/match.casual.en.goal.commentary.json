@@ -1,0 +1,22 @@
+[
+ {
+  "t": 63.0,
+  "text": "Redmoor FC have camped in Halvard Athletic's half. Halvard Athletic simply can't get a touch.",
+  "voice_style": "calm",
+  "claim": "buildup-63.0",
+  "evidence": [
+   "window 53.0-63.0"
+  ]
+ },
+ {
+  "t": 69.5,
+  "text": "GOAL! D. Moreau buries it! Redmoor FC make it 1-0.",
+  "voice_style": "excited",
+  "claim": "m1",
+  "evidence": [
+   "e29",
+   "e28",
+   "m1"
+  ]
+ }
+]

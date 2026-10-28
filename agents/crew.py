@@ -245,6 +245,8 @@ async def t_analyst(c, b):
             'analyst': ('goal', 'line_breaking_pass', 'pressing_spell', 'momentum_swing', 'big_chance'),
             'player': ('goal', 'big_chance', 'line_breaking_pass', 'sprint_milestone')}[kind]
     cap = {'casual': 6, 'analyst': 9, 'player': 6}[kind]
+    if b.get('window'):  # a segment (e.g. the goal at 63-72 s): only its moments
+        moms = [m for m in moms if b['window'][0] <= m['t'] <= b['window'][1]]
     for m in moms:
         if m['type'] in want and len(b['claims']) < cap:
             b['claims'].append(await moment_claim(c, b, m))
@@ -266,8 +268,11 @@ async def moment_claim(c, b, m):
     name = who and who['name']
     if typ == 'goal':
         shot = by.get('shot', {}).get('event', {})
+        hr = None
+        if who:  # scorer's synthetic heart rate at the goal, from load up to that instant
+            hr = (await c.tool('get_player', id=who['id'], t0=0, t1=mt, match=c.match))['series']['hr'][-1]
         t, p = mt, {'player': name, 'team': team, 'score': '-'.join(map(str, by['goal']['frame']['score'])),
-                    'xg': shot.get('xg'), 'dist': shot.get('distance')}
+                    'xg': shot.get('xg'), 'dist': shot.get('distance'), 'kmh': shot.get('speedKmh'), 'hr': hr}
     elif typ == 'big_chance':
         sh = by['shot']['event']
         t = round(sh['event']['t'] + 1.5, 1)  # react once the shot is over
@@ -341,6 +346,23 @@ async def t_tactician(c, b):
                             'params': {'player': pl['name'], 'pos': pl['pos'], 'lh': snap['lineFromOwnGoal'],
                                        'near': snap['nearestOpponent']['name']}})
         return b
+    if b.get('window'):  # segment: one live build-up line at its start, from the 10 s before
+        t = round(b['window'][0], 1)
+        w = await c.tool('get_window_stats', t0=t - 10, t1=t, match=c.match)
+        goal = next((x for x in b['claims'] if x['kind'] == 'goal'), None)
+        att = (goal or {}).get('side') or ('home' if w['home']['possession'] >= 50 else 'away')
+        dfn = 'away' if att == 'home' else 'home'
+        T, O = b['teams'][att]['name'], b['teams'][dfn]['name']
+        if kind == 'analyst':
+            k, p = 'tactic_buildup', {'team': T, 'opp': O, 'poss': w[att]['possession'], 'lh': w[dfn]['lineHeight']}
+        elif w['chaos'] >= 60:
+            k, p = 'tactic_chaos', {'turnovers': w['turnovers'], 'chaos': w['chaos']}
+        else:
+            k, p = ('tactic_siege', {'team': T, 'opp': O, 'poss': w[att]['possession']}) if w[att]['possession'] >= 85 else \
+                   ('tactic_control', {'team': T, 'poss': w[att]['possession'], 'control': w['control']})
+        b['claims'].append({'id': f'buildup-{t}', 't': t, 'tm': t, 'asof': w['t1'], 'kind': k, 'params': p,
+                            'evidence': [f"window {w['t0']}-{w['t1']}"], 'score': 60})
+        return b
     off = 5 if kind == 'casual' else 4  # replay analysis right after the moment, from the 10 s before it
     for cl in [x for x in b['claims'] if x['kind'] in ('goal', 'big_chance', 'line_breaking_pass')][:4]:
         tm = cl['tm']
@@ -390,6 +412,8 @@ async def window_scores(c, base, fork, t):
 
 
 async def t_whatif(c, b):
+    if b.get('window'):
+        return b  # segments are about the moment itself; the what-if has its own runs
     if b['forkOf']:
         name = c.match
     else:
@@ -480,6 +504,8 @@ async def t_producer(c, b):
             aired.append(x['id'])
             busy.append(x['t'])
     byid = {x['id']: x for x in b['claims']}
+    if b.get('window'):
+        aired = [i for i in aired if b['window'][0] <= byid[i]['t'] <= b['window'][1]]
     aired.sort(key=lambda i: byid[i]['t'])
     fo = b['forkOf']
     if fo:
@@ -491,6 +517,8 @@ async def t_producer(c, b):
     else:
         s = {'name': c.base, 'match': c.match, 'from': 0, 'to': b['end'], 'cam': 'broadcast', 'lens': LENS[kind],
              'select': pid, 'cues': []}
+        if b.get('window'):
+            s['from'], s['to'] = b['window']
     for i in aired:
         x = byid[i]
         if x['kind'] == 'goal' and not fo:
@@ -515,6 +543,8 @@ async def t_localizer(c, b):
     for i in b['aired']:
         x = byid[i]
         n = seen[x['kind']] = seen.get(x['kind'], -1) + 1  # nth time this kind airs -> phrase variant
+        if b.get('shortest'):  # tight segment: the shortest variant, so lines don't talk over each other
+            n = min(range(3), key=lambda k: len(phrases.render(x['kind'], x['params'], c.lang, voice(c, x), k)[2]))
         title, cap, say = phrases.render(x['kind'], x['params'], c.lang, voice(c, x), n)
         x['loc'] = {'title': title, 'cap': cap, 'say': say}
     return b
@@ -578,6 +608,8 @@ async def main():
     ap.add_argument('--persona', default='casual', help='casual | analyst | player:<id>')
     ap.add_argument('--lang', default='en', choices=phrases.LANGS)
     ap.add_argument('--kill', choices=STAGES, help='make this agent crash to demo recovery')
+    ap.add_argument('--window', nargs=2, type=float, metavar=('T0', 'T1'), help='only this segment, e.g. 63 72 for the goal')
+    ap.add_argument('--shortest', action='store_true', help='use the shortest phrase variant (tight segments)')
     ap.add_argument('--tag', help='extra output name part, e.g. killtactician -> <match>.<persona>.<lang>.killtactician.*')
     a = ap.parse_args()
     load_env()
@@ -591,7 +623,7 @@ async def main():
         c.log('start', vars(a), f'mode={mode}, tools={[f.name for f in mcp.functions]}')
         stages = [Stage(c, n) for n in STAGES]
         wf = WorkflowBuilder(start_executor=stages[0]).add_chain(stages).build()
-        res = await wf.run({'match': a.match, 'persona': a.persona, 'lang': a.lang})
+        res = await wf.run({'match': a.match, 'persona': a.persona, 'lang': a.lang, 'window': a.window, 'shortest': a.shortest})
         lines = finalize(c, res.get_outputs()[0])
     print(f'{c.base}: mode={mode}, {len(lines)} lines, {sum(1 for s in c.trace if s["fallback"])} fallbacks, '
           f'{sum(1 for s in c.trace if not s["ok"])} errors')

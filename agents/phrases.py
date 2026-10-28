@@ -82,7 +82,8 @@ P = {
             'player_load': ('WORKHORSE', '{player}', ['{player} has run {dist} metres so far and touched {kmh} km/h. What an engine.']),
         },
         'analyst': {
-            'goal': ('GOAL', '{player} · xG {xg}', ['Goal, {player}, from {dist} metres.', 'xG {xg}: {xgw}, and he takes it.', '{score}.']),
+            'goal': ('GOAL', '{player} · xG {xg}', ['Goal, {player}, from {dist} metres!', 'xG {xg}, and he takes it.', '{kmh} km/h, synthetic heart rate {hr}.', '{score}.']),
+            'tactic_buildup': ('BUILD-UP', '{team} · {poss}% · line {lh} m', ['{team}: {poss} percent of the ball.', '{opp}\'s line: {lh} metres from goal.']),
             'big_chance': ('CHANCE', '{player} · xG {xg}', [['{player} from {dist} metres at {kmh} km/h, xG {xg}.', 'That is {xgw} for {team}.'],
                                                             ['{player} again: {dist} metres, {kmh} km/h.', 'xG {xg}, {xgw}, and it stays out.'],
                                                             ['{player} gets the shot away from {dist} metres, xG {xg}.', 'The volume of chances is building for {team}.']]),
@@ -139,7 +140,8 @@ P = {
             'player_load': ('PULMÓN', '{player}', ['{player} lleva ya {dist} metros y ha tocado los {kmh} km/h. Qué despliegue.']),
         },
         'analyst': {
-            'goal': ('GOL', '{player} · xG {xg}', ['Gol de {player} desde {dist} metros.', 'xG {xg}: {xgw}, y no perdona.', '{score}.']),
+            'goal': ('GOL', '{player} · xG {xg}', ['Gol de {player} desde {dist} metros.', 'xG {xg}: {xgw}, y no perdona.', 'Sale a {kmh} km/h, pulso sintético {hr}.', '{score}.']),
+            'tactic_buildup': ('ELABORACIÓN', '{team} · {poss}% · línea {lh} m', ['{team} tiene el {poss} por ciento del balón.', 'La línea de {opp} está a {lh} metros de su portería.']),
             'big_chance': ('OCASIÓN', '{player} · xG {xg}', [['{player} desde {dist} metros a {kmh} km/h, xG {xg}.', 'Es {xgw} para {team}.'],
                                                              ['Otra vez {player}: {dist} metros, {kmh} km/h.', 'xG {xg}, {xgw}, y no entra.'],
                                                              ['{player} dispara desde {dist} metros, xG {xg}.', 'Las ocasiones de {team} se acumulan.']]),
@@ -196,7 +198,8 @@ P = {
             'player_load': ('MOTOR', '{player}', ['{player} şimdiden {dist} metre koştu, saatte {kmh} kilometreyi gördü. Ne motor!']),
         },
         'analyst': {
-            'goal': ('GOL', '{player} · xG {xg}', ['Gol {player} imzalı, {dist} metreden.', 'xG {xg}: {xgw}, ve affetmiyor.', 'Skor {score}.']),
+            'goal': ('GOL', '{player} · xG {xg}', ['Gol {player} imzalı, {dist} metreden.', 'xG {xg}: {xgw}, ve affetmiyor.', 'Top saatte {kmh} kilometreyle çıkıyor, sentetik nabız {hr}.', 'Skor {score}.']),
+            'tactic_buildup': ('HÜCUM KURULUMU', '{team} · %{poss} · hat {lh} m', ['{team} topun yüzde {poss} kadarına sahip.', '{opp} savunma hattı kalesinden {lh} metre önde.']),
             'big_chance': ('POZİSYON', '{player} · xG {xg}', [['{player} {dist} metreden, saatte {kmh} kilometre, xG {xg}.', '{team} için {xgw}.'],
                                                               ['Yine {player}: {dist} metre, saatte {kmh} kilometre.', 'xG {xg}, {xgw}, ama gol çıkmıyor.'],
                                                               ['{player} {dist} metreden vuruşunu yapıyor, xG {xg}.', '{team} pozisyonları üst üste diziyor.']]),
@@ -253,7 +256,8 @@ P = {
             'player_load': ('DAUERLÄUFER', '{player}', ['{player} hat schon {dist} Meter abgespult und {kmh} km/h erreicht. Was für eine Lunge.']),
         },
         'analyst': {
-            'goal': ('TOR', '{player} · xG {xg}', ['Tor durch {player}, aus {dist} Metern.', 'xG {xg}: {xgw}, und er macht ihn.', '{score}.']),
+            'goal': ('TOR', '{player} · xG {xg}', ['Tor durch {player}, aus {dist} Metern.', 'xG {xg}: {xgw}, und er macht ihn.', '{kmh} km/h vom Fuß, synthetischer Puls {hr}.', '{score}.']),
+            'tactic_buildup': ('AUFBAU', '{team} · {poss}% · Kette {lh} m', ['{team} hat {poss} Prozent Ballbesitz.', 'Die Kette von {opp} steht {lh} Meter vor dem Tor.']),
             'big_chance': ('CHANCE', '{player} · xG {xg}', [['{player} aus {dist} Metern mit {kmh} km/h, xG {xg}.', 'Das ist {xgw} für {team}.'],
                                                             ['Wieder {player}: {dist} Meter, {kmh} km/h.', 'xG {xg}, {xgw}, aber er bleibt draußen.'],
                                                             ['{player} kommt aus {dist} Metern zum Abschluss, xG {xg}.', 'Die Chancen für {team} häufen sich.']]),
@@ -308,7 +312,7 @@ def render(kind, params, lang, voice='casual', n=0):
         return None
     ps = dict(params)
     for k, x in ps.items():  # casual/you voices speak whole numbers; analyst keeps one decimal
-        if isinstance(x, float) and k not in ('xg', 't') and (x.is_integer() or v == 'casual' or (v == 'you' and abs(x) >= 10)):
+        if isinstance(x, float) and k not in ('xg', 't') and (x.is_integer() or v == 'casual' or abs(x) >= (10 if v == 'you' else 100)):
             ps[k] = int(round(x))
     if ps.get('xg') is not None:
         ps['xgw'] = _bucket(lang, 'xgw', ps['xg'])
@@ -332,9 +336,9 @@ if __name__ == '__main__':  # self-check: every kind renders in every language/v
             'scorer': 'S', 'near': 'N', 'pos': 'CB', 'near_d': 8.3, 'ahead': 1.1, 'other': 'Y'}
     allowed = {'8', '8.3', '1.1', '1', '0', '69', '69.5', '0.236', '11.6', '12', '131.2', '131', '3', '2.2', '2', '85', '57', '99', '59', '70', '30.1', '30', '22', '153', '1-0', '0-0'}
     for lang in LANGS:
-        for kind in set(P['en']['casual']) | set(P['en']['you']):
+        for kind in set(P['en']['casual']) | set(P['en']['you']) | set(P['en']['analyst']):
             for voice in VOICES:
-                if kind.startswith('you_') and voice != 'you':
+                if (kind.startswith('you_') and voice != 'you') or (kind not in P['en']['casual'] and voice == 'casual'):
                     continue
                 for n in range(3):
                     r = render(kind, demo, lang, voice, n)

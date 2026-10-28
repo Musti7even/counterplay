@@ -1,0 +1,22 @@
+[
+ {
+  "t": 63.0,
+  "text": "Redmoor FC hat sich in der Hälfte von Halvard Athletic festgesetzt, Halvard Athletic kommt gar nicht mehr an den Ball.",
+  "voice_style": "calm",
+  "claim": "buildup-63.0",
+  "evidence": [
+   "window 53.0-63.0"
+  ]
+ },
+ {
+  "t": 69.5,
+  "text": "TOOOR! D. Moreau versenkt ihn! Redmoor FC stellt auf 1-0.",
+  "voice_style": "excited",
+  "claim": "m1",
+  "evidence": [
+   "e29",
+   "e28",
+   "m1"
+  ]
+ }
+]

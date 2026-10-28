@@ -1,0 +1,22 @@
+[
+ {
+  "t": 63.0,
+  "text": "Redmoor FC: 100 percent of the ball. Halvard Athletic's line: 31 metres from goal.",
+  "voice_style": "calm",
+  "claim": "buildup-63.0",
+  "evidence": [
+   "window 53.0-63.0"
+  ]
+ },
+ {
+  "t": 69.5,
+  "text": "Goal, D. Moreau, from 11.6 metres! xG 0.236, and he takes it. 131 km/h, synthetic heart rate 140. 1-0.",
+  "voice_style": "excited",
+  "claim": "m1",
+  "evidence": [
+   "e29",
+   "e28",
+   "m1"
+  ]
+ }
+]

@@ -1,0 +1,22 @@
+[
+ {
+  "t": 63.0,
+  "text": "Ahora solo juega Redmoor FC. Halvard Athletic persigue sombras.",
+  "voice_style": "calm",
+  "claim": "buildup-63.0",
+  "evidence": [
+   "window 53.0-63.0"
+  ]
+ },
+ {
+  "t": 69.5,
+  "text": "¡GOOOL! ¡D. Moreau la manda a la red! Redmoor FC pone el 1-0.",
+  "voice_style": "excited",
+  "claim": "m1",
+  "evidence": [
+   "e29",
+   "e28",
+   "m1"
+  ]
+ }
+]
