@@ -65,7 +65,7 @@ export class Overlay {
       this.card = document.createElement('div'); this.card.className = 'card one ov-tr';
       this.card.innerHTML = `<div class="card-head player"><i></i><span class="num"></span><span class="name"></span></div>
         <div class="card-row"><span>Speed</span><b class="pc-kmh"></b></div><div class="card-row"><span>Distance</span><b class="pc-dist"></b></div>
-        <div class="card-row"><span>Heart rate*</span><b class="pc-hr"></b></div><div class="card-note">*modelled from workload</div>`;
+        <div class="card-row"><span>Heart rate*</span><b class="pc-hr"></b></div><div class="card-note">*synthetic, from the match engine</div>`;
       this.root.append(this.card);
     }
     parent.append(this.root);
@@ -104,7 +104,7 @@ export class Overlay {
         this.card.style.setProperty('--team', card.color);
         setText(q('.num'), String(card.num)); setText(q('.name'), card.name);
         q('.pc-kmh').innerHTML = `${card.kmh.toFixed(1)}<small>km/h</small>`; q('.pc-kmh').classList.toggle('live', card.kmh > 27);
-        q('.pc-dist').innerHTML = `${card.dist.toFixed(0)}<small>m</small>`; q('.pc-hr').innerHTML = `${card.hr.toFixed(0)}<small>bpm</small>`;
+        q('.pc-dist').innerHTML = `${card.dist.toFixed(0)}<small>m</small>`; q('.pc-hr').innerHTML = Number.isFinite(card.hr) ? `${card.hr.toFixed(0)}<small>bpm</small>` : '—';
       }
     }
     // voice: realtime playback only (the recorder muxes audio from demo.audio instead)

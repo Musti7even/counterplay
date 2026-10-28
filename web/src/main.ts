@@ -164,6 +164,8 @@ async function main() {
   if (alt) alt.label.querySelector('.vl-name')!.insertAdjacentHTML('afterend', `<span class="vl-change">${document.querySelector('.wi-text')!.textContent}</span>`);
   const end = Math.max(duration(orig), fork ? duration(fork) : 0);
   const subs = commentary ? new Overlay(document.body, { commentary, audio: true }) : null;
+  // ?hrcard=1 (video): the live player card (km/h, distance, heart rate*) for the selected player in the single view
+  const hr = q.get('hrcard') === '1' ? { ov: new Overlay(main.el, { variant: 'player', match: orig }), card: makePlayerCard(orig, await loadInsights(orig.name)) } : null;
   subs?.root.classList.add('ov-fixed');
   if (subs) document.body.classList.add('has-subs');
   let control: ControlStrip | null = null;
@@ -252,6 +254,7 @@ async function main() {
     if (split) alt!.render(state.t, dt, now, false, { camFrom: main.cam });
     hud.update(s, state.lens, main.gfx.last, captions);
     subs?.update(s, null, undefined, state.playing && !capture);
+    hr?.ov.update(s, null, main.gfx.last, false, hr.card(state.selected, s));
     control?.update(state.t);
     (window as any).__frames = ++frames;
   };
@@ -276,6 +279,27 @@ async function main() {
 }
 
 // Persona quad: the same moment for four agent runs (cues + commentary each), one match clock.
+// heart rate: one source of truth = the engine's synthetic HR series in data/<match>.insights.json (1 Hz, the same
+// value the agents quote via get_player). The card shows the last sample at or before t; no renderer-side model.
+type Insights = { players: { id: string; series: { hr: number[] } }[] };
+const _ins = new Map<string, Promise<Insights | null>>();
+const loadInsights = (name: string) => _ins.get(name) ?? (_ins.set(name, fetch(`data/${name}.insights.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null)), _ins.get(name)!);
+// live player card: speed from tracking, distance since kickoff, engine heart rate
+function makePlayerCard(orig: Match, ins: Insights | null) {
+  const cum = new Map<string, Float32Array>();
+  return (sel: View['vs']['selected'], s: ReturnType<typeof snapshot>): PlayerCard | null => {
+    if (!sel) return null;
+    const key = `${sel.side}${sel.idx}`, F = orig.frames;
+    if (!cum.has(key)) { const c = new Float32Array(F.length); for (let i = 1; i < F.length; i++) { const a = F[i - 1][sel.side][sel.idx], b = F[i][sel.side][sel.idx]; const d = Math.hypot(b[0] - a[0], b[1] - a[1]); c[i] = c[i - 1] + (d < 5 ? d : 0); } cum.set(key, c); }
+    const c = cum.get(key)!, fi = Math.min(F.length - 1, Math.max(0, Math.round((s.t - F[0].t) * orig.meta.fps)));
+    const kmh = Math.hypot(...s.vel[sel.side][sel.idx]) * 3.6;
+    const p = orig.meta[sel.side].players[sel.idx];
+    const series = ins?.players.find((x) => x.id === p.id)?.series.hr;
+    const hr = series ? series[Math.max(0, Math.min(series.length - 1, Math.floor(s.t + 1e-6)))] : NaN;
+    return { num: p.num, name: p.name, color: orig.meta[sel.side].color, kmh, dist: c[fi], hr };
+  };
+}
+
 // angles4: the same moment from four cameras (no captions/commentary); quad: four persona runs
 const ANGLES: { cam: CamMode; label: string; lens: number }[] = [
   { cam: 'broadcast', label: 'Broadcast', lens: 0.15 }, { cam: 'tactical', label: 'High tactical', lens: 0.3 },
@@ -308,17 +332,7 @@ async function quad() {
     if (id) for (const side of ['home', 'away'] as Side[]) { const idx = orig.meta[side].players.findIndex((p) => p.id === id); if (idx >= 0) vs.selected = { side, idx }; }
   };
   const lastSel: (string | null | undefined)[] = runs.map(() => undefined);
-  // live card for the player quadrant: speed from tracking, distance since kickoff, heart rate modelled from workload
-  const cum = new Map<string, Float32Array>();
-  const playerCard = (sel: View['vs']['selected'], s: ReturnType<typeof snapshot>): PlayerCard | null => {
-    if (!sel) return null;
-    const key = `${sel.side}${sel.idx}`, F = orig.frames;
-    if (!cum.has(key)) { const c = new Float32Array(F.length); for (let i = 1; i < F.length; i++) { const a = F[i - 1][sel.side][sel.idx], b = F[i][sel.side][sel.idx]; const d = Math.hypot(b[0] - a[0], b[1] - a[1]); c[i] = c[i - 1] + (d < 5 ? d : 0); } cum.set(key, c); }
-    const c = cum.get(key)!, fi = Math.min(F.length - 1, Math.max(0, Math.round((s.t - F[0].t) * orig.meta.fps))), w = Math.round(20 * orig.meta.fps);
-    const kmh = Math.hypot(...s.vel[sel.side][sel.idx]) * 3.6, avg = (c[fi] - c[Math.max(0, fi - w)]) / 20; // m/s over 20 s
-    const p = orig.meta[sel.side].players[sel.idx];
-    return { num: p.num, name: p.name, color: orig.meta[sel.side].color, kmh, dist: c[fi], hr: Math.min(192, 92 + 62 * Math.min(1, avg / 4) + 28 * Math.min(1, kmh / 30)) };
-  };
+  const playerCard = makePlayerCard(orig, await loadInsights(orig.name));
   if (q.get('ui') === '0' || capture) document.body.classList.add('noui');
   if (capture) document.body.classList.add('capture');
   for (const c of ['chapterbar', 'nol3']) if (q.get(c) === '1') document.body.classList.add(c); // video chapters
