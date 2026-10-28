@@ -35,3 +35,6 @@ body.c-bar, body.c-cap, body.c-hook, html:has(body.c-bar), html:has(body.c-cap),
 .hook { max-width: 16em; text-shadow: 0 4px 30px rgba(0,0,0,0.6); }
 .capz.up { bottom: calc(var(--u) * 46); }
 .capz.alert .lt, .lt.alert { --sig: var(--alert); }
+body.c-qlabels, html:has(body.c-qlabels) { background: transparent; }
+.c-qlabels #card { padding: 0; display: block; }
+.qlab { position: absolute; height: 36px; font-size: 14px; }

@@ -39,6 +39,35 @@ const CARDS = {
   'v2-c5fact': 'card=cap&up=1&k=Fact-check&t=Every number checked against the engine',
   'v2-c5producer': 'card=cap&up=1&k=Producer&t=Cues camera, lens and captions',
   'v2-c5local': 'card=cap&up=1&k=Localizer&t=Speaks every fan’s language',
+  'v3-bar1': 'card=bar&n=1&names=The goal|The argument|The answer|Every fan|How',
+  'v3-bar2': 'card=bar&n=2&names=The goal|The argument|The answer|Every fan|How',
+  'v3-bar3': 'card=bar&n=3&names=The goal|The argument|The answer|Every fan|How',
+  'v3-bar4': 'card=bar&n=4&names=The goal|The argument|The answer|Every fan|How',
+  'v3-bar5': 'card=bar&n=5&names=The goal|The argument|The answer|Every fan|How',
+  'v3-hook1': 'card=hook&t=Every fan has shouted it.',
+  'v3-hook2': 'card=hook&t=<em>“If he’d just stepped up…”</em>',
+  'v3-c2a': 'card=cap&k=The argument&t=Tom, in London, sees it differently.',
+  'v3-c2b': 'card=cap&k=The argument&t=The line sat 29.7 m deep.',
+  'v3-c2c': 'card=cap&k=The argument&t=Moreau ran into the gap.',
+  'v3-c2d': 'card=cap&k=The argument&t=Who’s right? Nobody could say.',
+  'v3-c3a': 'card=cap&sig=whatif&k=The answer&t=Tonight, we replay it.',
+  'v3-c3b': 'card=cap&sig=whatif&k=The answer&t=Same match. Sørensen steps up.',
+  'v3-c3c': 'card=cap&sig=whatif&k=The answer&t=No goal. Deniz was right.',
+  'v3-c4': 'card=cap&k=Every fan&t=Everyone gets their own broadcast.',
+  'v3-c4a': 'card=cap&k=Fan 1&t=You',
+  'v3-c4b': 'card=cap&k=Fan 2&t=Tom · London · Analyst',
+  'v3-c4c': 'card=cap&k=Fan 3&t=Sørensen · his own camera',
+  'v3-c4d': 'card=cap&k=Fan 4&t=Deniz · Istanbul · Türkçe',
+  'v3-qlabels': 'card=qlabels&l1=You&l2=Tom · London · Analyst&l3=Sørensen · his own camera&l4=Deniz · Istanbul · Türkçe',
+  'v3-c5intro': 'card=cap&up=1&k=How&t=Six agents run the show.',
+  'v3-c5analyst': 'card=cap&up=1&k=Analyst&t=Finds the moment',
+  'v3-c5tfail': 'card=cap&up=1&sig=alert&k=Tactician&t=One agent fails',
+  'v3-c5trec': 'card=cap&up=1&sig=alert&k=Tactician&t=One fails. The show goes on.',
+  'v3-c5whatif': 'card=cap&up=1&sig=whatif&k=What-if&t=Re-simulates the match',
+  'v3-c5fact': 'card=cap&up=1&k=Fact-check&t=Every number checked against the engine.',
+  'v3-c5producer': 'card=cap&up=1&k=Producer&t=Directs the show',
+  'v3-c5local': 'card=cap&up=1&k=Localizer&t=Translates it for every fan',
+  'v3-end': 'card=end&line=Settle the argument.',
 };
 const only = process.argv.slice(2);
 const out = new URL('../shots/cards/', import.meta.url).pathname;
@@ -50,7 +79,7 @@ for (const [name, qs] of Object.entries(CARDS)) {
   if (only.length && !only.some((o) => name.startsWith(o))) continue;
   await page.goto(`${BASE}/video/cards.html?${qs.replace('LINEH', process.env.LINEH ?? '?')}`, { waitUntil: 'load' });
   await page.waitForFunction('window.__ready === true'); await page.evaluate(() => document.fonts.ready);
-  await page.screenshot({ path: `${out}${name}.png`, omitBackground: name === 'rewind' || name.startsWith('v2-') });
+  await page.screenshot({ path: `${out}${name}.png`, omitBackground: name === 'rewind' || name.startsWith('v2-') || (name.startsWith('v3-') && name !== 'v3-end') });
   console.log('wrote', name);
 }
 await browser.close();
