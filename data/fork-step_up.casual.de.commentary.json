@@ -1,0 +1,24 @@
+[
+ {
+  "t": 62.5,
+  "text": "Moment mal. Was wäre, wenn H. Sørensen herausgerückt wäre?",
+  "voice_style": "hopeful",
+  "claim": "w-setup",
+  "evidence": [
+   "compare_fork",
+   "fork-step_up",
+   "a6"
+  ]
+ },
+ {
+  "t": 70.0,
+  "text": "Gleicher Moment, eine Änderung, und kein Tor! 0-0 statt 1-0.",
+  "voice_style": "excited",
+  "claim": "w-result",
+  "evidence": [
+   "compare_fork",
+   "fork-step_up",
+   "score@70.0"
+  ]
+ }
+]

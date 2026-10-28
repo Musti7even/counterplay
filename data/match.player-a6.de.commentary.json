@@ -1,0 +1,80 @@
+[
+ {
+  "t": 2.0,
+  "text": "Du beginnst heute als Innenverteidiger, H. Sørensen. Deine Kette steht 38 Meter vor dem Tor, dein nächster Gegenspieler ist M. Ferreira.",
+  "voice_style": "newscast",
+  "claim": "you-job",
+  "evidence": [
+   "snapshot a6@2.0"
+  ]
+ },
+ {
+  "t": 69.5,
+  "text": "D. Moreau trifft, 1-0. D. Moreau war beim Schuss 8.3 Meter von dir entfernt. Du standest 1.1 Meter vor dem Rest deiner Kette.",
+  "voice_style": "calm",
+  "claim": "m1",
+  "evidence": [
+   "m1",
+   "snapshot a6@69.0"
+  ]
+ },
+ {
+  "t": 81.0,
+  "text": "Jetzt geht es um dich, H. Sørensen. Was wäre, wenn du herausgerückt wärst?",
+  "voice_style": "hopeful",
+  "claim": "w-setup",
+  "evidence": [
+   "compare_fork",
+   "fork-step_up",
+   "a6"
+  ]
+ },
+ {
+  "t": 86.5,
+  "text": "Du rückst heraus, und nach 69.5 Sekunden fällt kein Tor. 0-0 statt 1-0.",
+  "voice_style": "excited",
+  "claim": "w-result",
+  "evidence": [
+   "compare_fork",
+   "fork-step_up",
+   "score@86.5"
+  ]
+ },
+ {
+  "t": 97.9,
+  "text": "D. Moreau trifft, 2-0. R. Takahashi war beim Schuss 2.1 Meter von dir entfernt. Du standest 17 Meter vor dem Rest deiner Kette.",
+  "voice_style": "calm",
+  "claim": "m2",
+  "evidence": [
+   "m2",
+   "snapshot a6@97.5"
+  ]
+ },
+ {
+  "t": 178.1,
+  "text": "A. Brennan gewinnt das Duell und nimmt dir den Ball ab.",
+  "voice_style": "calm",
+  "claim": "e80",
+  "evidence": [
+   "e80"
+  ]
+ },
+ {
+  "t": 230.5,
+  "text": "Du liest den Pass und gehst dazwischen. Ball gewonnen.",
+  "voice_style": "cheerful",
+  "claim": "e96",
+  "evidence": [
+   "e96"
+  ]
+ },
+ {
+  "t": 246.7,
+  "text": "Bisher hast du 1057 Meter abgespult, 28 km/h erreicht und 19 Sprints angezogen. Dein synthetischer Puls lag bisher in der Spitze bei 153.",
+  "voice_style": "newscast",
+  "claim": "p-a6",
+  "evidence": [
+   "a6"
+  ]
+ }
+]

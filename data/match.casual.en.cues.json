@@ -1,0 +1,107 @@
+{
+ "name": "match.casual.en",
+ "match": "match",
+ "from": 0,
+ "to": 300.0,
+ "cam": "broadcast",
+ "lens": 0.15,
+ "select": null,
+ "cues": [
+  {
+   "t": 35.1,
+   "caption": {
+    "title": "SO CLOSE",
+    "text": "A. Brennan from 11 m",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 67.5,
+   "speed": 0.5
+  },
+  {
+   "t": 69.5,
+   "caption": {
+    "title": "GOAL!",
+    "text": "D. Moreau · Redmoor FC",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 70.0,
+   "speed": 1
+  },
+  {
+   "t": 74.5,
+   "caption": {
+    "title": "ALL Redmoor FC",
+    "text": "Halvard Athletic can't get out",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 81.0,
+   "caption": {
+    "title": "WHAT IF?",
+    "text": "H. Sørensen stepped up",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 86.5,
+   "caption": {
+    "title": "WHAT IF",
+    "text": "No goal!",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 95.9,
+   "speed": 0.5
+  },
+  {
+   "t": 97.9,
+   "caption": {
+    "title": "GOAL!",
+    "text": "D. Moreau · Redmoor FC",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 98.4,
+   "speed": 1
+  },
+  {
+   "t": 102.9,
+   "caption": {
+    "title": "ALL Redmoor FC",
+    "text": "Halvard Athletic can't get out",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 125.9,
+   "caption": {
+    "title": "SO CLOSE",
+    "text": "A. Brennan from 14 m",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 139.0,
+   "caption": {
+    "title": "SO CLOSE",
+    "text": "F. Delacroix from 12 m",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 157.9,
+   "caption": {
+    "title": "SO CLOSE",
+    "text": "A. Brennan from 12 m",
+    "dur": 3.5
+   }
+  }
+ ]
+}

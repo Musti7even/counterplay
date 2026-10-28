@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Counterplay · AI what-if broadcast</title>
+  <script type="module" crossorigin src="./assets/index-DCMJJVfV.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-0L0uApWN.css">
+</head>
+<body>
+  <div id="views"></div>
+
+  <div id="scorebug" class="sb hud">
+    <span class="sb-team home"><i></i><span class="short"></span></span>
+    <span class="sb-score"><span class="h">0</span><span class="sep">–</span><span class="a">0</span></span>
+    <span class="sb-team away"><span class="short"></span><i></i></span>
+    <span class="sb-clock">00:00</span>
+  </div>
+  <div id="whatif" class="badge whatif hud"><span>What if</span><span class="bd-v wi-text"></span></div>
+
+  <div id="tactics" class="card hud">
+    <div class="card-head"><span>Shape · 20 s</span><b class="home"></b><b class="away"></b></div>
+    <div class="card-row"><span>Formation</span><b data-k="label-home"></b><b data-k="label-away"></b></div>
+    <div class="card-row"><span>Line height</span><b data-k="line-home"></b><b data-k="line-away"></b></div>
+    <div class="card-row"><span>Length × width</span><b data-k="cmp-home"></b><b data-k="cmp-away"></b></div>
+  </div>
+
+  <div id="zone-l" class="zone"></div>
+  <div id="zone-r" class="zone"></div>
+
+  <div id="controls">
+    <a id="home-btn" href="./" title="Start screen">Start</a>
+    <button id="play" title="Play / pause (space)">▶</button>
+    <div id="timeline"><div id="markers"></div><input id="scrub" type="range" min="0" max="1" step="0.05" value="0" /></div>
+    <div id="time">00:00</div>
+    <select id="speed" title="Playback speed"><option>0.5</option><option selected>1</option><option>2</option><option>4</option></select>
+    <div class="seg" id="cams">
+      <button data-cam="broadcast" title="1">Broadcast</button><button data-cam="tactical" title="2">Tactical</button><button data-cam="player" title="3">Player</button>
+    </div>
+    <label id="lensbox"><span>CASUAL</span><input id="lens" type="range" min="0" max="1" step="0.01" value="0.2" /><span>TACTICAL</span></label>
+    <div class="seg" id="viewmode">
+      <button data-view="single">Match</button><button data-view="split">Split</button><button data-view="ghost">Ghost</button>
+    </div>
+    <button id="help-btn" title="Keys (?)">?</button>
+  </div>
+
+  <div id="start">
+    <div class="st-inner">
+      <div class="fs-kicker">AI match engine · live tracking · what-if</div>
+      <h1 class="fs-title">Counterplay</h1>
+      <p class="fs-line">Change one decision on the pitch and watch the match replay differently. An AI crew analyses, fact-checks and calls it live, in your language.</p>
+      <nav class="st-grid">
+        <a class="agent" href="?director=whatif"><div class="ag-top"><span class="ag-idx">01</span><span class="ag-name">The what-if</span></div><div class="ag-role">Sørensen steps up. Does Redmoor still score? Original and alternate timeline, side by side.</div></a>
+        <a class="agent" href="?director=goal"><div class="ag-top"><span class="ag-idx">02</span><span class="ag-name">Fan to analyst</span></div><div class="ag-role">One picture, from a clean broadcast to a full tactical breakdown.</div></a>
+        <a class="agent" href="?view=quad&amp;from=60&amp;to=72"><div class="ag-top"><span class="ag-idx">03</span><span class="ag-name">Every fan</span></div><div class="ag-role">Casual, analyst, player cam and Turkish commentary on one clock.</div></a>
+        <a class="agent" href="?cues=data/fork-step_up.casual.en.cues.json&amp;control=1&amp;controlAt=62-70"><div class="ag-top"><span class="ag-idx">04</span><span class="ag-name">AI gallery</span></div><div class="ag-role">Six agents, live tool calls, fact-checks and a recovery from failure.</div></a>
+      </nav>
+      <div class="st-foot">Fictional clubs · simulated match data · press ? for keys</div>
+    </div>
+  </div>
+
+  <div id="help"><div class="card">
+    <div class="card-head"><span>Keys</span></div>
+    <div class="card-row"><span><kbd>Space</kbd></span><b>Play / pause</b></div>
+    <div class="card-row"><span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></span><b>Broadcast · tactical · player cam</b></div>
+    <div class="card-row"><span><kbd>←</kbd><kbd>→</kbd></span><b>Seek ±5 s</b></div>
+    <div class="card-row"><span><kbd>C</kbd><kbd>T</kbd></span><b>Lens: casual · tactical</b></div>
+    <div class="card-row"><span><kbd>S</kbd><kbd>G</kbd><kbd>M</kbd></span><b>Split · ghost · single (what-if)</b></div>
+    <div class="card-row"><span><kbd>F</kbd></span><b>Jump to the fork</b></div>
+    <div class="card-row"><span><kbd>Click</kbd></span><b>Select a player · <kbd>Esc</kbd> clears</b></div>
+    <div class="card-row"><span><kbd>H</kbd></span><b>Hide controls (filming)</b></div>
+    <div class="card-row"><span><kbd>?</kbd></span><b>This help · <a href="./">back to start</a></b></div>
+  </div></div>
+  <div id="error"></div>
+</body>
+</html>

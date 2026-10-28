@@ -1,0 +1,80 @@
+[
+ {
+  "t": 2.0,
+  "text": "You start at centre-back tonight, H. Sørensen. Your back line sets up 38 metres from goal, and M. Ferreira is the nearest opponent to you.",
+  "voice_style": "newscast",
+  "claim": "you-job",
+  "evidence": [
+   "snapshot a6@2.0"
+  ]
+ },
+ {
+  "t": 69.5,
+  "text": "D. Moreau scores, 1-0. D. Moreau was 8.3 metres from you when the shot came. You were 1.1 metres ahead of the rest of your line.",
+  "voice_style": "calm",
+  "claim": "m1",
+  "evidence": [
+   "m1",
+   "snapshot a6@69.0"
+  ]
+ },
+ {
+  "t": 81.0,
+  "text": "This one is on you, H. Sørensen. What if you had stepped up?",
+  "voice_style": "hopeful",
+  "claim": "w-setup",
+  "evidence": [
+   "compare_fork",
+   "fork-step_up",
+   "a6"
+  ]
+ },
+ {
+  "t": 86.5,
+  "text": "You step up, and there is no goal at 69.5 seconds. It is 0-0, not 1-0.",
+  "voice_style": "excited",
+  "claim": "w-result",
+  "evidence": [
+   "compare_fork",
+   "fork-step_up",
+   "score@86.5"
+  ]
+ },
+ {
+  "t": 97.9,
+  "text": "D. Moreau scores, 2-0. R. Takahashi was 2.1 metres from you when the shot came. You were 17 metres ahead of the rest of your line.",
+  "voice_style": "calm",
+  "claim": "m2",
+  "evidence": [
+   "m2",
+   "snapshot a6@97.5"
+  ]
+ },
+ {
+  "t": 178.1,
+  "text": "A. Brennan wins that one and takes the ball off you.",
+  "voice_style": "calm",
+  "claim": "e80",
+  "evidence": [
+   "e80"
+  ]
+ },
+ {
+  "t": 230.5,
+  "text": "You read the pass and step in. Ball won.",
+  "voice_style": "cheerful",
+  "claim": "e96",
+  "evidence": [
+   "e96"
+  ]
+ },
+ {
+  "t": 246.7,
+  "text": "So far you have covered 1057 metres, topped out at 28 km/h and made 19 sprints. Your synthetic heart rate has peaked at 153.",
+  "voice_style": "newscast",
+  "claim": "p-a6",
+  "evidence": [
+   "a6"
+  ]
+ }
+]

@@ -1,0 +1,160 @@
+{
+ "name": "match.analyst.en",
+ "match": "match",
+ "from": 0,
+ "to": 300.0,
+ "cam": "broadcast",
+ "lens": 0.8,
+ "select": null,
+ "cues": [
+  {
+   "t": 1,
+   "lensTo": 0.8,
+   "over": 3
+  },
+  {
+   "t": 35.1,
+   "caption": {
+    "title": "CHANCE",
+    "text": "A. Brennan · xG 0.173",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 67.5,
+   "speed": 0.5
+  },
+  {
+   "t": 69.5,
+   "caption": {
+    "title": "GOAL",
+    "text": "D. Moreau · xG 0.236",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 70.0,
+   "speed": 1
+  },
+  {
+   "t": 73.5,
+   "caption": {
+    "title": "TERRITORY",
+    "text": "Redmoor FC · 100%",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 77.0,
+   "caption": {
+    "title": "BACK LINE",
+    "text": "Halvard Athletic · 30.1 m",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 81.0,
+   "caption": {
+    "title": "COUNTERFACTUAL",
+    "text": "H. Sørensen steps up instead of dropping off",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 86.5,
+   "caption": {
+    "title": "RESULT",
+    "text": "1-0 vs 0-0",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 95.9,
+   "speed": 0.5
+  },
+  {
+   "t": 97.9,
+   "caption": {
+    "title": "GOAL",
+    "text": "D. Moreau · xG 0.313",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 98.4,
+   "speed": 1
+  },
+  {
+   "t": 101.9,
+   "caption": {
+    "title": "TERRITORY",
+    "text": "Redmoor FC · 100%",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 105.4,
+   "caption": {
+    "title": "BACK LINE",
+    "text": "Halvard Athletic · 30.3 m",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 125.9,
+   "caption": {
+    "title": "CHANCE",
+    "text": "A. Brennan · xG 0.134",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 139.0,
+   "caption": {
+    "title": "CHANCE",
+    "text": "F. Delacroix · xG 0.195",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 145.0,
+   "caption": {
+    "title": "BACK LINE",
+    "text": "Redmoor FC · 33.6 m",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 157.9,
+   "caption": {
+    "title": "CHANCE",
+    "text": "A. Brennan · xG 0.211",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 163.9,
+   "caption": {
+    "title": "BACK LINE",
+    "text": "Halvard Athletic · 41.9 m",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 198.3,
+   "caption": {
+    "title": "CHANCE",
+    "text": "A. Brennan · xG 0.133",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 240.0,
+   "caption": {
+    "title": "CHANCE",
+    "text": "V. Ibarra · xG 0.126",
+    "dur": 3.5
+   }
+  }
+ ]
+}

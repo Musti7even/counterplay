@@ -1,0 +1,12 @@
+{
+  "name": "goal",
+  "match": "match",
+  "from": 60, "to": 72,
+  "cam": "broadcast", "lens": 0,
+  "cues": [
+    { "t": 62.0, "lensTo": 1, "over": 4 },
+    { "t": 62.3, "caption": { "title": "LENS", "text": "Casual → Tactical", "dur": 3.5 } },
+    { "t": 68.6, "speed": 0.4 },
+    { "t": 69.9, "speed": 1 }
+  ]
+}

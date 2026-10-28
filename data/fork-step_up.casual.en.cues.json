@@ -1,0 +1,49 @@
+{
+ "name": "fork-step_up.casual.en",
+ "match": "match",
+ "fork": "fork-step_up",
+ "from": 61.5,
+ "to": 76.5,
+ "view": "split",
+ "cam": "broadcast",
+ "lens": 0.15,
+ "select": "a6",
+ "cues": [
+  {
+   "t": 62.5,
+   "caption": {
+    "title": "WHAT IF?",
+    "text": "H. Sørensen stepped up",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 66.0,
+   "speed": 0.5
+  },
+  {
+   "t": 67.5,
+   "view": "ghost",
+   "cut": true,
+   "speed": 0.7
+  },
+  {
+   "t": 69.5,
+   "view": "split",
+   "cut": true
+  },
+  {
+   "t": 70.0,
+   "caption": {
+    "title": "WHAT IF",
+    "text": "No goal!",
+    "dur": 3.5,
+    "side": "whatif"
+   }
+  },
+  {
+   "t": 72.5,
+   "speed": 1
+  }
+ ]
+}

@@ -1,0 +1,107 @@
+{
+ "name": "match.casual.tr",
+ "match": "match",
+ "from": 0,
+ "to": 300.0,
+ "cam": "broadcast",
+ "lens": 0.15,
+ "select": null,
+ "cues": [
+  {
+   "t": 35.1,
+   "caption": {
+    "title": "KIL PAYI",
+    "text": "A. Brennan, 11 metreden",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 67.5,
+   "speed": 0.5
+  },
+  {
+   "t": 69.5,
+   "caption": {
+    "title": "GOL!",
+    "text": "D. Moreau · Redmoor FC",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 70.0,
+   "speed": 1
+  },
+  {
+   "t": 74.5,
+   "caption": {
+    "title": "TEK KALE",
+    "text": "Halvard Athletic çıkamıyor",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 81.0,
+   "caption": {
+    "title": "YA OLSAYDI?",
+    "text": "H. Sørensen öne çıksaydı",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 86.5,
+   "caption": {
+    "title": "YA OLSAYDI?",
+    "text": "Gol yok!",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 95.9,
+   "speed": 0.5
+  },
+  {
+   "t": 97.9,
+   "caption": {
+    "title": "GOL!",
+    "text": "D. Moreau · Redmoor FC",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 98.4,
+   "speed": 1
+  },
+  {
+   "t": 102.9,
+   "caption": {
+    "title": "TEK KALE",
+    "text": "Halvard Athletic çıkamıyor",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 125.9,
+   "caption": {
+    "title": "KIL PAYI",
+    "text": "A. Brennan, 14 metreden",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 139.0,
+   "caption": {
+    "title": "KIL PAYI",
+    "text": "F. Delacroix, 12 metreden",
+    "dur": 3.5
+   }
+  },
+  {
+   "t": 157.9,
+   "caption": {
+    "title": "KIL PAYI",
+    "text": "A. Brennan, 12 metreden",
+    "dur": 3.5
+   }
+  }
+ ]
+}
