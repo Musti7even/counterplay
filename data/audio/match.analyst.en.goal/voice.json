@@ -1,0 +1,21 @@
+[
+ {
+  "t": 63.0,
+  "file": "000.mp3",
+  "dur": 6.3,
+  "text": "Redmoor FC: 100 percent of the ball. Halvard Athletic's line: 31 metres from goal.",
+  "spoken": "Redmoor FC: 100 percent of the ball. Halvard Athletic's line: 31 metres from goal.",
+  "engine": "elevenlabs",
+  "voice": "elevenlabs:Daniel",
+  "tempo": 1.084
+ },
+ {
+  "t": 69.5,
+  "file": "001.mp3",
+  "dur": 14.21,
+  "text": "Goal, D. Moreau, from 11.6 metres! xG 0.236, and he takes it. 131 km/h, synthetic heart rate 140. 1-0.",
+  "spoken": "Goal, Moreau, from 11.6 metres! Expected goals 0.236, and he takes it. 131 kilometres per hour, synthetic heart rate 140. One nil.",
+  "engine": "elevenlabs",
+  "voice": "elevenlabs:Daniel"
+ }
+]

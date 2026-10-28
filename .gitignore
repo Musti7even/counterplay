@@ -5,7 +5,6 @@ __pycache__/
 .env
 *.dump
 *.ckpt
-data/audio/
 web/shots/demo-*.mp4
 web/shots/quick-*.mp4
 web/shots/*.mp4

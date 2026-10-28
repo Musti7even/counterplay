@@ -1,0 +1,74 @@
+[
+ {
+  "n": 1,
+  "file": "1.mp3",
+  "dur": 2.83,
+  "text": "We're watching a match live. Minute sixty-nine. Watch this.",
+  "engine": "elevenlabs",
+  "voice": "elevenlabs:Chris"
+ },
+ {
+  "n": 2,
+  "file": "2.mp3",
+  "dur": 1.9,
+  "text": "Show me that goal from four angles.",
+  "engine": "elevenlabs",
+  "voice": "elevenlabs:Chris"
+ },
+ {
+  "n": 3,
+  "file": "3.mp3",
+  "dur": 3.9,
+  "text": "My uncle says it's Sørensen's fault. Show me what happens if he steps up.",
+  "engine": "elevenlabs",
+  "voice": "elevenlabs:Chris"
+ },
+ {
+  "n": 4,
+  "file": "4.mp3",
+  "dur": 2.65,
+  "text": "My uncle's new to football. Make the commentary simple.",
+  "engine": "elevenlabs",
+  "voice": "elevenlabs:Chris"
+ },
+ {
+  "n": 5,
+  "file": "5.mp3",
+  "dur": 1.07,
+  "text": "Now in Spanish.",
+  "engine": "elevenlabs",
+  "voice": "elevenlabs:Chris"
+ },
+ {
+  "n": 6,
+  "file": "6.mp3",
+  "dur": 2.0,
+  "text": "How would a German commentator call it?",
+  "engine": "elevenlabs",
+  "voice": "elevenlabs:Chris"
+ },
+ {
+  "n": 7,
+  "file": "7.mp3",
+  "dur": 2.32,
+  "text": "When I watch alone, I want the full tactics.",
+  "engine": "elevenlabs",
+  "voice": "elevenlabs:Chris"
+ },
+ {
+  "n": 8,
+  "file": "8.mp3",
+  "dur": 6.41,
+  "text": "Behind every command, six agents: they find the moment, re-simulate it, check every number and direct the show.",
+  "engine": "elevenlabs",
+  "voice": "elevenlabs:Chris"
+ },
+ {
+  "n": 9,
+  "file": "9.mp3",
+  "dur": 2.04,
+  "text": "Counterplay. Your match, on command.",
+  "engine": "elevenlabs",
+  "voice": "elevenlabs:Chris"
+ }
+]

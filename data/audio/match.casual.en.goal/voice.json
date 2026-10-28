@@ -1,0 +1,20 @@
+[
+ {
+  "t": 63.0,
+  "file": "000.mp3",
+  "dur": 5.57,
+  "text": "Redmoor FC have camped in Halvard Athletic's half. Halvard Athletic simply can't get a touch.",
+  "spoken": "Redmoor FC have camped in Halvard Athletic's half. Halvard Athletic simply can't get a touch.",
+  "engine": "elevenlabs",
+  "voice": "elevenlabs:Charlie"
+ },
+ {
+  "t": 69.5,
+  "file": "001.mp3",
+  "dur": 3.48,
+  "text": "GOAL! D. Moreau buries it! Redmoor FC make it 1-0.",
+  "spoken": "Goal! Moreau buries it! Redmoor FC make it one nil.",
+  "engine": "elevenlabs",
+  "voice": "elevenlabs:Charlie"
+ }
+]

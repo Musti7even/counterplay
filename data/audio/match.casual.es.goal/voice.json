@@ -1,0 +1,20 @@
+[
+ {
+  "t": 63.0,
+  "file": "000.mp3",
+  "dur": 4.23,
+  "text": "Ahora solo juega Redmoor FC. Halvard Athletic persigue sombras.",
+  "spoken": "Ahora solo juega Redmoor FC. Halvard Athletic persigue sombras.",
+  "engine": "elevenlabs",
+  "voice": "elevenlabs:Liam"
+ },
+ {
+  "t": 69.5,
+  "file": "001.mp3",
+  "dur": 3.81,
+  "text": "¡GOOOL! ¡D. Moreau la manda a la red! Redmoor FC pone el 1-0.",
+  "spoken": "¡Gol! ¡Moreau la manda a la red! Redmoor FC pone el uno a cero.",
+  "engine": "elevenlabs",
+  "voice": "elevenlabs:Liam"
+ }
+]
