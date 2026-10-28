@@ -50,7 +50,7 @@ for (const [name, qs] of Object.entries(CARDS)) {
   if (only.length && !only.some((o) => name.startsWith(o))) continue;
   await page.goto(`${BASE}/video/cards.html?${qs.replace('LINEH', process.env.LINEH ?? '?')}`, { waitUntil: 'load' });
   await page.waitForFunction('window.__ready === true'); await page.evaluate(() => document.fonts.ready);
-  await page.screenshot({ path: `${out}${name}.png`, omitBackground: name === 'rewind' || (name.startsWith('v2-') && !name.startsWith('v2-hook')) });
+  await page.screenshot({ path: `${out}${name}.png`, omitBackground: name === 'rewind' || name.startsWith('v2-') });
   console.log('wrote', name);
 }
 await browser.close();

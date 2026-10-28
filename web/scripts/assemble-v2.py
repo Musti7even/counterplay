@@ -18,7 +18,8 @@ n = 0
 def ff(*a): subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', *a], check=True)
 def dur(f): return float(subprocess.check_output(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).decode())
 def card(name): return f'{CARDS}/v2-{name}.png'
-def have(f): return os.path.exists(f)
+def have(f):  # a clip counts only once the recorder finished it (sidecar written last)
+    return os.path.exists(f) and (not f.endswith('.mp4') or os.path.exists(f[:-4] + '.frames.json'))
 
 def seg(base_inputs, base_filter, length, overlays=(), bar=None):
     """base_inputs: ffmpeg input args producing [0..k]; base_filter: filter graph ending in [base] (1920x1080@30, `length` s).
@@ -36,7 +37,8 @@ def seg(base_inputs, base_filter, length, overlays=(), bar=None):
         fo = '' if b >= length else f',fade=out:st={b - FADE:.3f}:d={FADE}:alpha=1'
         fil.append(f'[{idx}:v]format=rgba{fi}{fo}[o{j}];[{last}][o{j}]overlay=0:0:format=auto[v{j}]')
         last = f'v{j}'
-    fil.append(f'[{last}]fps={FPS},format=yuv420p[out]')
+    # one set of colour tags for every segment: mixed tags make ffmpeg reconfigure mid-stream and xfade stops early
+    fil.append(f'[{last}]fps={FPS},scale=out_range=tv,format=yuv420p,setparams=range=tv:colorspace=bt709:color_primaries=bt709:color_trc=bt709[out]')
     ff(*ins, '-filter_complex', ';'.join(fil), '-map', '[out]', '-t', f'{length:.3f}', *ENC, out)
     return out
 
@@ -80,11 +82,13 @@ def wipe_join(parts, out):
     """Chapters joined by one transition style: the design-system wipe (left sweep, 0.4 s)."""
     W = 0.4
     if len(parts) == 1: return ff('-i', parts[0], '-c', 'copy', out)
-    ins, fil, acc, last = [], [], dur(parts[0]), '0:v'
-    for p in parts: ins += ['-i', p]
+    ins, fil, acc, last = [], [], dur(parts[0]), 's0'
+    for i, p in enumerate(parts):
+        ins += ['-i', p]
+        fil.append(f'[{i}:v]settb=AVTB,setpts=PTS-STARTPTS,fps={FPS},format=yuv420p,setsar=1[s{i}]')  # same clock for every input
     for i in range(1, len(parts)):
         off = acc - W
-        fil.append(f'[{last}][{i}:v]xfade=transition=wipeleft:duration={W}:offset={off:.3f}[x{i}]')
+        fil.append(f'[{last}][s{i}]xfade=transition=wipeleft:duration={W}:offset={off:.3f}[x{i}]')
         last = f'x{i}'; acc = off + dur(parts[i])
     ff(*ins, '-filter_complex', ';'.join(fil), '-map', f'[{last}]', *ENC, '-movflags', '+faststart', out)
 
@@ -97,35 +101,36 @@ v = lambda name: f'{V2}/{name}.mp4'
 bg = f'{TMP}/hookbg.png'
 src = v('ch1') if have(v('ch1')) else f'{SH}/coldopen.mp4'
 ff('-i', src, '-frames:v', '1', '-vf', 'scale=1920:1080,boxblur=18:2,eq=brightness=-0.12', bg)
-ch['hook'] = [still(bg, 5.0, [(card('hook1'), 0, 2.4), (card('hook2'), 2.4, 5.0)])]
+ch['hook'] = [still(bg, 6.0, [(card('hook1'), 0, 2.9), (card('hook2'), 2.9, 6.0)])]
 
 # 1 what happened: real speed, goal + hold
-if have(v('ch1')): ch[1] = [clip(v('ch1'), bar=1, hold_end=1.5)]
+# clips stop at match 70.95, before the kick-off wipe (goal hold ends 71.2); the last frame (ball in net, banner) is held
+if have(v('ch1')): ch[1] = [clip(v('ch1'), bar=1, length=7.9, hold_end=2.0)]
 elif FILL: ch[1] = [clip(f'{SH}/coldopen.mp4', bar=1)]
 
 # 2 why: rewind -> freeze -> lens ramp -> graphics one by one -> play 0.5x to the shot
 if all(have(s(x)) for x in ('s2a', 's2b', 's2c', 's2d')):
     p = [still(s('s2a'), 1.6, [(card('rewind'), 0, 1.6)], bar=2),
-         xfade_still(s('s2a'), s('s2b'), 0.2, 1.2, 3.0, 'fade', [(card('c2a'), 1.0, 4.4)], bar=2),
-         still(s('s2c'), 3.0, [(card('c2b'), 0, 3.0)], bar=2),
-         still(s('s2d'), 3.2, [(card('c2c'), 0, 3.2)], bar=2)]
+         xfade_still(s('s2a'), s('s2b'), 0.2, 1.4, 3.4, 'fade', [(card('c2a'), 1.2, 5.0)], bar=2),
+         still(s('s2c'), 3.5, [(card('c2b'), 0, 3.5)], bar=2),
+         still(s('s2d'), 3.7, [(card('c2c'), 0, 3.7)], bar=2)]
     if have(v('ch2')): p.append(clip(v('ch2'), bar=2))
     ch[2] = p
 elif FILL: ch[2] = [clip(f'{SH}/lens.mp4', bar=2)]
 
 # 3 what if: freeze on Sørensen -> question -> path draws -> play -> split result held
 if have(s('s3a')) and have(s('s3b')):
-    p = [still(s('s3a'), 3.0, [(card('c3a'), 0.2, 3.0)], bar=3),
-         xfade_still(s('s3a'), s('s3b'), 0.0, 1.6, 2.6, 'wiperight', [(card('c3b'), 0.6, 4.2)], bar=3)]
-    if have(v('ch3')): p.append(clip(v('ch3'), bar=3))
-    if have(v('ch3split')): p.append(clip(v('ch3split'), [(card('c3c'), 1.0, 4.6)], bar=3, hold_end=3.0))
+    p = [still(s('s3a'), 3.4, [(card('c3a'), 0.2, 3.4)], bar=3),
+         xfade_still(s('s3a'), s('s3b'), 0.0, 1.8, 2.8, 'wiperight', [(card('c3b'), 0.6, 4.6)], bar=3)]
+    if have(v('ch3')): p.append(clip(v('ch3'), bar=3, length=3.2))  # stop before the ghosts crowd the frame
+    if have(v('ch3split')): p.append(clip(v('ch3split'), [(card('c3c'), 0.8, 4.6)], bar=3, length=1.3, hold_end=3.5))
     ch[3] = p
 elif FILL: ch[3] = [clip(f'{SH}/whatif.mp4', bar=3)]
 
 # 4 every fan: 1 -> 2 -> 4, a short spotlight per newly added quadrant
 if have(v('quad')) and have(v('ch1')):
-    q, qd = v('quad'), dur(v('quad'))
-    p = [clip(v('ch1'), [(card('c4'), 0.2, 3.0)], bar=4, start=5.5, length=1.8, hold_end=1.2),
+    q, qd = v('quad'), min(dur(v('quad')), 3.9)  # 3.9 s = match 70.95, before the wipe
+    p = [clip(v('ch1'), [(card('c4'), 0.2, 2.0), (card('c4a'), 2.0, 4.0)], bar=4, start=4.3, length=2.0, hold_end=2.0),
          quad_layout(q, 0.0, 1.0, 2, spot=1, hold_end=1.6, overlays=[(card('c4b'), 0.2, 2.6)], bar=4),
          quad_layout(q, 1.0, max(0.5, qd - 1.0 - 0.05), 4, spot=2, overlays=[(card('c4c'), 0.2, qd - 1.05)], bar=4),
          quad_layout(q, qd - 0.05, 0.04, 4, spot=3, hold_end=2.2, overlays=[(card('c4d'), 0.1, 2.24)], bar=4),
@@ -134,12 +139,12 @@ if have(v('quad')) and have(v('ch1')):
 elif FILL: ch[4] = [clip(f'{SH}/quad.mp4', bar=4)]
 
 # 5 how: one agent lit at a time, kill -> recovered held, fact-check
-order = [('intro', 2.6), ('analyst', 2.6), ('tfail', 2.6), ('trec', 3.2), ('whatif', 2.6), ('fact', 3.2), ('producer', 2.4), ('local', 2.4)]
+order = [('intro', 3.0), ('analyst', 2.8), ('tfail', 2.8), ('trec', 3.6), ('whatif', 2.8), ('fact', 3.6), ('producer', 2.6), ('local', 2.6)]
 if all(have(s(f's5-{k}')) for k, _ in order):
     ch[5] = [still(s(f's5-{k}'), d, [(card(f'c5{k}'), 0, d)], bar=5) for k, d in order]
 elif FILL: ch[5] = [clip(f'{SH}/control.mp4', bar=5)]
 
-ch['arch'] = [still(f'{CARDS}/arch.png', 9.0, zoom=0.04)]
+ch['arch'] = [still(f'{CARDS}/arch.png', 10.0, zoom=0.04)]
 ch['end'] = [still(f'{CARDS}/end.png', 6.0, zoom=0.02)]
 
 # inside a chapter: hard cuts; between chapters: the wipe
