@@ -44,3 +44,22 @@ $T/agentenv/bin/python voice.py ../data/match.casual.en.commentary.json         
 | voice | Azure AI Speech resource (F0/S0) | `AZURE_SPEECH_KEY`, `AZURE_SPEECH_REGION` (voices: en-US-GuyNeural, es-ES-AlvaroNeural, tr-TR-AhmetNeural, de-DE-ConradNeural) |
 
 The LLM path has only been tested against an unreachable endpoint (client builds, then the retry and fallback work), not against a real deployment yet.
+
+## Story v4: commands, goal-moment voices, speech-to-text
+
+```bash
+$T/agentenv/bin/python crew.py --persona casual --lang en --window 63 72 --tag goal         # goal segment (also es --shortest, de, analyst en)
+$T/ttsenv/bin/python voice.py ../data/match.*.goal.commentary.json                         # -> data/audio/<run>/{000.mp3,…,voice.json}
+$T/ttsenv/bin/python voice.py --commands --ambience                                        # viewer commands, crowd loop + goal roar
+$T/ttsenv/bin/python transcribe.py ../data/audio/commands/{1..9}.mp3 && $T/agentenv/bin/python command.py
+```
+
+- **`command.py`:** turns an instruction into calls to `seek`, `set_view`, `fork_what_if`, `set_persona`, `set_language`, `set_commentary_level` and `highlight_players`, plus director cues.
+  - **Modes:** with Azure creds it runs an LLM `Agent` with these tools. Without them it uses a keyword/regex intent router, labelled `mode: "rules"` in every output.
+  - **Data:** names, fork results and scores come from the MCP server (`get_roster`, `list_forks`, `compare_fork`, `get_match_state`).
+- **`voice.py`:** the engine is ElevenLabs if `ELEVENLABS_API_KEY` is set, else Azure AI Speech, else Piper.
+  - **Cache:** ElevenLabs requests are cached on disk (`.tools/el-cache`), so re-runs are free.
+  - **Overlap:** a line that would talk over the next one is tightened locally with `atempo`.
+- **`transcribe.py`:** faster-whisper `small` with the roster as vocabulary. It writes `data/commands/transcripts.json`, which `command.py` uses instead of the script.
+
+**Voices and sound: ElevenLabs (elevenlabs.io).** Licences are in `web/public/assets/LICENSES.md`.

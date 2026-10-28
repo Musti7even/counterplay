@@ -64,6 +64,8 @@ Azure is optional. Put `AZURE_OPENAI_ENDPOINT` / `AZURE_OPENAI_DEPLOYMENT` / `AZ
 
 ## Data and licensing
 
+- **Voices and sound: ElevenLabs (elevenlabs.io).** This covers the commentary voices, the viewer commands and the stadium ambience in `data/audio/`. Details are in [`web/public/assets/LICENSES.md`](web/public/assets/LICENSES.md).
+
 - **Synthetic data only.** Matches come from [Google Research Football](https://github.com/google-research/football) (Apache-2.0), simulated on its builtin AI.
 - **Fictional clubs and players.** Redmoor FC and Halvard Athletic, and every player name, are made up.
 - **No real league data.** No Premier League data, footage, names or marks are used.
